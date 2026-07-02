@@ -60,3 +60,25 @@ button {
 button:hover {
     background: #1d4ed8;
 }
+#chat-box {
+    width: 100%;
+    height: 300px;
+    background: #111827;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    padding: 15px;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.message {
+    padding: 12px;
+    margin-bottom: 12px;
+    border-radius: 10px;
+}
+
+.user-message {
+    background: #2563eb;
+    color: white;
+    text-align: right;
+}

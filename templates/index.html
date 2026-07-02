@@ -4,9 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Project Nova</title>
-
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
@@ -15,21 +13,20 @@
     <div class="container">
 
         <h1>Project Nova</h1>
-
         <p>Your intelligent AI assistant.</p>
 
+        <div id="chat-box"></div>
+
         <input
+            id="user-input"
             type="text"
             placeholder="Ask me anything...">
 
-        <br><br>
-
-        <button>Send</button>
+        <button id="send-button">Send</button>
 
     </div>
 
-<script src="{{ url_for('static', filename='js/script.js')}}"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
 </body>
-
 </html>
