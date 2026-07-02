@@ -10,19 +10,37 @@
 
 <body>
 
-    <div class="container">
+    <div class="app-layout">
 
-        <h1>Project Nova</h1>
-        <p>Your intelligent AI assistant.</p>
+        <aside class="sidebar">
+            <h2>Project Nova</h2>
+            <button class="new-chat-btn">+ New Chat</button>
 
-        <div id="chat-box"></div>
+            <div class="sidebar-menu">
+                <p>💬 Chat</p>
+                <p>📈 Trading</p>
+                <p>📄 Files</p>
+                <p>⚙️ Settings</p>
+            </div>
+        </aside>
 
-        <input
-            id="user-input"
-            type="text"
-            placeholder="Ask me anything...">
+        <main class="chat-area">
+            <div class="chat-header">
+                <h1>Project Nova</h1>
+                <p>Your intelligent AI assistant.</p>
+            </div>
 
-        <button id="send-button">Send</button>
+            <div id="chat-box"></div>
+
+            <div class="input-area">
+                <input
+                    id="user-input"
+                    type="text"
+                    placeholder="Ask Project Nova anything...">
+
+                <button id="send-button">Send</button>
+            </div>
+        </main>
 
     </div>
 

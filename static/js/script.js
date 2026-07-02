@@ -26,7 +26,14 @@ async function sendMessage() {
 
     userInput.value = "";
 
-    const response = await fetch("/chat", {
+const thinkingMessage = document.createElement("div");
+thinkingMessage.className = "message ai-message";
+thinkingMessage.textContent = "Nova is thinking...";
+
+chatBox.appendChild(thinkingMessage);
+chatBox.scrollTop = chatBox.scrollHeight;
+
+const response = await fetch("/chat", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -36,12 +43,8 @@ async function sendMessage() {
         })
     });
 
-    const data = await response.json();
+   const data = await response.json();
 
-    const aiMessage = document.createElement("div");
-    aiMessage.className = "message ai-message";
-    aiMessage.textContent = data.reply;
-
-    chatBox.appendChild(aiMessage);
+thinkingMessage.textContent = data.reply;
     chatBox.scrollTop = chatBox.scrollHeight;
 }
