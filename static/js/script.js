@@ -4,7 +4,13 @@ const sendButton = document.getElementById("send-button");
 
 sendButton.addEventListener("click", sendMessage);
 
-function sendMessage() {
+userInput.addEventListener("keypress", function (event) {
+    if (event.key === "Enter") {
+        sendMessage();
+    }
+});
+
+async function sendMessage() {
     const message = userInput.value;
 
     if (message.trim() === "") {
@@ -15,15 +21,27 @@ function sendMessage() {
     userMessage.className = "message user-message";
     userMessage.textContent = message;
 
-chatBox.appendChild(userMessage);
+    chatBox.appendChild(userMessage);
+    chatBox.scrollTop = chatBox.scrollHeight;
 
-userInput.value = "";
+    userInput.value = "";
 
-setTimeout(function () {
+    const response = await fetch("/chat", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            message: message
+        })
+    });
+
+    const data = await response.json();
+
     const aiMessage = document.createElement("div");
     aiMessage.className = "message ai-message";
-    aiMessage.textContent = "Hi! I am Project Nova. Soon I will be connected to real AI.";
+    aiMessage.textContent = data.reply;
 
     chatBox.appendChild(aiMessage);
-}, 500);
+    chatBox.scrollTop = chatBox.scrollHeight;
 }
