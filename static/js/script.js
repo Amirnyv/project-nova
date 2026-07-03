@@ -1,6 +1,7 @@
 const chatBox = document.getElementById("chat-box");
 const userInput = document.getElementById("user-input");
 const sendButton = document.getElementById("send-button");
+const newChatButton = document.querySelector(".new-chat-btn");
 
 sendButton.addEventListener("click", sendMessage);
 
@@ -17,34 +18,95 @@ async function sendMessage() {
         return;
     }
 
+    const time = new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+
     const userMessage = document.createElement("div");
     userMessage.className = "message user-message";
-    userMessage.textContent = message;
+    userMessage.innerHTML = `
+        ${message}
+        <br><small>${time}</small>
+    `;
 
     chatBox.appendChild(userMessage);
+    saveChat();
     chatBox.scrollTop = chatBox.scrollHeight;
 
     userInput.value = "";
+setTimeout(() => {
+    userInput.focus();
+}, 0);
+ const thinkingMessage = document.createElement("div");
+    thinkingMessage.className = "message ai-message";
+    thinkingMessage.innerHTML = `
+        Nova is thinking...
+        <br><small>${time}</small>
+    `;
 
-const thinkingMessage = document.createElement("div");
-thinkingMessage.className = "message ai-message";
-thinkingMessage.textContent = "Nova is thinking...";
-
-chatBox.appendChild(thinkingMessage);
-chatBox.scrollTop = chatBox.scrollHeight;
-
-const response = await fetch("/chat", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            message: message
-        })
-    });
-
-   const data = await response.json();
-
-thinkingMessage.textContent = data.reply;
+    chatBox.appendChild(thinkingMessage);
     chatBox.scrollTop = chatBox.scrollHeight;
+
+    try {
+        const response = await fetch("/chat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                message: message
+            })
+        });
+
+        const data = await response.json();
+
+        thinkingMessage.innerHTML = `
+            ${data.reply}
+            <br><small>${time}</small>
+        `;
+
+        saveChat();
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+    } catch (error) {
+        thinkingMessage.innerHTML = `
+            Nova is not connected to AI credits yet. We can keep building the website for now.
+            <br><small>${time}</small>
+        `;
+
+        saveChat();
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
 }
+
+newChatButton.addEventListener("click", function () {
+    chatBox.innerHTML = "";
+
+    const welcomeMessage = document.createElement("div");
+    welcomeMessage.className = "message ai-message";
+    welcomeMessage.textContent = "Hello! I'm Project Nova. How can I help you today?";
+
+    chatBox.appendChild(welcomeMessage);
+    saveChat();
+
+    setTimeout(() => {
+        userInput.focus();
+    }, 0);
+});
+
+function saveChat() {
+    localStorage.setItem("projectNovaChat", chatBox.innerHTML);
+}
+
+function loadChat() {
+    const savedChat = localStorage.getItem("projectNovaChat");
+
+    if (savedChat) {
+        chatBox.innerHTML = savedChat;
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+}
+
+loadChat();
+userInput.focus();
