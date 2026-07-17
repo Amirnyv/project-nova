@@ -171,3 +171,134 @@ button:hover {
 .input-area button {
     margin-top: 0;
 }
+
+.conversation-section {
+    margin-bottom: 25px;
+}
+
+.conversation-section h3 {
+    color: #94a3b8;
+    font-size: 13px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+#conversation-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.conversation-button {
+    width: 100%;
+    padding: 10px;
+    margin: 0;
+    background: transparent;
+    color: #e2e8f0;
+    border: none;
+    border-radius: 8px;
+    text-align: left;
+    font-size: 14px;
+}
+
+.conversation-button:hover {
+    background: #1e293b;
+}
+/* Mobile layout */
+@media (max-width: 768px) {
+    body {
+        height: auto;
+        min-height: 100vh;
+        display: block;
+    }
+
+    .app-layout {
+        flex-direction: column;
+        width: 100%;
+        min-height: 100vh;
+    }
+
+    .sidebar {
+        width: 100%;
+        padding: 18px;
+    }
+
+    .sidebar h2 {
+        font-size: 24px;
+        margin-bottom: 15px;
+    }
+
+    .new-chat-btn {
+        margin-bottom: 18px;
+    }
+
+    .conversation-section {
+        margin-bottom: 15px;
+    }
+
+    .sidebar-menu {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+    }
+
+    .sidebar-menu p {
+        margin: 0;
+        padding: 10px;
+    }
+
+    .chat-area {
+        width: 100%;
+        min-height: 70vh;
+    }
+
+    .chat-header {
+        padding: 18px;
+    }
+
+    .chat-header h1 {
+        font-size: 30px;
+        margin: 0 0 8px;
+    }
+
+    .chat-header p {
+        margin: 0;
+    }
+
+    #chat-box {
+        min-height: 350px;
+        padding: 15px;
+    }
+
+    .input-area {
+        padding: 12px;
+        gap: 8px;
+    }
+
+    .input-area input {
+        width: 100%;
+        min-width: 0;
+        padding: 12px;
+    }
+
+    .input-area button {
+        padding: 12px 18px;
+        font-size: 16px;
+    }
+
+    .user-message,
+    .ai-message {
+        margin-left: 0;
+        margin-right: 0;
+        max-width: 85%;
+        overflow-wrap: anywhere;
+    }
+
+    .user-message {
+        margin-left: auto;
+    }
+
+    .ai-message {
+        margin-right: auto;
+    }
+}

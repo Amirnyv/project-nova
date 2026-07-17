@@ -81,6 +81,19 @@ setTimeout(() => {
 }
 
 newChatButton.addEventListener("click", function () {
+    const currentChat = chatBox.innerHTML.trim();
+
+    if (currentChat !== "") {
+        conversations.unshift({
+            title: "New Conversation",
+            messages: currentChat,
+            createdAt: new Date().toISOString()
+        });
+
+        saveConversations();
+        renderConversations();
+    }
+
     chatBox.innerHTML = "";
 
     const welcomeMessage = document.createElement("div");
