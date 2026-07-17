@@ -110,3 +110,38 @@ function loadChat() {
 
 loadChat();
 userInput.focus();
+
+const conversationList = document.getElementById("conversation-list");
+
+let conversations = JSON.parse(
+    localStorage.getItem("projectNovaConversations")
+) || [];
+
+function saveConversations() {
+    localStorage.setItem(
+        "projectNovaConversations",
+        JSON.stringify(conversations)
+    );
+}
+
+function renderConversations() {
+    conversationList.innerHTML = "";
+
+    conversations.forEach(function (conversation, index) {
+        const conversationButton = document.createElement("button");
+
+        conversationButton.className = "conversation-button";
+        conversationButton.textContent = conversation.title;
+
+        conversationButton.addEventListener("click", function () {
+            chatBox.innerHTML = conversation.messages;
+            localStorage.setItem("projectNovaChat", conversation.messages);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            userInput.focus();
+        });
+
+        conversationList.appendChild(conversationButton);
+    });
+}
+
+renderConversations();
