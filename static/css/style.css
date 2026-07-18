@@ -302,3 +302,30 @@ button:hover {
         margin-right: auto;
     }
 }
+
+.conversation-row {
+    display: flex;
+    align-items: stretch;
+    gap: 6px;
+}
+
+.conversation-row .conversation-button {
+    flex: 1;
+}
+
+.delete-conversation-button {
+    width: 34px;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    color: #94a3b8;
+    border: none;
+    border-radius: 8px;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.delete-conversation-button:hover {
+    background: #7f1d1d;
+    color: white;
+}
