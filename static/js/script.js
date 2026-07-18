@@ -2,19 +2,29 @@ const chatBox = document.getElementById("chat-box");
 const userInput = document.getElementById("user-input");
 const sendButton = document.getElementById("send-button");
 const newChatButton = document.querySelector(".new-chat-btn");
+const conversationList = document.getElementById("conversation-list");
+
+let conversations =
+    JSON.parse(localStorage.getItem("projectNovaConversations")) || [];
+
+let activeConversationId =
+    localStorage.getItem("projectNovaActiveConversationId") || null;
 
 sendButton.addEventListener("click", sendMessage);
 
-userInput.addEventListener("keypress", function (event) {
+userInput.addEventListener("keydown", function (event) {
     if (event.key === "Enter") {
+        event.preventDefault();
         sendMessage();
     }
 });
 
-async function sendMessage() {
-    const message = userInput.value;
+newChatButton.addEventListener("click", startNewChat);
 
-    if (message.trim() === "") {
+async function sendMessage() {
+    const message = userInput.value.trim();
+
+    if (message === "") {
         return;
     }
 
@@ -26,19 +36,20 @@ async function sendMessage() {
     const userMessage = document.createElement("div");
     userMessage.className = "message user-message";
     userMessage.innerHTML = `
-        ${message}
+        ${escapeHtml(message)}
         <br><small>${time}</small>
     `;
 
     chatBox.appendChild(userMessage);
-    saveChat();
     chatBox.scrollTop = chatBox.scrollHeight;
 
     userInput.value = "";
-setTimeout(() => {
     userInput.focus();
-}, 0);
- const thinkingMessage = document.createElement("div");
+
+    ensureActiveConversation(message);
+    saveCurrentConversation();
+
+    const thinkingMessage = document.createElement("div");
     thinkingMessage.className = "message ai-message";
     thinkingMessage.innerHTML = `
         Nova is thinking...
@@ -59,76 +70,118 @@ setTimeout(() => {
             })
         });
 
+        if (!response.ok) {
+            throw new Error(`Request failed with status ${response.status}`);
+        }
+
         const data = await response.json();
 
         thinkingMessage.innerHTML = `
-            ${data.reply}
+            ${escapeHtml(data.reply)}
             <br><small>${time}</small>
         `;
-
-        saveChat();
-        chatBox.scrollTop = chatBox.scrollHeight;
-
     } catch (error) {
         thinkingMessage.innerHTML = `
             Nova is not connected to AI credits yet. We can keep building the website for now.
             <br><small>${time}</small>
         `;
-
-        saveChat();
-        chatBox.scrollTop = chatBox.scrollHeight;
     }
+
+    saveCurrentConversation();
+    chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-newChatButton.addEventListener("click", function () {
-    const currentChat = chatBox.innerHTML.trim();
+function startNewChat() {
+    saveCurrentConversation();
 
-    if (currentChat !== "") {
-        conversations.unshift({
-            title: "New Conversation",
-            messages: currentChat,
-            createdAt: new Date().toISOString()
-        });
-
-        saveConversations();
-        renderConversations();
-    }
+    activeConversationId = null;
+    localStorage.removeItem("projectNovaActiveConversationId");
 
     chatBox.innerHTML = "";
 
     const welcomeMessage = document.createElement("div");
     welcomeMessage.className = "message ai-message";
-    welcomeMessage.textContent = "Hello! I'm Project Nova. How can I help you today?";
+    welcomeMessage.textContent =
+        "Hello! I'm Project Nova. How can I help you today?";
 
     chatBox.appendChild(welcomeMessage);
-    saveChat();
 
-    setTimeout(() => {
-        userInput.focus();
-    }, 0);
-});
-
-function saveChat() {
     localStorage.setItem("projectNovaChat", chatBox.innerHTML);
+
+    renderConversations();
+    userInput.focus();
 }
 
-function loadChat() {
-    const savedChat = localStorage.getItem("projectNovaChat");
-
-    if (savedChat) {
-        chatBox.innerHTML = savedChat;
-        chatBox.scrollTop = chatBox.scrollHeight;
+function ensureActiveConversation(firstMessage) {
+    if (activeConversationId !== null) {
+        return;
     }
+
+    const conversation = {
+        id: crypto.randomUUID(),
+        title: createConversationTitle(firstMessage),
+        messages: chatBox.innerHTML,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+
+    conversations.unshift(conversation);
+    activeConversationId = conversation.id;
+
+    localStorage.setItem(
+        "projectNovaActiveConversationId",
+        activeConversationId
+    );
+
+    saveConversations();
+    renderConversations();
 }
 
-loadChat();
-userInput.focus();
+function saveCurrentConversation() {
+    localStorage.setItem("projectNovaChat", chatBox.innerHTML);
 
-const conversationList = document.getElementById("conversation-list");
+    if (activeConversationId === null) {
+        return;
+    }
 
-let conversations = JSON.parse(
-    localStorage.getItem("projectNovaConversations")
-) || [];
+    const conversation = conversations.find(function (item) {
+        return item.id === activeConversationId;
+    });
+
+    if (!conversation) {
+        return;
+    }
+
+    conversation.messages = chatBox.innerHTML;
+    conversation.updatedAt = new Date().toISOString();
+
+    saveConversations();
+    renderConversations();
+}
+
+function loadConversation(conversationId) {
+    const conversation = conversations.find(function (item) {
+        return item.id === conversationId;
+    });
+
+    if (!conversation) {
+        return;
+    }
+
+    activeConversationId = conversation.id;
+
+    localStorage.setItem(
+        "projectNovaActiveConversationId",
+        activeConversationId
+    );
+
+    chatBox.innerHTML = conversation.messages;
+    localStorage.setItem("projectNovaChat", conversation.messages);
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+    renderConversations();
+    userInput.focus();
+}
 
 function saveConversations() {
     localStorage.setItem(
@@ -140,21 +193,62 @@ function saveConversations() {
 function renderConversations() {
     conversationList.innerHTML = "";
 
-    conversations.forEach(function (conversation, index) {
+    conversations.forEach(function (conversation) {
         const conversationButton = document.createElement("button");
 
         conversationButton.className = "conversation-button";
         conversationButton.textContent = conversation.title;
 
+        if (conversation.id === activeConversationId) {
+            conversationButton.classList.add("active");
+        }
+
         conversationButton.addEventListener("click", function () {
-            chatBox.innerHTML = conversation.messages;
-            localStorage.setItem("projectNovaChat", conversation.messages);
-            chatBox.scrollTop = chatBox.scrollHeight;
-            userInput.focus();
+            loadConversation(conversation.id);
         });
 
         conversationList.appendChild(conversationButton);
     });
 }
 
-renderConversations();
+function createConversationTitle(message) {
+    const cleanedMessage = message.replace(/\s+/g, " ").trim();
+
+    if (cleanedMessage.length <= 28) {
+        return cleanedMessage;
+    }
+
+    return `${cleanedMessage.slice(0, 28)}...`;
+}
+
+function escapeHtml(text) {
+    const element = document.createElement("div");
+    element.textContent = text;
+    return element.innerHTML;
+}
+
+function loadSavedState() {
+    renderConversations();
+
+    if (activeConversationId !== null) {
+        const activeConversation = conversations.find(function (item) {
+            return item.id === activeConversationId;
+        });
+
+        if (activeConversation) {
+            chatBox.innerHTML = activeConversation.messages;
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return;
+        }
+    }
+
+    const savedChat = localStorage.getItem("projectNovaChat");
+
+    if (savedChat) {
+        chatBox.innerHTML = savedChat;
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+}
+
+loadSavedState();
+userInput.focus();
