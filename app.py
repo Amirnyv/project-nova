@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 from openai import OpenAI
 from dotenv import load_dotenv
+from agents.stock_agent import analyze_stock
 import os
 
 app = Flask(__name__)
@@ -68,11 +69,46 @@ def chat():
         "content": user_message
     })
 
+    stock_keywords = [
+        "aapl",
+        "tsla",
+        "btc",
+        "bitcoin",
+        "stock",
+        "stocks",
+        "analyze"
+    ]
+
+    if any(word in user_message.lower() for word in stock_keywords):
+
+        symbol = None
+
+        if "aapl" in user_message.lower():
+            symbol = "AAPL"
+        elif "tsla" in user_message.lower():
+            symbol = "TSLA"
+        elif "btc" in user_message.lower() or "bitcoin" in user_message.lower():
+            symbol = "BTC"
+
+        if symbol:
+            result = analyze_stock(symbol)
+            return jsonify({
+    "reply":
+        f"📈 {result['company']} ({result['symbol']})\n\n"
+        f"💲 Current Price: ${result['price']}\n"
+        f"📊 Daily Change: {result['change']}%\n\n"
+        f"🎯 AI Signal: {result['signal']}\n"
+        f"📈 Confidence: {result['confidence']}%\n"
+        f"⚠️ Risk: {result['risk']}\n\n"
+        f"💡 Reason:\n{result['reason']}\n\n"
+        f"🧪 {result['mode']}"
+})
+
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=messages
     )
-
+    
     reply = response.choices[0].message.content
 
     return jsonify({
