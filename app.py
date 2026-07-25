@@ -53,7 +53,7 @@ def chat():
                 "content": content
             })
 
-messages.append({
+    messages.append({
         "role": "system",
         "content": (
             f"The current conversation contains "
@@ -61,9 +61,9 @@ messages.append({
             f"Use the earlier discussion when answering if it "
             f"is relevant."
         )
-})
+    })
 
-messages.append({
+    messages.append({
         "role": "user",
         "content": user_message
     })

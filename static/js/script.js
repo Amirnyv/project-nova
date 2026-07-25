@@ -191,6 +191,15 @@ function saveCurrentConversation() {
 
     conversation.messages = chatBox.innerHTML;
 conversation.updatedAt = new Date().toISOString();
+const lastUserMessage = chatBox.querySelector(
+    ".user-message:last-of-type"
+);
+
+if (lastUserMessage) {
+    conversation.context = detectContext(
+        lastUserMessage.textContent
+    );
+}
 
 const totalMessages =
 chatBox.querySelectorAll(".user-message").length;
@@ -421,15 +430,23 @@ function detectGoal(message) {
 
     const text = message.toLowerCase();
 
+    if (text.includes("nova") || text.includes("project")) {
+        return "Building Project Nova";
+    }
+
+    if (text.includes("flask")) {
+        return "Building Project Nova";
+    }
+
     if (text.includes("python")) {
         return "Learning Python";
     }
 
-    if (text.includes("tesla")) {
+    if (text.includes("stock") || text.includes("tesla")) {
         return "Learning Stocks";
     }
 
-    if (text.includes("bitcoin")) {
+    if (text.includes("bitcoin") || text.includes("crypto")) {
         return "Learning Crypto";
     }
 
@@ -442,6 +459,37 @@ function detectGoal(message) {
     }
 
     return "General Learning";
+}
+
+function detectContext(message) {
+
+    const text = message.toLowerCase();
+
+    if (text.includes("flask")) {
+        return "Building Flask Backend";
+    }
+
+    if (text.includes("python")) {
+        return "Learning Python";
+    }
+
+    if (text.includes("memory")) {
+        return "Building Memory System";
+    }
+
+    if (text.includes("api")) {
+        return "Connecting OpenAI API";
+    }
+
+    if (text.includes("stock")) {
+        return "Building Trading System";
+    }
+
+    if (text.includes("debug")) {
+        return "Debugging";
+    }
+
+    return "General Discussion";
 }
 
 function formatLastActive(dateString) {
