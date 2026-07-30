@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime
 
 STARTING_CASH = 10000.00
 
@@ -9,18 +10,30 @@ DATA_FILE = os.path.join(
 )
 
 
+def default_portfolio():
+    return {
+        "cash": STARTING_CASH,
+        "positions": {},
+        "trade_history": []
+    }
+
+
 def load_portfolio():
     if os.path.exists(DATA_FILE):
         try:
             with open(DATA_FILE, "r") as file:
-                return json.load(file)
+                data = json.load(file)
+
+                # Backward compatibility with your old save file
+                if "trade_history" not in data:
+                    data["trade_history"] = []
+
+                return data
+
         except (json.JSONDecodeError, OSError):
             pass
 
-    return {
-        "cash": STARTING_CASH,
-        "positions": {}
-    }
+    return default_portfolio()
 
 
 def save_portfolio():
@@ -28,11 +41,30 @@ def save_portfolio():
         json.dump(portfolio, file, indent=4)
 
 
+def record_trade(action, symbol, shares, price):
+    trade = {
+        "action": action,
+        "symbol": symbol,
+        "shares": shares,
+        "price": round(price, 2),
+        "total": round(shares * price, 2),
+        "timestamp": datetime.now().strftime(
+            "%Y-%m-%d %I:%M:%S %p"
+        )
+    }
+
+    portfolio["trade_history"].append(trade)
+
+
 portfolio = load_portfolio()
 
 
 def get_portfolio():
     return portfolio
+
+
+def get_trade_history():
+    return portfolio["trade_history"]
 
 
 def buy_stock(symbol, shares, price):
@@ -79,6 +111,13 @@ def buy_stock(symbol, shares, price):
         2
     )
 
+    record_trade(
+        "BUY",
+        symbol,
+        shares,
+        price
+    )
+
     save_portfolio()
 
     return {
@@ -123,6 +162,13 @@ def sell_stock(symbol, shares, price):
     portfolio["cash"] = round(
         portfolio["cash"] + proceeds,
         2
+    )
+
+    record_trade(
+        "SELL",
+        symbol,
+        shares,
+        price
     )
 
     save_portfolio()

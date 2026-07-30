@@ -2,7 +2,12 @@ from flask import Flask, render_template, request, jsonify
 from openai import OpenAI
 from dotenv import load_dotenv
 from agents.stock_agent import analyze_stock
-from agents.portfolio_agent import buy_stock, sell_stock, get_portfolio
+from agents.portfolio_agent import (
+    buy_stock,
+    sell_stock,
+    get_portfolio,
+    get_trade_history
+)
 import os
 
 app = Flask(__name__)
@@ -71,7 +76,36 @@ def chat():
     })
 
     lower_message = user_message.lower()
+    # Trade history
+    if "trade history" in lower_message:
+        trades = get_trade_history()
 
+        if not trades:
+            return jsonify({
+                "reply": (
+                    "📜 Trade History\n\n"
+                    "No paper trades recorded yet."
+                )
+            })
+
+        history_text = ""
+
+        for trade in reversed(trades):
+            history_text += (
+                f"\n\n{trade['action']} {trade['symbol']}\n"
+                f"Shares: {trade['shares']}\n"
+                f"Price: ${trade['price']:.2f}\n"
+                f"Total: ${trade['total']:.2f}\n"
+                f"Time: {trade['timestamp']}"
+            )
+
+        return jsonify({
+            "reply": (
+                f"📜 Paper Trade History"
+                f"{history_text}\n\n"
+                f"🧪 Simulation Mode"
+            )
+        })
     lower_message = user_message.lower()
 
         # Show portfolio

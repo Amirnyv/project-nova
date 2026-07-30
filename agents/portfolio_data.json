@@ -5,5 +5,23 @@
             "shares": 2.0,
             "average_price": 338.19
         }
-    }
+    },
+    "trade_history": [
+        {
+            "action": "BUY",
+            "symbol": "AAPL",
+            "shares": 1.0,
+            "price": 338.19,
+            "total": 338.19,
+            "timestamp": "2026-07-29 11:25:42 PM"
+        },
+        {
+            "action": "SELL",
+            "symbol": "AAPL",
+            "shares": 1.0,
+            "price": 338.19,
+            "total": 338.19,
+            "timestamp": "2026-07-29 11:25:48 PM"
+        }
+    ]
 }
