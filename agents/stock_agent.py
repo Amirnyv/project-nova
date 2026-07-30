@@ -122,8 +122,29 @@ def analyze_stock(symbol):
         price = float(quote["close"])
         daily_change = float(quote["percent_change"])
 
+        # Current moving averages
         ma20 = sum(prices[-20:]) / 20
         ma50 = sum(prices[-50:]) / 50
+
+        # 20-day moving average history for chart
+        ma20_history = []
+
+        for i in range(len(prices)):
+            if i < 19:
+                ma20_history.append(None)
+            else:
+                average = sum(prices[i - 19:i + 1]) / 20
+                ma20_history.append(round(average, 2))
+
+        # 50-day moving average history for chart
+        ma50_history = []
+
+        for i in range(len(prices)):
+            if i < 49:
+                ma50_history.append(None)
+            else:
+                average = sum(prices[i - 49:i + 1]) / 50
+                ma50_history.append(round(average, 2))
 
         rsi = calculate_rsi(prices)
 
@@ -136,13 +157,17 @@ def analyze_stock(symbol):
         score = 50
         reasons = []
 
-        # Trend
+        # Trend analysis
         if price > ma20:
             score += 10
-            reasons.append("Price is above the 20-day average.")
+            reasons.append(
+                "Price is above the 20-day average."
+            )
         else:
             score -= 10
-            reasons.append("Price is below the 20-day average.")
+            reasons.append(
+                "Price is below the 20-day average."
+            )
 
         if ma20 > ma50:
             score += 15
@@ -155,31 +180,44 @@ def analyze_stock(symbol):
                 "The 20-day average is below the 50-day average."
             )
 
-        # RSI
+        # RSI analysis
         if rsi is not None:
             if 50 <= rsi < 70:
                 score += 10
-                reasons.append("RSI shows positive momentum.")
+                reasons.append(
+                    "RSI shows positive momentum."
+                )
             elif rsi >= 70:
                 score -= 5
-                reasons.append("RSI may indicate overbought conditions.")
+                reasons.append(
+                    "RSI may indicate overbought conditions."
+                )
             elif rsi < 30:
                 score += 5
-                reasons.append("RSI may indicate oversold conditions.")
+                reasons.append(
+                    "RSI may indicate oversold conditions."
+                )
             else:
                 score -= 5
-                reasons.append("RSI shows weaker momentum.")
+                reasons.append(
+                    "RSI shows weaker momentum."
+                )
 
-        # 5-day momentum
+        # 5-day momentum analysis
         if momentum_5d > 2:
             score += 10
-            reasons.append("Five-day momentum is positive.")
+            reasons.append(
+                "Five-day momentum is positive."
+            )
         elif momentum_5d < -2:
             score -= 10
-            reasons.append("Five-day momentum is negative.")
+            reasons.append(
+                "Five-day momentum is negative."
+            )
 
         score = max(0, min(100, round(score)))
 
+        # Signal
         if score >= 70:
             signal = "BUY 📈"
         elif score <= 30:
@@ -187,6 +225,7 @@ def analyze_stock(symbol):
         else:
             signal = "HOLD"
 
+        # Risk
         if volatility >= 3:
             risk = "High"
         elif volatility >= 1.5:
@@ -211,14 +250,16 @@ def analyze_stock(symbol):
             "confidence": score,
             "risk": risk,
 
-                        "reason": " ".join(reasons),
+            "reason": " ".join(reasons),
             "mode": "Live Market Data + Technical Analysis",
 
             "chart_dates": [
                 item["datetime"]
                 for item in reversed(values)
             ],
-            "chart_prices": prices
+            "chart_prices": prices,
+            "chart_ma20": ma20_history,
+            "chart_ma50": ma50_history
         }
 
     except requests.RequestException as error:

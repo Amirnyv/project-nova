@@ -568,14 +568,28 @@ function createStockChart(messageElement, stockData) {
             labels: stockData.dates,
 
             datasets: [
-                {
-                    label: `${stockData.symbol} Price`,
-                    data: stockData.prices,
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    tension: 0.2
-                }
-            ]
+    {
+        label: `${stockData.symbol} Price`,
+        data: stockData.prices,
+        borderWidth: 2,
+        pointRadius: 0,
+        tension: 0.2
+    },
+    {
+        label: "20-Day MA",
+        data: stockData.ma20,
+        borderWidth: 2,
+        pointRadius: 0,
+        tension: 0.2
+    },
+    {
+        label: "50-Day MA",
+        data: stockData.ma50,
+        borderWidth: 2,
+        pointRadius: 0,
+        tension: 0.2
+    }
+]
         },
 
         options: {

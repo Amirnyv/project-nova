@@ -114,10 +114,12 @@ def chat():
                     f"🌐 {result['mode']}"
                 ),
                 "stock_data": {
-                    "symbol": result["symbol"],
-                    "dates": result["chart_dates"],
-                    "prices": result["chart_prices"]
-                }
+    "symbol": result["symbol"],
+    "dates": result["chart_dates"],
+    "prices": result["chart_prices"],
+    "ma20": result["chart_ma20"],
+    "ma50": result["chart_ma50"]
+}
             })
 
     response = client.chat.completions.create(
