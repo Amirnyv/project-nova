@@ -110,9 +110,14 @@ def chat():
                     f"🧠 Nova Score: {result['score']}/100\n"
                     f"🎯 Signal: {result['signal']}\n"
                     f"⚠️ Risk: {result['risk']}\n\n"
-                    f"💡 Analysis:\n{result['reason']}\n\n"
+                                        f"💡 Analysis:\n{result['reason']}\n\n"
                     f"🌐 {result['mode']}"
-                )
+                ),
+                "stock_data": {
+                    "symbol": result["symbol"],
+                    "dates": result["chart_dates"],
+                    "prices": result["chart_prices"]
+                }
             })
 
     response = client.chat.completions.create(

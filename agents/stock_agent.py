@@ -211,8 +211,14 @@ def analyze_stock(symbol):
             "confidence": score,
             "risk": risk,
 
-            "reason": " ".join(reasons),
-            "mode": "Live Market Data + Technical Analysis"
+                        "reason": " ".join(reasons),
+            "mode": "Live Market Data + Technical Analysis",
+
+            "chart_dates": [
+                item["datetime"]
+                for item in reversed(values)
+            ],
+            "chart_prices": prices
         }
 
     except requests.RequestException as error:

@@ -108,10 +108,17 @@ async function sendMessage() {
 
         const data = await response.json();
 
-        thinkingMessage.innerHTML = `
-            ${escapeHtml(data.reply)}
-            <br><small>${time}</small>
-        `;
+thinkingMessage.innerHTML = `
+    ${escapeHtml(data.reply)}
+    <br><small>${time}</small>
+`;
+
+if (data.stock_data) {
+    createStockChart(
+        thinkingMessage,
+        data.stock_data
+    );
+}
     } catch (error) {
         thinkingMessage.innerHTML = `
             Nova is not connected to AI credits yet. We can keep building the website for now.
@@ -544,4 +551,50 @@ function deleteConversation(conversationId) {
 
 loadSavedState();
 userInput.focus();
+
+function createStockChart(messageElement, stockData) {
+    const chartContainer = document.createElement("div");
+    chartContainer.className = "stock-chart-container";
+
+    const canvas = document.createElement("canvas");
+
+    chartContainer.appendChild(canvas);
+    messageElement.appendChild(chartContainer);
+
+    new Chart(canvas, {
+        type: "line",
+
+        data: {
+            labels: stockData.dates,
+
+            datasets: [
+                {
+                    label: `${stockData.symbol} Price`,
+                    data: stockData.prices,
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    tension: 0.2
+                }
+            ]
+        },
+
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+
+            interaction: {
+                intersect: false,
+                mode: "index"
+            },
+
+            scales: {
+                x: {
+                    ticks: {
+                        maxTicksLimit: 8
+                    }
+                }
+            }
+        }
+    });
+}
 
