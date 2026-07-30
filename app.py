@@ -80,7 +80,6 @@ def chat():
     ]
 
     if any(word in user_message.lower() for word in stock_keywords):
-
         symbol = None
 
         if "aapl" in user_message.lower():
@@ -92,17 +91,29 @@ def chat():
 
         if symbol:
             result = analyze_stock(symbol)
+
+            if "error" in result:
+                return jsonify({
+                    "reply": f"Stock Agent Error: {result['error']}"
+                })
+
             return jsonify({
-    "reply":
-        f"📈 {result['company']} ({result['symbol']})\n\n"
-        f"💲 Current Price: ${result['price']}\n"
-        f"📊 Daily Change: {result['change']}%\n\n"
-        f"🎯 AI Signal: {result['signal']}\n"
-        f"📈 Confidence: {result['confidence']}%\n"
-        f"⚠️ Risk: {result['risk']}\n\n"
-        f"💡 Reason:\n{result['reason']}\n\n"
-        f"🧪 {result['mode']}"
-})
+                "reply": (
+                    f"📈 {result['company']} ({result['symbol']})\n\n"
+                    f"💲 Current Price: ${result['price']}\n"
+                    f"📊 Daily Change: {result['change']}%\n\n"
+                    f"📉 20-Day Average: ${result['ma20']}\n"
+                    f"📉 50-Day Average: ${result['ma50']}\n"
+                    f"⚡ RSI (14): {result['rsi']}\n"
+                    f"🚀 5-Day Momentum: {result['momentum']}%\n"
+                    f"⚠️ Volatility: {result['volatility']}%\n\n"
+                    f"🧠 Nova Score: {result['score']}/100\n"
+                    f"🎯 Signal: {result['signal']}\n"
+                    f"⚠️ Risk: {result['risk']}\n\n"
+                    f"💡 Analysis:\n{result['reason']}\n\n"
+                    f"🌐 {result['mode']}"
+                )
+            })
 
     response = client.chat.completions.create(
         model="gpt-4o-mini",
