@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify
 from openai import OpenAI
 from dotenv import load_dotenv
 from agents.stock_agent import analyze_stock
+from agents.portfolio_agent import buy_stock, sell_stock, get_portfolio
 import os
 
 app = Flask(__name__)
@@ -68,6 +69,213 @@ def chat():
         "role": "user",
         "content": user_message
     })
+
+    lower_message = user_message.lower()
+
+    lower_message = user_message.lower()
+
+    # Show portfolio
+    if "portfolio" in lower_message:
+        portfolio = get_portfolio()
+
+        positions = portfolio["positions"]
+
+        if positions:
+            position_text = ""
+
+            for symbol, position in positions.items():
+                position_text += (
+                    f"\n{symbol}: "
+                    f"{position['shares']} shares "
+                    f"@ ${position['average_price']}"
+                )
+        else:
+            position_text = "\nNo positions yet."
+
+        return jsonify({
+            "reply": (
+                f"💼 Paper Portfolio\n\n"
+                f"💵 Cash: ${portfolio['cash']}\n"
+                f"📊 Positions:{position_text}\n\n"
+                f"🧪 Simulation Mode"
+            )
+        })
+
+    # Buy commands
+    if lower_message.startswith("buy "):
+        parts = user_message.split()
+
+        if len(parts) == 3:
+            symbol = parts[1].upper()
+
+            try:
+                shares = float(parts[2])
+            except ValueError:
+                return jsonify({
+                    "reply": "Enter shares as a number."
+                })
+
+            stock = analyze_stock(symbol)
+
+            if "error" in stock:
+                return jsonify({
+                    "reply": f"Stock Agent Error: {stock['error']}"
+                })
+
+            result = buy_stock(
+                symbol,
+                shares,
+                stock["price"]
+            )
+
+            if "error" in result:
+                return jsonify({
+                    "reply": result["error"]
+                })
+
+            return jsonify({
+                "reply": (
+                    f"✅ Paper Trade Executed\n\n"
+                    f"Bought {result['shares']} shares of "
+                    f"{result['symbol']}\n"
+                    f"Price: ${result['price']}\n"
+                    f"Cost: ${result['cost']}\n\n"
+                    f"Cash Remaining: ${result['cash']}\n"
+                    f"🧪 Simulation Mode"
+                )
+            })
+
+    # Sell commands
+    if lower_message.startswith("sell "):
+        parts = user_message.split()
+
+        if len(parts) == 3:
+            symbol = parts[1].upper()
+
+            try:
+                shares = float(parts[2])
+            except ValueError:
+                return jsonify({
+                    "reply": "Enter shares as a number."
+                })
+
+            stock = analyze_stock(symbol)
+
+            if "error" in stock:
+                return jsonify({
+                    "reply": f"Stock Agent Error: {stock['error']}"
+                })
+
+            result = sell_stock(
+                symbol,
+                shares,
+                stock["price"]
+            )
+
+            if "error" in result:
+                return jsonify({
+                    "reply": result["error"]
+                })
+
+            return jsonify({
+                "reply": (
+                    f"✅ Paper Trade Executed\n\n"
+                    f"Sold {result['shares']} shares of "
+                    f"{result['symbol']}\n"
+                    f"Price: ${result['price']}\n"
+                    f"Proceeds: ${result['proceeds']}\n\n"
+                    f"Cash Available: ${result['cash']}\n"
+                    f"🧪 Simulation Mode"
+                )
+            })
+
+    # Buy commands
+    if lower_message.startswith("buy "):
+        parts = user_message.split()
+
+        if len(parts) == 3:
+            symbol = parts[1].upper()
+
+            try:
+                shares = float(parts[2])
+            except ValueError:
+                return jsonify({
+                    "reply": "Enter shares as a number."
+                })
+
+            stock = analyze_stock(symbol)
+
+            if "error" in stock:
+                return jsonify({
+                    "reply": f"Stock Agent Error: {stock['error']}"
+                })
+
+            result = buy_stock(
+                symbol,
+                shares,
+                stock["price"]
+            )
+
+            if "error" in result:
+                return jsonify({
+                    "reply": result["error"]
+                })
+
+            return jsonify({
+                "reply": (
+                    f"✅ Paper Trade Executed\n\n"
+                    f"Bought {result['shares']} shares of "
+                    f"{result['symbol']}\n"
+                    f"Price: ${result['price']}\n"
+                    f"Cost: ${result['cost']}\n\n"
+                    f"Cash Remaining: ${result['cash']}\n"
+                    f"🧪 Simulation Mode"
+                )
+            })
+
+    # Sell commands
+    if lower_message.startswith("sell "):
+        parts = user_message.split()
+
+        if len(parts) == 3:
+            symbol = parts[1].upper()
+
+            try:
+                shares = float(parts[2])
+            except ValueError:
+                return jsonify({
+                    "reply": "Enter shares as a number."
+                })
+
+            stock = analyze_stock(symbol)
+
+            if "error" in stock:
+                return jsonify({
+                    "reply": f"Stock Agent Error: {stock['error']}"
+                })
+
+            result = sell_stock(
+                symbol,
+                shares,
+                stock["price"]
+            )
+
+            if "error" in result:
+                return jsonify({
+                    "reply": result["error"]
+                })
+
+            return jsonify({
+                "reply": (
+                    f"✅ Paper Trade Executed\n\n"
+                    f"Sold {result['shares']} shares of "
+                    f"{result['symbol']}\n"
+                    f"Price: ${result['price']}\n"
+                    f"Proceeds: ${result['proceeds']}\n\n"
+                    f"Cash Available: ${result['cash']}\n"
+                    f"🧪 Simulation Mode"
+                )
+            })
 
     stock_keywords = [
         "aapl",
