@@ -1,9 +1,34 @@
+import json
+import os
+
 STARTING_CASH = 10000.00
 
-portfolio = {
-    "cash": STARTING_CASH,
-    "positions": {}
-}
+DATA_FILE = os.path.join(
+    os.path.dirname(__file__),
+    "portfolio_data.json"
+)
+
+
+def load_portfolio():
+    if os.path.exists(DATA_FILE):
+        try:
+            with open(DATA_FILE, "r") as file:
+                return json.load(file)
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    return {
+        "cash": STARTING_CASH,
+        "positions": {}
+    }
+
+
+def save_portfolio():
+    with open(DATA_FILE, "w") as file:
+        json.dump(portfolio, file, indent=4)
+
+
+portfolio = load_portfolio()
 
 
 def get_portfolio():
@@ -54,6 +79,8 @@ def buy_stock(symbol, shares, price):
         2
     )
 
+    save_portfolio()
+
     return {
         "success": True,
         "symbol": symbol,
@@ -97,6 +124,8 @@ def sell_stock(symbol, shares, price):
         portfolio["cash"] + proceeds,
         2
     )
+
+    save_portfolio()
 
     return {
         "success": True,

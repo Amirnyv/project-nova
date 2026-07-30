@@ -74,32 +74,62 @@ def chat():
 
     lower_message = user_message.lower()
 
-    # Show portfolio
+        # Show portfolio
     if "portfolio" in lower_message:
         portfolio = get_portfolio()
-
         positions = portfolio["positions"]
 
-        if positions:
-            position_text = ""
+        total_positions_value = 0
+        position_text = ""
 
-            for symbol, position in positions.items():
-                position_text += (
-                    f"\n{symbol}: "
-                    f"{position['shares']} shares "
-                    f"@ ${position['average_price']}"
-                )
-        else:
-            position_text = "\nNo positions yet."
+        for symbol, position in positions.items():
+            stock = analyze_stock(symbol)
+
+            if "error" in stock:
+                current_price = position["average_price"]
+            else:
+                current_price = stock["price"]
+
+            shares = position["shares"]
+            average_price = position["average_price"]
+
+            market_value = shares * current_price
+            cost_basis = shares * average_price
+            profit_loss = market_value - cost_basis
+
+            total_positions_value += market_value
+
+            position_text += (
+                f"\n\n📈 {symbol}\n"
+                f"Shares: {shares}\n"
+                f"Average Price: ${average_price:.2f}\n"
+                f"Current Price: ${current_price:.2f}\n"
+                f"Market Value: ${market_value:.2f}\n"
+                f"P/L: ${profit_loss:+.2f}"
+            )
+
+        if not positions:
+            position_text = "\n\nNo positions yet."
+
+        portfolio_value = (
+            portfolio["cash"] + total_positions_value
+        )
+
+        total_profit_loss = portfolio_value - 10000.00
 
         return jsonify({
             "reply": (
                 f"💼 Paper Portfolio\n\n"
-                f"💵 Cash: ${portfolio['cash']}\n"
-                f"📊 Positions:{position_text}\n\n"
+                f"💵 Cash: ${portfolio['cash']:.2f}\n"
+                f"📊 Investments: ${total_positions_value:.2f}\n"
+                f"💰 Portfolio Value: ${portfolio_value:.2f}\n"
+                f"📈 Total P/L: ${total_profit_loss:+.2f}"
+                f"{position_text}\n\n"
                 f"🧪 Simulation Mode"
             )
         })
+
+    # Buy commands
 
     # Buy commands
     if lower_message.startswith("buy "):
