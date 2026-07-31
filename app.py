@@ -35,6 +35,11 @@ from agents.portfolio_agent import (
     get_trade_history
 )
 
+from agents.project_agent import (
+    create_project,
+    get_projects
+)
+
 from database import get_db, init_db
 from user_model import User, get_user_by_id
 
@@ -839,6 +844,37 @@ def chat():
 # -------------------------------------------------
 # RUN
 # -------------------------------------------------
+
+@app.route("/api/projects", methods=["GET"])
+@login_required
+def list_projects():
+    projects = get_projects(
+        int(current_user.id)
+    )
+
+    return jsonify({
+        "projects": projects
+    })
+
+
+@app.route("/api/projects", methods=["POST"])
+@login_required
+def add_project():
+    data = request.get_json() or {}
+
+    name = data.get("name", "").strip()
+    description = data.get("description", "").strip()
+
+    result = create_project(
+        int(current_user.id),
+        name,
+        description
+    )
+
+    if "error" in result:
+        return jsonify(result), 400
+
+    return jsonify(result), 201
 
 if __name__ == "__main__":
 
