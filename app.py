@@ -394,7 +394,9 @@ def chat():
 
     if "trade history" in lower_message:
 
-        trades = get_trade_history()
+        trades = get_trade_history(
+    int(current_user.id)
+)
 
         if not trades:
 
@@ -433,7 +435,9 @@ def chat():
 
     if "portfolio" in lower_message:
 
-        portfolio = get_portfolio()
+        portfolio = get_portfolio(
+    int(current_user.id)
+)
 
         positions = portfolio["positions"]
 
@@ -579,10 +583,11 @@ def chat():
 
 
         result = buy_stock(
-            symbol,
-            shares,
-            stock["price"]
-        )
+    int(current_user.id),
+    symbol,
+    shares,
+    stock["price"]
+)
 
 
         if "error" in result:
@@ -658,10 +663,11 @@ def chat():
 
 
         result = sell_stock(
-            symbol,
-            shares,
-            stock["price"]
-        )
+    int(current_user.id),
+    symbol,
+    shares,
+    stock["price"]
+)
 
 
         if "error" in result:
