@@ -4,54 +4,286 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Project Nova</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
 </head>
 
 <body>
 
     <div class="app-layout">
 
+        <!-- SIDEBAR -->
         <aside class="sidebar">
+
             <h2>Project Nova</h2>
-            <button class="new-chat-btn">+ New Chat</button>
 
-           <div class="conversation-section">
-    <h3>Chats</h3>
-    <div id="conversation-list"></div>
-</div>
+            <button class="new-chat-btn">
+                + New Chat
+            </button>
 
-<div class="sidebar-menu">
-    <p>💬 Chat</p>
-    <p>📈 Trading</p>
-    <p>📄 Files</p>
-    <p>⚙️ Settings</p>
-</div>
+            <div class="conversation-section">
+                <h3>Chats</h3>
+                <div id="conversation-list"></div>
+            </div>
+
+            <div class="sidebar-menu">
+
+                <button
+                    class="nav-button active"
+                    data-page="chat"
+                >
+                    💬 Chat
+                </button>
+
+                <button
+                    class="nav-button"
+                    data-page="portfolio"
+                >
+                    💼 Portfolio
+                </button>
+
+                <button
+                    class="nav-button"
+                    data-page="markets"
+                >
+                    📈 Markets
+                </button>
+
+                <button
+                    class="nav-button"
+                    data-page="files"
+                >
+                    📄 Files
+                </button>
+
+                <button
+                    class="nav-button"
+                    data-page="settings"
+                >
+                    ⚙️ Settings
+                </button>
+
+            </div>
+
         </aside>
 
-        <main class="chat-area">
-            <div class="chat-header">
-                <h1>Project Nova</h1>
-                <p>Your intelligent AI assistant.</p>
-            </div>
 
-            <div id="chat-box"></div>
+        <!-- MAIN CONTENT -->
+        <main class="main-area">
 
-            <div class="input-area">
-                <input
-                    id="user-input"
-                    type="text"
-                    placeholder="Ask Project Nova anything...">
+            <!-- CHAT PAGE -->
+            <section
+                id="chat-page"
+                class="page active-page"
+            >
 
-                <button id="send-button">Send</button>
-            </div>
+                <div class="chat-header">
+
+                    <h1>Project Nova</h1>
+
+                    <p>
+                        Your intelligent AI assistant.
+                    </p>
+
+                </div>
+
+
+                <div id="chat-box"></div>
+
+
+                <div class="input-area">
+
+                    <input
+                        id="user-input"
+                        type="text"
+                        placeholder="Ask Project Nova anything..."
+                    >
+
+                    <button id="send-button">
+                        Send
+                    </button>
+
+                </div>
+
+            </section>
+
+
+            <!-- PORTFOLIO PAGE -->
+            <section
+                id="portfolio-page"
+                class="page"
+            >
+
+                <div class="page-header">
+
+                    <h1>Portfolio</h1>
+
+                    <p>
+                        Track your paper trading account.
+                    </p>
+
+                </div>
+
+
+                <div class="portfolio-summary">
+
+                    <div class="dashboard-card">
+
+                        <span>Portfolio Value</span>
+
+                        <h2 id="portfolio-value">
+                            $0.00
+                        </h2>
+
+                    </div>
+
+
+                    <div class="dashboard-card">
+
+                        <span>Available Cash</span>
+
+                        <h2 id="portfolio-cash">
+                            $0.00
+                        </h2>
+
+                    </div>
+
+
+                    <div class="dashboard-card">
+
+                        <span>Total P/L</span>
+
+                        <h2 id="portfolio-profit">
+                            $0.00
+                        </h2>
+
+                    </div>
+
+                </div>
+
+
+                <div class="dashboard-section">
+
+                    <h2>Positions</h2>
+
+                    <div id="portfolio-positions">
+                        No positions yet.
+                    </div>
+
+                </div>
+
+
+                <div class="dashboard-section">
+
+                    <h2>Trade History</h2>
+
+                    <div id="portfolio-history">
+                        No trades yet.
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- MARKETS PAGE -->
+            <section
+                id="markets-page"
+                class="page"
+            >
+
+                <div class="page-header">
+
+                    <h1>Markets</h1>
+
+                    <p>
+                        Analyze stocks and market opportunities.
+                    </p>
+
+                </div>
+
+
+                <div class="market-search">
+
+                    <input
+                        id="market-symbol"
+                        type="text"
+                        placeholder="Enter ticker — AAPL, TSLA, NVDA..."
+                    >
+
+                    <button id="market-search-button">
+                        Analyze
+                    </button>
+
+                </div>
+
+
+                <div id="market-results">
+
+                    <p>
+                        Search for a stock to begin.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- FILES PAGE -->
+            <section
+                id="files-page"
+                class="page"
+            >
+
+                <div class="page-header">
+
+                    <h1>Files</h1>
+
+                    <p>
+                        File tools coming soon.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- SETTINGS PAGE -->
+            <section
+                id="settings-page"
+                class="page"
+            >
+
+                <div class="page-header">
+
+                    <h1>Settings</h1>
+
+                    <p>
+                        Nova settings coming soon.
+                    </p>
+
+                </div>
+
+            </section>
+
         </main>
 
     </div>
 
+
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="{{ url_for('static', filename='js/script.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+    <!-- Project Nova -->
+    <script
+        src="{{ url_for('static', filename='js/script.js') }}"
+    ></script>
 
 </body>
+
 </html>

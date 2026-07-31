@@ -4,6 +4,17 @@ const sendButton = document.getElementById("send-button");
 const newChatButton = document.querySelector(".new-chat-btn");
 const conversationList = document.getElementById("conversation-list");
 
+const navButtons = document.querySelectorAll(".nav-button");
+const pages = document.querySelectorAll(".page");
+const marketSymbol = document.getElementById("market-symbol");
+const marketSearchButton = document.getElementById("market-search-button");
+const marketResults = document.getElementById("market-results");
+const portfolioValue = document.getElementById("portfolio-value");
+const portfolioCash = document.getElementById("portfolio-cash");
+const portfolioProfit = document.getElementById("portfolio-profit");
+const portfolioPositions = document.getElementById("portfolio-positions");
+const portfolioHistory = document.getElementById("portfolio-history");
+
 let conversations =
     JSON.parse(localStorage.getItem("projectNovaConversations")) || [];
     conversations = conversations.map(function (conversation) {
@@ -612,3 +623,193 @@ function createStockChart(messageElement, stockData) {
     });
 }
 
+
+function switchPage(pageName) {
+    pages.forEach(function (page) {
+        page.classList.remove("active-page");
+    });
+
+    navButtons.forEach(function (button) {
+        button.classList.remove("active");
+    });
+
+    const selectedPage = document.getElementById(
+        `${pageName}-page`
+    );
+
+    if (selectedPage) {
+        selectedPage.classList.add("active-page");
+    }
+
+    const selectedButton = document.querySelector(
+        `.nav-button[data-page="${pageName}"]`
+    );
+
+    if (selectedButton) {
+        selectedButton.classList.add("active");
+    }
+
+if (pageName === "portfolio") {
+    loadPortfolioDashboard();
+}
+
+    if (pageName === "chat") {
+        userInput.focus();
+    }
+}
+
+
+navButtons.forEach(function (button) {
+    button.addEventListener("click", function () {
+        const pageName = button.dataset.page;
+        switchPage(pageName);
+    });
+});
+
+async function analyzeMarketSymbol() {
+    const symbol = marketSymbol.value.trim().toUpperCase();
+
+    if (symbol === "") {
+        marketResults.textContent = "Enter a ticker symbol first.";
+        return;
+    }
+
+    marketResults.textContent = "Nova is analyzing...";
+
+    try {
+        const response = await fetch("/chat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                message: `Analyze ${symbol}`,
+                history: []
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(
+                `Request failed with status ${response.status}`
+            );
+        }
+
+        const data = await response.json();
+
+        marketResults.innerHTML = "";
+
+        const analysisText = document.createElement("div");
+        analysisText.textContent =
+            data.reply || "No analysis returned.";
+
+        marketResults.appendChild(analysisText);
+
+        if (data.stock_data) {
+            createStockChart(
+                marketResults,
+                data.stock_data
+            );
+        }
+
+    } catch (error) {
+        marketResults.textContent =
+            "Nova could not analyze this stock.";
+    }
+}
+
+
+marketSearchButton.addEventListener(
+    "click",
+    analyzeMarketSymbol
+);
+
+
+marketSymbol.addEventListener(
+    "keydown",
+    function (event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            analyzeMarketSymbol();
+        }
+    }
+);
+
+async function loadPortfolioDashboard() {
+    portfolioPositions.textContent = "Loading portfolio...";
+    portfolioHistory.textContent = "Loading trade history...";
+
+    try {
+        const portfolioResponse = await fetch("/chat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                message: "portfolio",
+                history: []
+            })
+        });
+
+        if (!portfolioResponse.ok) {
+            throw new Error("Portfolio request failed.");
+        }
+
+        const portfolioData = await portfolioResponse.json();
+        const portfolioText = portfolioData.reply || "";
+
+        const cashMatch = portfolioText.match(
+            /Cash:\s*\$([0-9,.]+)/
+        );
+
+        const valueMatch = portfolioText.match(
+            /Portfolio Value:\s*\$([0-9,.]+)/
+        );
+
+        const profitMatch = portfolioText.match(
+            /Total P\/L:\s*\$([+\-0-9,.]+)/
+        );
+
+        portfolioCash.textContent = cashMatch
+            ? `$${cashMatch[1]}`
+            : "$0.00";
+
+        portfolioValue.textContent = valueMatch
+            ? `$${valueMatch[1]}`
+            : "$0.00";
+
+        portfolioProfit.textContent = profitMatch
+            ? `$${profitMatch[1]}`
+            : "$0.00";
+
+        portfolioPositions.textContent = portfolioText;
+
+        const historyResponse = await fetch("/chat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                message: "trade history",
+                history: []
+            })
+        });
+
+        if (!historyResponse.ok) {
+            throw new Error("Trade history request failed.");
+        }
+
+        const historyData = await historyResponse.json();
+
+        portfolioHistory.textContent =
+            historyData.reply || "No trades yet.";
+
+    } catch (error) {
+        portfolioPositions.textContent =
+            "Could not load portfolio.";
+
+        portfolioHistory.textContent =
+            "Could not load trade history.";
+
+        console.error(error);
+    }
+}
