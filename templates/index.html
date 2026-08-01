@@ -54,6 +54,12 @@
                     📈 Markets
                 </button>
 
+<button
+    class="nav-button"
+    data-page="projects">
+    📁 Projects
+</button>
+
                 <button
                     class="nav-button"
                     data-page="files"
@@ -235,6 +241,37 @@
 
             </section>
 
+            <!-- PROJECTS PAGE -->
+<section
+    id="projects-page"
+    class="page"
+>
+
+    <div class="page-header">
+
+        <h1>Projects</h1>
+
+        <p>
+            Organize your work with Project Nova.
+        </p>
+
+    </div>
+
+
+    <button id="new-project-button">
+        + New Project
+    </button>
+
+
+    <div id="projects-list">
+
+        <p>
+            No projects yet.
+        </p>
+
+    </div>
+
+</section>
 
             <!-- FILES PAGE -->
             <section
@@ -285,6 +322,40 @@
     <script
         src="{{ url_for('static', filename='js/script.js') }}"
     ></script>
+
+<!-- CREATE PROJECT MODAL -->
+<div id="project-modal" class="modal">
+
+    <div class="modal-content">
+
+        <h2>Create Project</h2>
+
+        <input
+            id="project-name"
+            type="text"
+            placeholder="Project Name"
+        >
+
+        <textarea
+            id="project-description"
+            placeholder="Description"
+        ></textarea>
+
+        <div class="modal-buttons">
+
+            <button id="cancel-project">
+                Cancel
+            </button>
+
+            <button id="create-project">
+                Create
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 
 </body>
 

@@ -653,12 +653,15 @@ if (pageName === "portfolio") {
     loadPortfolioDashboard();
 }
 
-    if (pageName === "chat") {
-        userInput.focus();
-    }
+if (pageName === "projects") {
+    loadProjects();
 }
 
+if (pageName === "chat") {
+    userInput.focus();
+}
 
+}
 navButtons.forEach(function (button) {
     button.addEventListener("click", function () {
         const pageName = button.dataset.page;
@@ -813,3 +816,111 @@ async function loadPortfolioDashboard() {
         console.error(error);
     }
 }
+
+const projectsList =
+    document.getElementById("projects-list");
+
+const newProjectButton =
+    document.getElementById("new-project-button");
+    const projectModal =
+    document.getElementById("project-modal");
+
+const cancelProjectButton =
+    document.getElementById("cancel-project");
+
+const createProjectButton =
+    document.getElementById("create-project");
+
+const projectNameInput =
+    document.getElementById("project-name");
+
+const projectDescriptionInput =
+    document.getElementById("project-description");
+
+
+async function loadProjects() {
+
+    projectsList.innerHTML =
+        "<p>Loading projects...</p>";
+
+    try {
+
+        const response = await fetch(
+            "/api/projects"
+        );
+
+        const data = await response.json();
+
+        if (data.projects.length === 0) {
+
+            projectsList.innerHTML =
+                "<p>No projects yet.</p>";
+
+            return;
+        }
+
+        projectsList.innerHTML = "";
+
+        data.projects.forEach(function(project){
+
+            const card =
+                document.createElement("div");
+
+            card.className = "dashboard-card";
+
+            card.innerHTML = `
+                <h3>${project.name}</h3>
+                <p>${project.description}</p>
+            `;
+
+            projectsList.appendChild(card);
+
+        });
+
+    }
+    catch(error){
+
+        projectsList.innerHTML =
+            "<p>Could not load projects.</p>";
+
+        console.error(error);
+
+    }
+
+}
+
+newProjectButton.addEventListener(
+    "click",
+    function () {
+
+        projectModal.style.display = "flex";
+
+        projectNameInput.value = "";
+        projectDescriptionInput.value = "";
+
+        projectNameInput.focus();
+
+    }
+);
+
+
+cancelProjectButton.addEventListener(
+    "click",
+    function () {
+
+        projectModal.style.display = "none";
+
+    }
+);
+
+
+window.addEventListener(
+    "click",
+    function (event) {
+
+        if (event.target === projectModal) {
+            projectModal.style.display = "none";
+        }
+
+    }
+);
