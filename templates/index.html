@@ -2,246 +2,487 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Project Nova</title>
 
     <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='css/style.css') }}"
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
     >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/nova.css') }}"
+    >
+
 </head>
 
 <body>
 
-    <div class="app-layout">
+<div class="app">
 
-        <!-- SIDEBAR -->
-        <aside class="sidebar">
+    <!-- SIDEBAR -->
 
-            <h2>Project Nova</h2>
+    <aside class="sidebar">
 
-            <button class="new-chat-btn">
-                + New Chat
+        <div class="logo">
+
+            <h1>✦ NOVA</h1>
+
+            <p>AI Workspace</p>
+
+        </div>
+
+        <nav>
+
+            <button
+                class="sidebar-button active"
+                data-page="dashboard">
+
+                🏠 Dashboard
+
             </button>
 
-            <div class="conversation-section">
-                <h3>Chats</h3>
-                <div id="conversation-list"></div>
+            <button
+                class="sidebar-button"
+                data-page="chat">
+
+                💬 Chat
+
+            </button>
+
+            <button
+                class="sidebar-button"
+                data-page="projects">
+
+                📁 Projects
+
+            </button>
+
+            <button
+                class="sidebar-button"
+                data-page="portfolio">
+
+                💼 Portfolio
+
+            </button>
+
+            <button
+                class="sidebar-button"
+                data-page="markets">
+
+                📈 Markets
+
+            </button>
+
+            <button
+                class="sidebar-button"
+                data-page="agents">
+
+                🤖 Agents
+
+            </button>
+
+            <button
+                class="sidebar-button"
+                data-page="files">
+
+                📄 Files
+
+            </button>
+
+            <button
+                class="sidebar-button"
+                data-page="settings">
+
+                ⚙️ Settings
+
+            </button>
+
+        </nav>
+
+        <div class="sidebar-account">
+
+            <div class="sidebar-user">
+
+                <span>👤</span>
+
+                <div>
+
+                    <strong>{{ user.username }}</strong>
+
+                    <small>Nova Account</small>
+
+                </div>
+
             </div>
 
-            <div class="sidebar-menu">
+            <a
+                href="{{ url_for('logout') }}"
+                class="logout-button">
+
+                🚪 Log Out
+
+            </a>
+
+        </div>
+
+    </aside>
+
+    <main class="main-content">
+        <!-- ========================= -->
+<!-- DASHBOARD -->
+<!-- ========================= -->
+
+<section
+    id="dashboard-page"
+    class="page active-page"
+>
+
+    <div class="hero">
+
+        <div class="hero-left">
+
+            <span class="hero-badge">
+
+                ✦ PROJECT NOVA
+
+            </span>
+
+            <h1>
+
+                Good Evening,
+                {{ user.username }} 👋
+
+            </h1>
+
+            <h2>
+
+                Build. Trade. Create.
+
+            </h2>
+
+            <p>
+
+                Everything you need,
+                all in one intelligent workspace.
+
+            </p>
+
+            <div class="hero-buttons">
 
                 <button
-                    class="nav-button active"
-                    data-page="chat"
+                    class="primary-button"
+                    id="hero-new-project-button"
                 >
-                    💬 Chat
+
+                    + New Project
+
                 </button>
 
                 <button
-                    class="nav-button"
-                    data-page="portfolio"
+                    class="secondary-button"
+                    data-page="projects"
                 >
-                    💼 Portfolio
+
+                    Open Projects
+
                 </button>
 
-                <button
-                    class="nav-button"
-                    data-page="markets"
-                >
-                    📈 Markets
-                </button>
-
-<button
-    class="nav-button"
-    data-page="projects">
-    📁 Projects
-</button>
-
-                <button
-                    class="nav-button"
-                    data-page="files"
-                >
-                    📄 Files
-                </button>
-
-                <button
-                    class="nav-button"
-                    data-page="settings"
-                >
-                    ⚙️ Settings
-                </button>
-<a href="{{ url_for('logout') }}" class="logout-button">
-    🚪 Log Out
-</a>
             </div>
 
-        </aside>
+        </div>
 
+        <div class="hero-tools">
 
-        <!-- MAIN CONTENT -->
-        <main class="main-area">
-
-            <!-- CHAT PAGE -->
-            <section
-                id="chat-page"
-                class="page active-page"
+            <button
+                class="icon-button"
             >
 
-                <div class="chat-header">
+                🔔
 
-                    <h1>Project Nova</h1>
+            </button>
 
-                    <p>
-                        Your intelligent AI assistant.
-                    </p>
-
-                </div>
-
-
-                <div id="chat-box"></div>
-
-
-                <div class="input-area">
-
-                    <input
-                        id="user-input"
-                        type="text"
-                        placeholder="Ask Project Nova anything..."
-                    >
-
-                    <button id="send-button">
-                        Send
-                    </button>
-
-                </div>
-
-            </section>
-
-
-            <!-- PORTFOLIO PAGE -->
-            <section
-                id="portfolio-page"
-                class="page"
+            <button
+                class="profile-button"
+                data-page="settings"
             >
 
-                <div class="page-header">
+                👤
 
-                    <h1>Portfolio</h1>
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- QUICK ACTIONS -->
+
+    <div class="quick-actions">
+
+        <button
+            class="quick-card"
+            data-page="chat"
+        >
+
+            <span>💬</span>
+
+            <h3>Chat</h3>
+
+            <p>Talk with Nova</p>
+
+        </button>
+
+        <button
+            class="quick-card"
+            data-page="projects"
+        >
+
+            <span>📁</span>
+
+            <h3>Projects</h3>
+
+            <p>Your workspaces</p>
+
+        </button>
+
+        <button
+            class="quick-card"
+            data-page="portfolio"
+        >
+
+            <span>💼</span>
+
+            <h3>Portfolio</h3>
+
+            <p>Paper trading</p>
+
+        </button>
+
+        <button
+            class="quick-card"
+            data-page="markets"
+        >
+
+            <span>📈</span>
+
+            <h3>Markets</h3>
+
+            <p>Stock analysis</p>
+
+        </button>
+
+        <button
+            class="quick-card"
+            data-page="agents"
+        >
+
+            <span>🤖</span>
+
+            <h3>Agents</h3>
+
+            <p>Create AI agents</p>
+
+        </button>
+
+        <button
+            class="quick-card"
+            data-page="files"
+        >
+
+            <span>📄</span>
+
+            <h3>Files</h3>
+
+            <p>Your documents</p>
+
+        </button>
+
+    </div>
+
+
+
+    <!-- WORKSPACE -->
+
+    <div class="workspace-grid">
+
+        <section class="workspace-card">
+
+            <div class="section-header">
+
+                <h2>
+
+                    📁 Continue Working
+
+                </h2>
+
+            </div>
+
+            <div class="project-preview">
+
+                <span class="project-icon">
+
+                    📁
+
+                </span>
+
+                <div>
+
+                    <h3>
+
+                        Project Nova
+
+                    </h3>
 
                     <p>
-                        Track your paper trading account.
+
+                        AI Workspace
+
                     </p>
 
-                </div>
+                    <small>
 
+                        Continue where you left off.
 
-                <div class="portfolio-summary">
-
-                    <div class="dashboard-card">
-
-                        <span>Portfolio Value</span>
-
-                        <h2 id="portfolio-value">
-                            $0.00
-                        </h2>
-
-                    </div>
-
-
-                    <div class="dashboard-card">
-
-                        <span>Available Cash</span>
-
-                        <h2 id="portfolio-cash">
-                            $0.00
-                        </h2>
-
-                    </div>
-
-
-                    <div class="dashboard-card">
-
-                        <span>Total P/L</span>
-
-                        <h2 id="portfolio-profit">
-                            $0.00
-                        </h2>
-
-                    </div>
+                    </small>
 
                 </div>
 
+            </div>
 
-                <div class="dashboard-section">
-
-                    <h2>Positions</h2>
-
-                    <div id="portfolio-positions">
-                        No positions yet.
-                    </div>
-
-                </div>
-
-
-                <div class="dashboard-section">
-
-                    <h2>Trade History</h2>
-
-                    <div id="portfolio-history">
-                        No trades yet.
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            <!-- MARKETS PAGE -->
-            <section
-                id="markets-page"
-                class="page"
+            <button
+                class="resume-button"
+                data-page="projects"
             >
 
-                <div class="page-header">
+                Resume →
 
-                    <h1>Markets</h1>
+            </button>
 
-                    <p>
-                        Analyze stocks and market opportunities.
-                    </p>
-
-                </div>
+        </section>
 
 
-                <div class="market-search">
 
-                    <input
-                        id="market-symbol"
-                        type="text"
-                        placeholder="Enter ticker — AAPL, TSLA, NVDA..."
-                    >
+        <section class="workspace-card">
 
-                    <button id="market-search-button">
-                        Analyze
-                    </button>
+            <h2>
 
-                </div>
+                🕒 Recent Activity
+
+            </h2>
+
+            <ul class="activity-list">
+
+                <li>
+
+                    ✅ Logged into Nova
+
+                </li>
+
+                <li>
+
+                    📁 Built Projects
+
+                </li>
+
+                <li>
+
+                    📈 Tested Trading Bot
+
+                </li>
+
+                <li>
+
+                    🤖 Added AI Agents
+
+                </li>
+
+            </ul>
+
+        </section>
+
+    </div>
+
+</section>
+<!-- ========================= -->
+<!-- CHAT -->
+<!-- ========================= -->
+
+<section
+    id="chat-page"
+    class="page"
+>
+
+    <div class="page-header">
+
+        <h1>💬 Chat</h1>
+
+        <p>
+
+            Talk with Project Nova.
+
+        </p>
+
+    </div>
+
+    <div class="content-panel">
+
+        <div id="chat-box">
+
+            <div class="message ai-message">
+
+                Hello! I'm Nova. How can I help today?
+
+            </div>
+
+        </div>
+
+        <div class="input-area">
+
+            <input
+                id="user-input"
+                type="text"
+                placeholder="Ask Nova anything..."
+            >
+
+            <button id="send-button">
+
+                Send
+
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
 
 
-                <div id="market-results">
 
-                    <p>
-                        Search for a stock to begin.
-                    </p>
+<!-- ========================= -->
+<!-- PROJECTS -->
+<!-- ========================= -->
 
-                </div>
-
-            </section>
-
-            <!-- PROJECTS PAGE -->
 <section
     id="projects-page"
     class="page"
@@ -249,86 +490,347 @@
 
     <div class="page-header">
 
-        <h1>Projects</h1>
+        <div>
 
-        <p>
-            Organize your work with Project Nova.
-        </p>
+            <h1>
+
+                📁 Projects
+
+            </h1>
+
+            <p>
+
+                Organize everything you build with Nova.
+
+            </p>
+
+        </div>
+
+        <button
+            class="primary-button"
+            id="new-project-button"
+        >
+
+            + New Project
+
+        </button>
 
     </div>
 
 
-    <button id="new-project-button">
-        + New Project
-    </button>
+
+    <!-- THIS IS IMPORTANT -->
+
+    <div
+        id="projects-list"
+        class="projects-grid"
+    >
+
+    </div>
+
+</section>
+<!-- ========================= -->
+<!-- PORTFOLIO -->
+<!-- ========================= -->
+
+<section
+    id="portfolio-page"
+    class="page"
+>
+
+    <div class="page-header">
+
+        <div>
+
+            <h1>💼 Portfolio</h1>
+
+            <p>
+
+                Track your paper trading account.
+
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="portfolio-summary">
+
+        <div class="dashboard-card">
+
+            <span>Portfolio Value</span>
+
+            <h2 id="portfolio-value">
+
+                $10,000.00
+
+            </h2>
+
+        </div>
+
+        <div class="dashboard-card">
+
+            <span>Available Cash</span>
+
+            <h2 id="portfolio-cash">
+
+                $10,000.00
+
+            </h2>
+
+        </div>
+
+        <div class="dashboard-card">
+
+            <span>Total P/L</span>
+
+            <h2 id="portfolio-profit">
+
+                $0.00
+
+            </h2>
+
+        </div>
+
+    </div>
+
+    <div class="content-panel">
+
+        <h2>
+
+            Positions
+
+        </h2>
+
+        <div id="portfolio-positions">
+
+            No positions yet.
+
+        </div>
+
+    </div>
+
+    <div class="content-panel">
+
+        <h2>
+
+            Trade History
+
+        </h2>
+
+        <div id="portfolio-history">
+
+            No trades yet.
+
+        </div>
+
+    </div>
+
+</section>
 
 
-    <div id="projects-list">
+
+<!-- ========================= -->
+<!-- MARKETS -->
+<!-- ========================= -->
+
+<section
+    id="markets-page"
+    class="page"
+>
+
+    <div class="page-header">
+
+        <div>
+
+            <h1>📈 Markets</h1>
+
+            <p>
+
+                Analyze stocks using Nova AI.
+
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="market-search">
+
+        <input
+            id="market-symbol"
+            type="text"
+            placeholder="Enter ticker (AAPL, TSLA...)"
+        >
+
+        <button
+            id="market-search-button"
+            class="primary-button"
+        >
+
+            Analyze
+
+        </button>
+
+    </div>
+
+    <div
+        id="market-results"
+        class="content-panel"
+    >
+
+        Search for a stock to begin.
+
+    </div>
+
+</section>
+<!-- ========================= -->
+<!-- AGENTS -->
+<!-- ========================= -->
+
+<section
+    id="agents-page"
+    class="page"
+>
+
+    <div class="page-header">
+
+        <div>
+
+            <h1>🤖 Agents</h1>
+
+            <p>Create specialized AI assistants.</p>
+
+        </div>
+
+        <button class="primary-button">
+
+            + Create Agent
+
+        </button>
+
+    </div>
+
+    <div class="content-panel empty-state">
+
+        <h3>Agent Builder</h3>
 
         <p>
-            No projects yet.
+
+            Build coding, trading, study,
+            and research agents.
+
         </p>
 
     </div>
 
 </section>
 
-            <!-- FILES PAGE -->
-            <section
-                id="files-page"
-                class="page"
-            >
-
-                <div class="page-header">
-
-                    <h1>Files</h1>
-
-                    <p>
-                        File tools coming soon.
-                    </p>
-
-                </div>
-
-            </section>
 
 
-            <!-- SETTINGS PAGE -->
-            <section
-                id="settings-page"
-                class="page"
-            >
+<!-- ========================= -->
+<!-- FILES -->
+<!-- ========================= -->
 
-                <div class="page-header">
+<section
+    id="files-page"
+    class="page"
+>
 
-                    <h1>Settings</h1>
+    <div class="page-header">
 
-                    <p>
-                        Nova settings coming soon.
-                    </p>
+        <h1>📄 Files</h1>
 
-                </div>
+        <p>
 
-            </section>
+            Manage your uploaded files.
 
-        </main>
+        </p>
 
     </div>
 
+    <div class="content-panel empty-state">
 
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <h3>No files yet</h3>
 
-    <!-- Project Nova -->
-    <script
-        src="{{ url_for('static', filename='js/script.js') }}"
-    ></script>
+        <p>
 
+            Uploads coming soon.
+
+        </p>
+
+    </div>
+
+</section>
+
+
+
+<!-- ========================= -->
+<!-- SETTINGS -->
+<!-- ========================= -->
+
+<section
+    id="settings-page"
+    class="page"
+>
+
+    <div class="page-header">
+
+        <h1>⚙️ Settings</h1>
+
+    </div>
+
+    <div class="content-panel">
+
+        <p>
+
+            Username:
+            <strong>{{ user.username }}</strong>
+
+        </p>
+
+        <p>
+
+            Email:
+            <strong>{{ user.email }}</strong>
+
+        </p>
+
+        <a
+            href="{{ url_for('logout') }}"
+            class="logout-button"
+        >
+
+            🚪 Log Out
+
+        </a>
+
+    </div>
+
+</section>
+
+</main>
+
+</div>
+
+
+
+<!-- ========================= -->
 <!-- CREATE PROJECT MODAL -->
-<div id="project-modal" class="modal">
+<!-- ========================= -->
+
+<div
+    id="project-modal"
+    class="modal"
+>
 
     <div class="modal-content">
 
-        <h2>Create Project</h2>
+        <h2>
+
+            Create Project
+
+        </h2>
 
         <input
             id="project-name"
@@ -338,17 +840,27 @@
 
         <textarea
             id="project-description"
-            placeholder="Description"
+            placeholder="Project Description"
         ></textarea>
 
         <div class="modal-buttons">
 
-            <button id="cancel-project">
+            <button
+                id="cancel-project"
+                class="secondary-button"
+            >
+
                 Cancel
+
             </button>
 
-            <button id="create-project">
+            <button
+                id="create-project"
+                class="primary-button"
+            >
+
                 Create
+
             </button>
 
         </div>
@@ -356,6 +868,16 @@
     </div>
 
 </div>
+
+
+
+<script
+    src="https://cdn.jsdelivr.net/npm/chart.js"
+></script>
+
+<script
+    src="{{ url_for('static', filename='js/nova.js') }}"
+></script>
 
 </body>
 

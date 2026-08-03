@@ -852,6 +852,8 @@ def list_projects():
         int(current_user.id)
     )
 
+    print(projects)
+
     return jsonify({
         "projects": projects
     })

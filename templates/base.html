@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {% block title %}
+        Project Nova
+        {% endblock %}
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/layout.css') }}"
+    >
+
+    {% block styles %}
+    {% endblock %}
+
+</head>
+
+<body>
+
+<div class="app">
+
+    <aside class="sidebar">
+
+        <div class="logo">
+
+            <h1>Nova</h1>
+
+        </div>
+
+        <nav>
+
+            <a href="/">🏠 Dashboard</a>
+
+            <a href="#">💬 Chat</a>
+
+            <a href="#">📁 Projects</a>
+
+            <a href="#">💼 Portfolio</a>
+
+            <a href="#">📈 Markets</a>
+
+            <a href="#">📄 Files</a>
+
+            <a href="#">🤖 Agents</a>
+
+            <a href="#">⚙️ Settings</a>
+
+        </nav>
+
+        <div class="logout">
+
+            <a href="{{ url_for('logout') }}">
+                🚪 Logout
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <main class="content">
+
+        {% block content %}
+        {% endblock %}
+
+    </main>
+
+</div>
+
+{% block scripts %}
+{% endblock %}
+
+</body>
+
+</html>
