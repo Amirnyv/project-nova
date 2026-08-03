@@ -68,6 +68,8 @@ async function loadProjects(){
         const data =
             await response.json();
             console.log(data);
+            const latestProject =
+    data.projects[0];
 
         projectsList.innerHTML = "";
 
@@ -83,6 +85,19 @@ async function loadProjects(){
             return;
 
         }
+        if(latestProject){
+
+    document.getElementById(
+    "latest-project-name"
+).textContent =
+    "📁 " + latestProject.name;
+
+document.getElementById(
+    "latest-project-description"
+).textContent =
+    latestProject.description || "No description";
+
+}
 
         data.projects.forEach(project=>{
 
@@ -92,22 +107,43 @@ async function loadProjects(){
             card.className = "project-item";
 
             card.innerHTML = `
-                <div>
+    <div>
 
-                    <h3>📁 ${project.name}</h3>
+        <h3>📁 ${project.name}</h3>
 
-                    <p>
-                        ${project.description || "No description"}
-                    </p>
+        <p>
+            ${project.description || "No description"}
+        </p>
 
-                </div>
+    </div>
 
-                <button class="resume-button">
-                    Open →
-                </button>
-            `;
+    <button
+        class="resume-button open-project"
+        data-id="${project.id}"
+        data-name="${project.name}"
+        data-description="${project.description || ""}"
+    >
+        Open →
+    </button>
+`;
 
             projectsList.appendChild(card);
+            const openButton =
+    card.querySelector(".open-project");
+
+openButton.onclick = () => {
+
+    openProject(
+
+        openButton.dataset.id,
+
+        openButton.dataset.name,
+
+        openButton.dataset.description
+
+    );
+
+};
 
         });
 
@@ -210,3 +246,13 @@ createProjectButton.onclick = async () => {
     }
 
 };
+
+function openProject(id, name, description){
+
+    alert(
+
+        "Opening: " + name
+
+    );
+
+}

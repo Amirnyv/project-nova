@@ -852,3 +852,83 @@ a {
     cursor:pointer;
 
 }
+
+/* Continue Working */
+
+.workspace-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:30px;
+
+    margin-top:50px;
+
+}
+
+.workspace-card{
+
+    background:#151d31;
+
+    border:1px solid #2d3b5e;
+
+    border-radius:24px;
+
+    padding:30px;
+
+}
+
+.project-preview{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:20px;
+
+    margin:25px 0;
+
+}
+
+.project-icon{
+
+    font-size:48px;
+
+}
+
+.project-preview h3{
+
+    margin:0;
+
+    font-size:28px;
+
+}
+
+.project-preview p{
+
+    margin:6px 0;
+
+    color:#98a2b3;
+
+}
+
+.project-preview small{
+
+    color:#7c8599;
+
+}
+
+.activity-list{
+
+    margin-top:20px;
+
+    padding-left:20px;
+
+}
+
+.activity-list li{
+
+    margin:14px 0;
+
+}
