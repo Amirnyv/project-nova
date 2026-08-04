@@ -249,10 +249,58 @@ createProjectButton.onclick = async () => {
 
 function openProject(id, name, description){
 
-    alert(
+    openPage("workspace");
 
-        "Opening: " + name
+    document.getElementById(
+        "workspace-title"
+    ).textContent =
+        "📁 " + name;
 
-    );
+    document.getElementById(
+        "workspace-description"
+    ).textContent =
+        description || "No description.";
+        animateStats();
+
+}
+
+const workspaceBack =
+    document.getElementById("workspace-back");
+
+workspaceBack.onclick = () => {
+
+    openPage("projects");
+
+};
+
+function animateStats(){
+
+    document
+        .querySelectorAll(".stat-card span")
+        .forEach(stat=>{
+
+            const target =
+                parseInt(stat.textContent);
+
+            if(isNaN(target)) return;
+
+            let current = 0;
+
+            const timer =
+            setInterval(()=>{
+
+                current++;
+
+                stat.textContent = current;
+
+                if(current>=target){
+
+                    clearInterval(timer);
+
+                }
+
+            },40);
+
+        });
 
 }

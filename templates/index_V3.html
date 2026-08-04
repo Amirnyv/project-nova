@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Nova V3</title>
+
+<link
+href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+rel="stylesheet">
+
+<link
+rel="stylesheet"
+href="{{ url_for('static', filename='css/nova.css') }}">
+
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- SIDEBAR -->
+
+<aside class="sidebar">
+
+<div class="logo">
+
+<div class="logo-circle">
+
+✦
+
+</div>
+
+<div>
+
+<h2>
+
+NOVA
+
+</h2>
+
+<p>
+
+AI Workspace
+
+</p>
+
+</div>
+
+</div>
+
+<button
+class="create-button">
+
+＋ New Project
+
+</button>
+
+<nav>
+
+<p class="sidebar-title">
+
+WORKSPACE
+
+</p>
+
+<button
+class="sidebar-button active">
+
+🏠 Dashboard
+
+</button>
+
+<button
+class="sidebar-button">
+
+💬 Nova Chat
+
+</button>
+
+<button
+class="sidebar-button">
+
+📁 Projects
+
+</button>
+
+<button
+class="sidebar-button">
+
+📄 Files
+
+</button>
+
+<p class="sidebar-title">
+
+AI
+
+</p>
+
+<button
+class="sidebar-button">
+
+🤖 Agents
+
+</button>
+
+<button
+class="sidebar-button">
+
+📈 Markets
+
+</button>
+
+<button
+class="sidebar-button">
+
+💼 Portfolio
+
+</button>
+
+<p class="sidebar-title">
+
+ACCOUNT
+
+</p>
+
+<button
+class="sidebar-button">
+
+⚙️ Settings
+
+</button>
+
+</nav>
+
+<div class="sidebar-user">
+
+<div class="avatar">
+
+{{ user.username[0]|upper }}
+
+</div>
+
+<div>
+
+<strong>
+
+{{ user.username }}
+
+</strong>
+
+<small>
+
+Pro Workspace
+
+</small>
+
+</div>
+
+</div>
+
+</aside>
+
+<main class="main-content">
