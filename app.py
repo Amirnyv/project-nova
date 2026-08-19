@@ -305,6 +305,14 @@ def home():
         "index.html",
         user=current_user
     )
+@app.route("/v3")
+@login_required
+def v3():
+
+    return render_template(
+        "index_v3.html",
+        user=current_user
+    )
 
 
 # -------------------------------------------------

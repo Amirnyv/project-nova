@@ -18,7 +18,7 @@ rel="stylesheet">
 
 <link
 rel="stylesheet"
-href="{{ url_for('static', filename='css/nova.css') }}">
+href="{{ url_for('static', filename='css/nova_v3.css') }}">
 
 </head>
 
@@ -170,3 +170,1944 @@ Pro Workspace
 </aside>
 
 <main class="main-content">
+
+<!-- ================================= -->
+<!-- DASHBOARD -->
+<!-- ================================= -->
+
+<section
+    id="dashboard-page"
+    class="page active-page"
+>
+
+    <div class="dashboard-header">
+
+        <div>
+
+            <h1>
+                Good Evening,
+                {{ user.username }} 👋
+            </h1>
+
+            <p>
+                Welcome back to Nova.
+            </p>
+
+        </div>
+
+        <div class="dashboard-actions">
+
+            <button
+                class="primary-button"
+                id="hero-new-project-button"
+            >
+                + New Project
+            </button>
+
+            <button
+                class="secondary-button"
+                data-page="chat"
+            >
+                Ask Nova
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div class="quick-actions">
+
+        <button
+            class="quick-card"
+            data-page="projects"
+        >
+            <span>📁</span>
+            <h3>Projects</h3>
+            <p>Manage your workspaces</p>
+        </button>
+
+        <button
+            class="quick-card"
+            data-page="chat"
+        >
+            <span>💬</span>
+            <h3>Nova Chat</h3>
+            <p>Talk with your AI assistant</p>
+        </button>
+
+        <button
+            class="quick-card"
+            data-page="markets"
+        >
+            <span>📈</span>
+            <h3>Markets</h3>
+            <p>Research stocks</p>
+        </button>
+
+        <button
+            class="quick-card"
+            data-page="agents"
+        >
+            <span>🤖</span>
+            <h3>AI Agents</h3>
+            <p>Use specialized assistants</p>
+        </button>
+
+    </div>
+
+
+    <div class="dashboard-grid">
+
+        <div class="dashboard-card large-card">
+
+            <div class="card-header">
+
+                <h2>
+                    📁 Recent Projects
+                </h2>
+
+                <button
+                    class="small-button"
+                    data-page="projects"
+                >
+                    View All
+                </button>
+
+            </div>
+
+            <div id="recent-projects">
+
+                <div class="loading-state">
+                    Loading projects...
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="dashboard-card">
+
+            <h2>
+                ✦ Nova AI
+            </h2>
+
+            <p>
+                What would you like to do today?
+            </p>
+
+            <div class="ai-shortcuts">
+
+                <button>💻 Code</button>
+                <button>📚 Study</button>
+                <button>✍️ Write</button>
+                <button>📊 Analyze</button>
+
+            </div>
+
+        </div>
+
+
+        <div class="dashboard-card">
+
+            <h2>
+                📈 Market Watch
+            </h2>
+
+            <div class="market-watch">
+
+                <div>
+                    <strong>AAPL</strong>
+                    <span>--</span>
+                </div>
+
+                <div>
+                    <strong>TSLA</strong>
+                    <span>--</span>
+                </div>
+
+                <div>
+                    <strong>BTC</strong>
+                    <span>--</span>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="dashboard-card">
+
+            <h2>
+                🕒 Activity
+            </h2>
+
+            <ul class="activity-list">
+
+                <li>✅ Nova V3 loaded</li>
+                <li>📁 Projects connected</li>
+                <li>🤖 AI tools ready</li>
+
+            </ul>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ================================= -->
+<!-- NOVA CHAT -->
+<!-- ================================= -->
+
+<section
+    id="chat-page"
+    class="page"
+>
+
+    <div class="page-header">
+
+        <div>
+            <h1>💬 Nova Chat</h1>
+
+            <p>
+                Your personal AI assistant.
+            </p>
+        </div>
+
+        <button
+            class="secondary-button"
+            id="new-chat-button"
+        >
+            + New Chat
+        </button>
+
+    </div>
+
+
+    <div class="chat-layout">
+
+
+        <!-- CHAT HISTORY -->
+
+        <aside class="chat-history">
+
+            <h3>Conversations</h3>
+
+            <div id="conversation-list">
+
+                <button class="conversation-item active">
+                    New Conversation
+                </button>
+
+            </div>
+
+        </aside>
+
+
+        <!-- MAIN CHAT -->
+
+        <div class="chat-panel">
+
+            <div
+                id="chat-box"
+                class="chat-messages"
+            >
+
+                <div class="message ai-message">
+
+                    <div class="message-avatar">
+                        ✦
+                    </div>
+
+                    <div>
+
+                        <strong>Nova</strong>
+
+                        <p>
+                            Hey {{ user.username }}.
+                            What can I help you with today?
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- SUGGESTIONS -->
+
+            <div class="chat-suggestions">
+
+                <button>
+                    💻 Help me code
+                </button>
+
+                <button>
+                    📈 Analyze a stock
+                </button>
+
+                <button>
+                    📚 Help me study
+                </button>
+
+                <button>
+                    ✍️ Help me write
+                </button>
+
+            </div>
+
+
+            <!-- MESSAGE INPUT -->
+
+            <div class="chat-input-area">
+
+                <button
+                    class="attachment-button"
+                    aria-label="Attach file"
+                >
+                    ＋
+                </button>
+
+                <textarea
+                    id="user-input"
+                    placeholder="Message Nova..."
+                    rows="1"
+                ></textarea>
+
+                <button
+                    id="send-button"
+                    class="send-button"
+                >
+                    Send
+                </button>
+
+            </div>
+
+            <small class="chat-disclaimer">
+                Nova can make mistakes. Check important information.
+            </small>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ================================= -->
+<!-- PROJECT WORKSPACE -->
+<!-- ================================= -->
+
+<section
+    id="workspace-page"
+    class="page"
+>
+
+    <div class="workspace-header">
+
+        <div>
+
+            <button
+                class="back-button"
+                id="workspace-back"
+            >
+                ← Projects
+            </button>
+
+            <h1 id="workspace-title">
+                📁 Project
+            </h1>
+
+            <p id="workspace-description">
+                Project description
+            </p>
+
+        </div>
+
+        <div class="workspace-actions">
+
+            <button class="secondary-button">
+                ⭐ Favorite
+            </button>
+
+            <button class="primary-button">
+                Ask Nova
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- WORKSPACE NAVIGATION -->
+
+    <div class="workspace-tabs">
+
+        <button
+            class="workspace-tab active"
+            data-workspace-tab="overview"
+        >
+            Overview
+        </button>
+
+        <button
+            class="workspace-tab"
+            data-workspace-tab="chat"
+        >
+            AI Chat
+        </button>
+
+        <button
+            class="workspace-tab"
+            data-workspace-tab="files"
+        >
+            Files
+        </button>
+
+        <button
+            class="workspace-tab"
+            data-workspace-tab="notes"
+        >
+            Notes
+        </button>
+
+        <button
+            class="workspace-tab"
+            data-workspace-tab="tasks"
+        >
+            Tasks
+        </button>
+
+        <button
+            class="workspace-tab"
+            data-workspace-tab="settings"
+        >
+            Settings
+        </button>
+
+    </div>
+
+
+    <!-- PROJECT STATS -->
+
+    <div class="workspace-stats">
+
+        <div class="stat-card">
+
+            <span class="stat-icon">
+                📄
+            </span>
+
+            <div>
+                <small>Files</small>
+
+                <strong id="workspace-file-count">
+                    0
+                </strong>
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <span class="stat-icon">
+                📝
+            </span>
+
+            <div>
+                <small>Notes</small>
+
+                <strong id="workspace-note-count">
+                    0
+                </strong>
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <span class="stat-icon">
+                ✅
+            </span>
+
+            <div>
+                <small>Tasks</small>
+
+                <strong id="workspace-task-count">
+                    0
+                </strong>
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <span class="stat-icon">
+                💬
+            </span>
+
+            <div>
+                <small>AI Chats</small>
+
+                <strong id="workspace-chat-count">
+                    0
+                </strong>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- WORKSPACE CONTENT -->
+
+    <div class="workspace-content">
+
+
+        <!-- OVERVIEW -->
+
+        <div
+            id="workspace-overview"
+            class="workspace-panel active-workspace-panel"
+        >
+
+            <div class="workspace-column">
+
+                <div class="content-panel">
+
+                    <div class="card-header">
+
+                        <h2>
+                            Continue Working
+                        </h2>
+
+                    </div>
+
+                    <p>
+                        Pick up where you left off in this project.
+                    </p>
+
+                    <button class="primary-button">
+                        Open Recent Work →
+                    </button>
+
+                </div>
+
+
+                <div class="content-panel">
+
+                    <h2>
+                        Recent Activity
+                    </h2>
+
+                    <div
+                        id="workspace-activity"
+                        class="activity-feed"
+                    >
+
+                        <div class="activity-item">
+                            <span>📁</span>
+                            Project opened
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="workspace-column">
+
+                <div class="content-panel">
+
+                    <h2>
+                        ✦ Nova Suggestions
+                    </h2>
+
+                    <p>
+                        Nova can help you continue this project.
+                    </p>
+
+                    <div class="suggestion-list">
+
+                        <button>
+                            Summarize this project
+                        </button>
+
+                        <button>
+                            Suggest next steps
+                        </button>
+
+                        <button>
+                            Find unfinished tasks
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="content-panel">
+
+                    <h2>
+                        Quick Actions
+                    </h2>
+
+                    <div class="workspace-quick-actions">
+
+                        <button>
+                            📝 New Note
+                        </button>
+
+                        <button>
+                            ✅ New Task
+                        </button>
+
+                        <button>
+                            📄 Upload File
+                        </button>
+
+                        <button>
+                            💬 Ask Nova
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- AI CHAT -->
+
+        <div
+            id="workspace-chat-panel"
+            class="workspace-panel"
+        >
+
+            <div class="content-panel">
+
+                <h2>
+                    💬 Project AI
+                </h2>
+
+                <div id="workspace-chat">
+                </div>
+
+                <div class="chat-input-area">
+
+                    <textarea
+                        id="workspace-input"
+                        placeholder="Ask Nova about this project..."
+                        rows="1"
+                    ></textarea>
+
+                    <button
+                        id="workspace-send"
+                        class="send-button"
+                    >
+                        Send
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- FILES -->
+
+        <div
+            id="workspace-files"
+            class="workspace-panel"
+        >
+
+            <div class="content-panel">
+
+                <div class="card-header">
+
+                    <h2>
+                        📄 Project Files
+                    </h2>
+
+                    <button class="primary-button">
+                        + Upload File
+                    </button>
+
+                </div>
+
+                <div
+                    id="workspace-files-list"
+                    class="empty-state"
+                >
+                    No files yet.
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- NOTES -->
+
+        <div
+            id="workspace-notes"
+            class="workspace-panel"
+        >
+
+            <div class="content-panel">
+
+                <div class="card-header">
+
+                    <h2>
+                        📝 Notes
+                    </h2>
+
+                    <button class="primary-button">
+                        + New Note
+                    </button>
+
+                </div>
+
+                <textarea
+                    id="project-notes"
+                    placeholder="Write notes for this project..."
+                ></textarea>
+
+                <button
+                    id="save-notes"
+                    class="primary-button"
+                >
+                    Save Notes
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- TASKS -->
+
+        <div
+            id="workspace-tasks"
+            class="workspace-panel"
+        >
+
+            <div class="content-panel">
+
+                <div class="card-header">
+
+                    <h2>
+                        ✅ Tasks
+                    </h2>
+
+                    <button class="primary-button">
+                        + New Task
+                    </button>
+
+                </div>
+
+                <div
+                    id="workspace-task-list"
+                    class="empty-state"
+                >
+                    No tasks yet.
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- SETTINGS -->
+
+        <div
+            id="workspace-settings"
+            class="workspace-panel"
+        >
+
+            <div class="content-panel">
+
+                <h2>
+                    ⚙️ Project Settings
+                </h2>
+
+                <p>
+                    Rename, favorite, export, or delete this project.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ================================= -->
+<!-- PORTFOLIO -->
+<!-- ================================= -->
+
+<section
+    id="portfolio-page"
+    class="page"
+>
+
+    <div class="page-header">
+
+        <div>
+            <h1>💼 Portfolio</h1>
+
+            <p>
+                Track your paper trading portfolio.
+            </p>
+        </div>
+
+        <button
+            class="primary-button"
+            id="portfolio-trade-button"
+        >
+            + New Trade
+        </button>
+
+    </div>
+
+
+    <!-- PORTFOLIO SUMMARY -->
+
+    <div class="portfolio-stats">
+
+        <div class="stat-card">
+
+            <small>Portfolio Value</small>
+
+            <strong id="portfolio-value">
+                $10,000.00
+            </strong>
+
+            <span class="positive">
+                +0.00%
+            </span>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <small>Available Cash</small>
+
+            <strong id="portfolio-cash">
+                $10,000.00
+            </strong>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <small>Total Profit / Loss</small>
+
+            <strong id="portfolio-profit">
+                $0.00
+            </strong>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <small>Open Positions</small>
+
+            <strong id="position-count">
+                0
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <!-- PORTFOLIO CONTENT -->
+
+    <div class="portfolio-grid">
+
+        <div class="content-panel large-card">
+
+            <div class="card-header">
+
+                <h2>
+                    Portfolio Performance
+                </h2>
+
+                <select id="portfolio-range">
+
+                    <option>1D</option>
+                    <option>1W</option>
+                    <option>1M</option>
+                    <option>3M</option>
+                    <option>1Y</option>
+
+                </select>
+
+            </div>
+
+            <div
+                id="portfolio-chart"
+                class="chart-placeholder"
+            >
+                📈 Portfolio chart will appear here
+            </div>
+
+        </div>
+
+
+        <div class="content-panel">
+
+            <h2>
+                ✦ Nova Portfolio Insight
+            </h2>
+
+            <p>
+                Nova will analyze your portfolio and highlight
+                risk, performance, and opportunities.
+            </p>
+
+            <button class="secondary-button">
+                Analyze Portfolio
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- POSITIONS -->
+
+    <div class="content-panel">
+
+        <div class="card-header">
+
+            <h2>
+                Open Positions
+            </h2>
+
+            <button
+                class="small-button"
+                data-page="markets"
+            >
+                Find Stocks
+            </button>
+
+        </div>
+
+        <div
+            id="portfolio-positions"
+            class="empty-state"
+        >
+            No open positions yet.
+        </div>
+
+    </div>
+
+
+    <!-- TRADE HISTORY -->
+
+    <div class="content-panel">
+
+        <h2>
+            Trade History
+        </h2>
+
+        <div
+            id="portfolio-history"
+            class="empty-state"
+        >
+            No trades yet.
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================================= -->
+<!-- MARKETS -->
+<!-- ================================= -->
+
+<section
+    id="markets-page"
+    class="page"
+>
+
+    <div class="page-header">
+
+        <div>
+            <h1>📈 Markets</h1>
+
+            <p>
+                Research markets and discover opportunities.
+            </p>
+        </div>
+
+    </div>
+
+
+    <!-- MARKET SEARCH -->
+
+    <div class="market-search-bar">
+
+        <span>⌕</span>
+
+        <input
+            id="market-symbol"
+            type="text"
+            placeholder="Search a stock or ticker — AAPL, TSLA, NVDA..."
+        >
+
+        <button
+            id="market-search-button"
+            class="primary-button"
+        >
+            Analyze
+        </button>
+
+    </div>
+
+
+    <!-- MARKET OVERVIEW -->
+
+    <div class="market-overview">
+
+        <div class="market-index-card">
+
+            <small>S&P 500</small>
+
+            <strong>--</strong>
+
+            <span>Market data coming soon</span>
+
+        </div>
+
+
+        <div class="market-index-card">
+
+            <small>NASDAQ</small>
+
+            <strong>--</strong>
+
+            <span>Market data coming soon</span>
+
+        </div>
+
+
+        <div class="market-index-card">
+
+            <small>Bitcoin</small>
+
+            <strong>--</strong>
+
+            <span>Market data coming soon</span>
+
+        </div>
+
+
+        <div class="market-index-card">
+
+            <small>Ethereum</small>
+
+            <strong>--</strong>
+
+            <span>Market data coming soon</span>
+
+        </div>
+
+    </div>
+
+
+    <div class="markets-grid">
+
+
+        <!-- WATCHLIST -->
+
+        <div class="content-panel">
+
+            <div class="card-header">
+
+                <h2>
+                    ⭐ Watchlist
+                </h2>
+
+                <button class="small-button">
+                    + Add
+                </button>
+
+            </div>
+
+            <div id="market-watchlist">
+
+                <div class="watchlist-row">
+
+                    <strong>AAPL</strong>
+
+                    <span>Apple</span>
+
+                    <span>--</span>
+
+                </div>
+
+
+                <div class="watchlist-row">
+
+                    <strong>TSLA</strong>
+
+                    <span>Tesla</span>
+
+                    <span>--</span>
+
+                </div>
+
+
+                <div class="watchlist-row">
+
+                    <strong>NVDA</strong>
+
+                    <span>NVIDIA</span>
+
+                    <span>--</span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- AI MARKET ANALYSIS -->
+
+        <div class="content-panel">
+
+            <h2>
+                ✦ Nova Market Intelligence
+            </h2>
+
+            <p>
+                Ask Nova to research a company, explain market
+                movement, or compare investments.
+            </p>
+
+            <div class="suggestion-list">
+
+                <button>
+                    Analyze AAPL
+                </button>
+
+                <button>
+                    Compare TSLA vs NVDA
+                </button>
+
+                <button>
+                    Explain today's market
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- SEARCH RESULT -->
+
+    <div
+        id="market-results"
+        class="content-panel"
+    >
+
+        <h2>
+            Stock Analysis
+        </h2>
+
+        <p>
+            Search for a stock above to begin.
+        </p>
+
+    </div>
+
+</section>
+
+<!-- ================================= -->
+<!-- AI AGENTS -->
+<!-- ================================= -->
+
+<section
+    id="agents-page"
+    class="page"
+>
+
+    <div class="page-header">
+
+        <div>
+
+            <h1>🤖 AI Agents</h1>
+
+            <p>
+                Build specialized assistants for different jobs.
+            </p>
+
+        </div>
+
+        <button
+            class="primary-button"
+            id="create-agent-button"
+        >
+            + Create Agent
+        </button>
+
+    </div>
+
+
+    <!-- AGENT SUMMARY -->
+
+    <div class="agent-overview">
+
+        <div class="overview-card">
+
+            <h3>Active Agents</h3>
+
+            <span id="agent-count">
+                4
+            </span>
+
+        </div>
+
+        <div class="overview-card">
+
+            <h3>Tasks Completed</h3>
+
+            <span>
+                0
+            </span>
+
+        </div>
+
+        <div class="overview-card">
+
+            <h3>Projects Connected</h3>
+
+            <span>
+                0
+            </span>
+
+        </div>
+
+        <div class="overview-card">
+
+            <h3>AI Sessions</h3>
+
+            <span>
+                0
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- AGENT CARDS -->
+
+    <div class="agents-grid">
+
+        <div class="agent-card">
+
+            <div class="agent-icon">
+                💻
+            </div>
+
+            <div>
+
+                <h3>Coding Agent</h3>
+
+                <p>
+                    Helps build, debug, and explain code.
+                </p>
+
+            </div>
+
+            <button class="secondary-button">
+                Open Agent
+            </button>
+
+        </div>
+
+
+        <div class="agent-card">
+
+            <div class="agent-icon">
+                📈
+            </div>
+
+            <div>
+
+                <h3>Market Agent</h3>
+
+                <p>
+                    Researches stocks and market trends.
+                </p>
+
+            </div>
+
+            <button class="secondary-button">
+                Open Agent
+            </button>
+
+        </div>
+
+
+        <div class="agent-card">
+
+            <div class="agent-icon">
+                📚
+            </div>
+
+            <div>
+
+                <h3>Study Agent</h3>
+
+                <p>
+                    Helps with notes, studying, and assignments.
+                </p>
+
+            </div>
+
+            <button class="secondary-button">
+                Open Agent
+            </button>
+
+        </div>
+
+
+        <div class="agent-card">
+
+            <div class="agent-icon">
+                ✍️
+            </div>
+
+            <div>
+
+                <h3>Writing Agent</h3>
+
+                <p>
+                    Helps draft and improve writing.
+                </p>
+
+            </div>
+
+            <button class="secondary-button">
+                Open Agent
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- AGENT BUILDER PREVIEW -->
+
+    <div class="content-panel">
+
+        <div class="card-header">
+
+            <h2>
+                ✦ Build Your Own Agent
+            </h2>
+
+        </div>
+
+        <p>
+            Create an assistant with its own role,
+            instructions, projects, and tools.
+        </p>
+
+        <div class="agent-builder-preview">
+
+            <div>
+
+                <small>Name</small>
+
+                <strong>
+                    Example: Research Agent
+                </strong>
+
+            </div>
+
+            <div>
+
+                <small>Purpose</small>
+
+                <strong>
+                    Research companies and summarize findings
+                </strong>
+
+            </div>
+
+            <div>
+
+                <small>Tools</small>
+
+                <strong>
+                    Web · Files · Notes
+                </strong>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ================================= -->
+<!-- FILES -->
+<!-- ================================= -->
+
+<section
+    id="files-page"
+    class="page"
+>
+
+    <div class="page-header">
+
+        <div>
+
+            <h1>📄 Files</h1>
+
+            <p>
+                Keep documents, images, code,
+                and project files organized.
+            </p>
+
+        </div>
+
+        <button
+            class="primary-button"
+            id="upload-file-button"
+        >
+            + Upload File
+        </button>
+
+    </div>
+
+
+    <!-- FILE STATS -->
+
+    <div class="file-overview">
+
+        <div class="overview-card">
+
+            <h3>Total Files</h3>
+
+            <span id="total-file-count">
+                0
+            </span>
+
+        </div>
+
+
+        <div class="overview-card">
+
+            <h3>Documents</h3>
+
+            <span>
+                0
+            </span>
+
+        </div>
+
+
+        <div class="overview-card">
+
+            <h3>Images</h3>
+
+            <span>
+                0
+            </span>
+
+        </div>
+
+
+        <div class="overview-card">
+
+            <h3>Code Files</h3>
+
+            <span>
+                0
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- FILE TOOLBAR -->
+
+    <div class="files-toolbar">
+
+        <div class="file-search">
+
+            <span>⌕</span>
+
+            <input
+                id="file-search"
+                type="text"
+                placeholder="Search files..."
+            >
+
+        </div>
+
+
+        <select id="file-filter">
+
+            <option>All Files</option>
+
+            <option>Documents</option>
+
+            <option>Images</option>
+
+            <option>Code</option>
+
+            <option>Recent</option>
+
+        </select>
+
+    </div>
+
+
+    <!-- DROP ZONE -->
+
+    <div
+        id="file-drop-zone"
+        class="file-drop-zone"
+    >
+
+        <div class="drop-zone-icon">
+            ↑
+        </div>
+
+        <h3>
+            Drop files here
+        </h3>
+
+        <p>
+            or click Upload File to choose files
+        </p>
+
+    </div>
+
+
+    <!-- FILE LIST -->
+
+    <div class="content-panel">
+
+        <div class="card-header">
+
+            <h2>
+                Your Files
+            </h2>
+
+        </div>
+
+        <div
+            id="files-list"
+            class="empty-state"
+        >
+            No files uploaded yet.
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================================= -->
+<!-- SETTINGS -->
+<!-- ================================= -->
+
+<section
+    id="settings-page"
+    class="page"
+>
+
+    <div class="page-header">
+
+        <div>
+
+            <h1>⚙️ Settings</h1>
+
+            <p>
+                Customize your Nova workspace.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="settings-layout">
+
+
+        <!-- PROFILE -->
+
+        <div class="settings-card">
+
+            <h2>
+                Profile
+            </h2>
+
+            <div class="profile-settings">
+
+                <div class="settings-avatar">
+
+                    {{ user.username[0]|upper }}
+
+                </div>
+
+
+                <div>
+
+                    <strong>
+                        {{ user.username }}
+                    </strong>
+
+                    <p>
+                        {{ user.email }}
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- APPEARANCE -->
+
+        <div class="settings-card">
+
+            <h2>
+                Appearance
+            </h2>
+
+            <div class="setting-row">
+
+                <div>
+
+                    <strong>
+                        Theme
+                    </strong>
+
+                    <p>
+                        Choose how Nova looks.
+                    </p>
+
+                </div>
+
+                <select id="theme-select">
+
+                    <option>Dark</option>
+
+                    <option>Light</option>
+
+                    <option>System</option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <!-- AI SETTINGS -->
+
+        <div class="settings-card">
+
+            <h2>
+                Nova AI
+            </h2>
+
+            <div class="setting-row">
+
+                <div>
+
+                    <strong>
+                        AI Memory
+                    </strong>
+
+                    <p>
+                        Allow Nova to remember useful
+                        project context.
+                    </p>
+
+                </div>
+
+                <label class="switch">
+
+                    <input
+                        type="checkbox"
+                        id="memory-toggle"
+                        checked
+                    >
+
+                    <span class="slider"></span>
+
+                </label>
+
+            </div>
+
+
+            <div class="setting-row">
+
+                <div>
+
+                    <strong>
+                        AI Suggestions
+                    </strong>
+
+                    <p>
+                        Show recommendations on your dashboard.
+                    </p>
+
+                </div>
+
+                <label class="switch">
+
+                    <input
+                        type="checkbox"
+                        id="suggestions-toggle"
+                        checked
+                    >
+
+                    <span class="slider"></span>
+
+                </label>
+
+            </div>
+
+        </div>
+
+
+        <!-- NOTIFICATIONS -->
+
+        <div class="settings-card">
+
+            <h2>
+                Notifications
+            </h2>
+
+            <div class="setting-row">
+
+                <div>
+
+                    <strong>
+                        Nova Notifications
+                    </strong>
+
+                    <p>
+                        Get notified about important activity.
+                    </p>
+
+                </div>
+
+                <label class="switch">
+
+                    <input
+                        type="checkbox"
+                        id="notifications-toggle"
+                        checked
+                    >
+
+                    <span class="slider"></span>
+
+                </label>
+
+            </div>
+
+        </div>
+
+
+        <!-- ACCOUNT -->
+
+        <div class="settings-card danger-zone">
+
+            <h2>
+                Account
+            </h2>
+
+            <a
+                href="{{ url_for('logout') }}"
+                class="logout-button"
+            >
+                Log Out
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ================================= -->
+<!-- CREATE PROJECT MODAL -->
+<!-- ================================= -->
+
+<div
+    id="project-modal"
+    class="modal"
+>
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <div>
+
+                <h2>
+                    Create Project
+                </h2>
+
+                <p>
+                    Start a new workspace in Nova.
+                </p>
+
+            </div>
+
+            <button
+                id="close-project-modal"
+                class="modal-close"
+                aria-label="Close"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <label for="project-name">
+            Project Name
+        </label>
+
+        <input
+            id="project-name"
+            type="text"
+            placeholder="Example: Trading Bot"
+        >
+
+
+        <label for="project-description">
+            Description
+        </label>
+
+        <textarea
+            id="project-description"
+            placeholder="What are you building?"
+        ></textarea>
+
+
+        <div class="modal-buttons">
+
+            <button
+                id="cancel-project"
+                class="secondary-button"
+            >
+                Cancel
+            </button>
+
+            <button
+                id="create-project"
+                class="primary-button"
+            >
+                Create Project
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================================= -->
+<!-- NOTIFICATION PANEL -->
+<!-- ================================= -->
+
+<div
+    id="notification-panel"
+    class="notification-panel"
+>
+
+    <div class="notification-header">
+
+        <h3>
+            Notifications
+        </h3>
+
+        <button
+            id="close-notifications"
+        >
+            ×
+        </button>
+
+    </div>
+
+    <div
+        id="notifications-list"
+        class="notification-list"
+    >
+
+        <div class="notification-item">
+
+            <span>✦</span>
+
+            <div>
+
+                <strong>
+                    Welcome to Nova V3
+                </strong>
+
+                <p>
+                    Your new workspace is being built.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+</main>
+
+</div>
+
+
+<script
+    src="https://cdn.jsdelivr.net/npm/chart.js"
+></script>
+
+<script
+    src="{{ url_for('static', filename='js/nova_v3.js') }}"
+></script>
+
+</body>
+
+</html>
