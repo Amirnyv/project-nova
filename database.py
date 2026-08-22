@@ -1,6 +1,7 @@
 import sqlite3
 from pathlib import Path
 
+
 DB_PATH = Path(__file__).resolve().parent / "nova.db"
 
 
@@ -51,16 +52,8 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id)
         );
-                CREATE TABLE IF NOT EXISTS projects (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            name TEXT NOT NULL,
-            description TEXT DEFAULT '',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id)
-        );
-                CREATE TABLE IF NOT EXISTS projects (
+
+        CREATE TABLE IF NOT EXISTS projects (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
             name TEXT NOT NULL,
@@ -80,7 +73,7 @@ def init_db():
             FOREIGN KEY (project_id) REFERENCES projects(id)
         );
 
-                CREATE TABLE IF NOT EXISTS project_tasks (
+        CREATE TABLE IF NOT EXISTS project_tasks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
             project_id INTEGER NOT NULL,
@@ -92,7 +85,7 @@ def init_db():
             FOREIGN KEY (project_id) REFERENCES projects(id)
         );
 
-                CREATE TABLE IF NOT EXISTS project_files (
+        CREATE TABLE IF NOT EXISTS project_files (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
             project_id INTEGER NOT NULL,
@@ -102,8 +95,80 @@ def init_db():
             FOREIGN KEY (user_id) REFERENCES users(id),
             FOREIGN KEY (project_id) REFERENCES projects(id)
         );
+
+        CREATE TABLE IF NOT EXISTS subscriptions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL UNIQUE,
+            plan TEXT NOT NULL DEFAULT 'none',
+            status TEXT NOT NULL DEFAULT 'inactive',
+            provider TEXT DEFAULT '',
+            provider_customer_id TEXT DEFAULT '',
+            provider_subscription_id TEXT DEFAULT '',
+            current_period_start TIMESTAMP,
+            current_period_end TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        );
+
+        CREATE TABLE IF NOT EXISTS conversations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            project_id INTEGER,
+            title TEXT NOT NULL DEFAULT 'New Conversation',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            FOREIGN KEY (project_id) REFERENCES projects(id)
+        );
+
+        CREATE TABLE IF NOT EXISTS conversation_messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            conversation_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            role TEXT NOT NULL,
+            content TEXT NOT NULL,
+            input_tokens INTEGER NOT NULL DEFAULT 0,
+            output_tokens INTEGER NOT NULL DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (conversation_id) REFERENCES conversations(id),
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        );
+
+        CREATE TABLE IF NOT EXISTS ai_usage (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            conversation_id INTEGER,
+            model TEXT NOT NULL DEFAULT '',
+            input_tokens INTEGER NOT NULL DEFAULT 0,
+            output_tokens INTEGER NOT NULL DEFAULT 0,
+            total_tokens INTEGER NOT NULL DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            FOREIGN KEY (conversation_id) REFERENCES conversations(id)
+        );
         """
     )
+
+    try:
+        connection.execute(
+            """
+            ALTER TABLE project_files
+            ADD COLUMN file_size INTEGER DEFAULT 0
+            """
+        )
+    except sqlite3.OperationalError:
+        pass
+
+    try:
+        connection.execute(
+            """
+            ALTER TABLE project_files
+            ADD COLUMN mime_type TEXT DEFAULT ''
+            """
+        )
+    except sqlite3.OperationalError:
+        pass
 
     connection.commit()
     connection.close()

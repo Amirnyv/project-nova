@@ -1,136 +1,245 @@
+// ========================================
+// NOVA V3 - PART 1
+// CORE NAVIGATION
+// ========================================
+
 const sidebarButtons =
-    document.querySelectorAll(".sidebar-button");
+    document.querySelectorAll(
+        ".sidebar-button"
+    );
 
 const quickCards =
-    document.querySelectorAll(".quick-card");
+    document.querySelectorAll(
+        ".quick-card"
+    );
 
 const pages =
-    document.querySelectorAll(".page");
-
-const projectModal =
-    document.getElementById("project-modal");
-
-const newProjectButton =
-    document.getElementById("new-project-button");
-
-const heroNewProjectButton =
-    document.getElementById("hero-new-project-button");
-
-const sidebarNewProjectButton =
-    document.getElementById("sidebar-new-project");
-
-const cancelProjectButton =
-    document.getElementById("cancel-project");
-
-const closeProjectModalButton =
-    document.getElementById("close-project-modal");
-
-const createProjectButton =
-    document.getElementById("create-project");
-
-const projectNameInput =
-    document.getElementById("project-name");
-
-const projectDescriptionInput =
-    document.getElementById("project-description");
-
-const projectsList =
-    document.getElementById("projects-list");
-
-const recentProjects =
-    document.getElementById("recent-projects");
-
-const workspaceBack =
-    document.getElementById("workspace-back");
-
-const workspaceTabs =
-    document.querySelectorAll(".workspace-tab");
-
-const workspacePanels =
-    document.querySelectorAll(".workspace-panel");
-
-const notificationButton =
-    document.getElementById("notifications-button");
-
-const notificationPanel =
-    document.getElementById("notification-panel");
-
-const closeNotifications =
-    document.getElementById("close-notifications");
+    document.querySelectorAll(
+        ".page"
+    );
 
 
 function openPage(pageName) {
 
     pages.forEach(page => {
-        page.classList.remove("active-page");
+
+        page.classList.remove(
+            "active-page"
+        );
+
     });
 
+
     const targetPage =
-        document.getElementById(pageName + "-page");
+        document.getElementById(
+            pageName + "-page"
+        );
+
 
     if (targetPage) {
-        targetPage.classList.add("active-page");
+
+        targetPage.classList.add(
+            "active-page"
+        );
+
     }
+
 
     sidebarButtons.forEach(button => {
 
-        button.classList.remove("active");
+        button.classList.remove(
+            "active"
+        );
 
-        if (button.dataset.page === pageName) {
-            button.classList.add("active");
+
+        if (
+            button.dataset.page ===
+            pageName
+        ) {
+
+            button.classList.add(
+                "active"
+            );
+
         }
 
     });
+
 
     window.scrollTo({
         top: 0,
         behavior: "smooth"
     });
+
 }
 
 
+// ========================================
+// SIDEBAR BUTTONS
+// ========================================
+
 sidebarButtons.forEach(button => {
 
-    button.addEventListener("click", () => {
+    button.addEventListener(
+        "click",
+        () => {
 
-        openPage(button.dataset.page);
+            const pageName =
+                button.dataset.page;
 
-    });
+
+            if (pageName) {
+
+                openPage(
+                    pageName
+                );
+
+            }
+
+        }
+    );
 
 });
 
+
+// ========================================
+// DASHBOARD QUICK CARDS
+// ========================================
 
 quickCards.forEach(card => {
 
-    card.addEventListener("click", () => {
+    card.addEventListener(
+        "click",
+        () => {
 
-        openPage(card.dataset.page);
+            const pageName =
+                card.dataset.page;
 
-    });
+
+            if (pageName) {
+
+                openPage(
+                    pageName
+                );
+
+            }
+
+        }
+    );
 
 });
 
 
+// ========================================
+// OTHER DATA-PAGE BUTTONS
+// ========================================
+
 document
-    .querySelectorAll("[data-page]")
+    .querySelectorAll(
+        "[data-page]"
+    )
     .forEach(button => {
 
         if (
-            button.classList.contains("sidebar-button")
+            button.classList.contains(
+                "sidebar-button"
+            )
             ||
-            button.classList.contains("quick-card")
+            button.classList.contains(
+                "quick-card"
+            )
         ) {
+
             return;
+
         }
 
-        button.addEventListener("click", () => {
 
-            openPage(button.dataset.page);
+        button.addEventListener(
+            "click",
+            () => {
 
-        });
+                const pageName =
+                    button.dataset.page;
+
+
+                if (pageName) {
+
+                    openPage(
+                        pageName
+                    );
+
+                }
+
+            }
+        );
 
     });
 
+    // ========================================
+// NOVA V3 - PART 2
+// PROJECT MODAL + PROJECT LOADING
+// ========================================
+
+const projectModal =
+    document.getElementById(
+        "project-modal"
+    );
+
+const newProjectButton =
+    document.getElementById(
+        "new-project-button"
+    );
+
+const heroNewProjectButton =
+    document.getElementById(
+        "hero-new-project-button"
+    );
+
+const sidebarNewProjectButton =
+    document.getElementById(
+        "sidebar-new-project"
+    );
+
+const cancelProjectButton =
+    document.getElementById(
+        "cancel-project"
+    );
+
+const closeProjectModalButton =
+    document.getElementById(
+        "close-project-modal"
+    );
+
+const createProjectButton =
+    document.getElementById(
+        "create-project"
+    );
+
+const projectNameInput =
+    document.getElementById(
+        "project-name"
+    );
+
+const projectDescriptionInput =
+    document.getElementById(
+        "project-description"
+    );
+
+const projectsList =
+    document.getElementById(
+        "projects-list"
+    );
+
+const recentProjects =
+    document.getElementById(
+        "recent-projects"
+    );
+
+
+// ========================================
+// OPEN / CLOSE PROJECT MODAL
+// ========================================
 
 function openProjectModal() {
 
@@ -138,13 +247,18 @@ function openProjectModal() {
         return;
     }
 
-    projectModal.classList.add("show");
+    projectModal.classList.add(
+        "show"
+    );
 
-    setTimeout(() => {
+    setTimeout(
+        () => {
 
-        projectNameInput?.focus();
+            projectNameInput?.focus();
 
-    }, 100);
+        },
+        100
+    );
 
 }
 
@@ -155,7 +269,9 @@ function closeProjectModal() {
         return;
     }
 
-    projectModal.classList.remove("show");
+    projectModal.classList.remove(
+        "show"
+    );
 
 }
 
@@ -165,44 +281,59 @@ newProjectButton?.addEventListener(
     openProjectModal
 );
 
+
 heroNewProjectButton?.addEventListener(
     "click",
     openProjectModal
 );
 
-sidebarNewProjectButton?.addEventListener(
-    "click",
-    () => {
 
-        openPage("projects");
+sidebarNewProjectButton
+    ?.addEventListener(
+        "click",
+        () => {
 
-        openProjectModal();
+            openPage("projects");
+            openProjectModal();
 
-    }
-);
+        }
+    );
 
-cancelProjectButton?.addEventListener(
-    "click",
-    closeProjectModal
-);
 
-closeProjectModalButton?.addEventListener(
-    "click",
-    closeProjectModal
-);
+cancelProjectButton
+    ?.addEventListener(
+        "click",
+        closeProjectModal
+    );
+
+
+closeProjectModalButton
+    ?.addEventListener(
+        "click",
+        closeProjectModal
+    );
 
 
 projectModal?.addEventListener(
     "click",
     event => {
 
-        if (event.target === projectModal) {
+        if (
+            event.target ===
+            projectModal
+        ) {
+
             closeProjectModal();
+
         }
 
     }
 );
 
+
+// ========================================
+// LOAD PROJECTS
+// ========================================
 
 async function loadProjects() {
 
@@ -213,12 +344,16 @@ async function loadProjects() {
     try {
 
         const response =
-            await fetch("/api/projects");
+            await fetch(
+                "/api/projects"
+            );
 
         if (!response.ok) {
+
             throw new Error(
                 "Could not load projects."
             );
+
         }
 
         const data =
@@ -227,20 +362,27 @@ async function loadProjects() {
         const projects =
             data.projects || [];
 
+
         projectsList.innerHTML = "";
+
 
         const projectCount =
             document.getElementById(
                 "project-count"
             );
 
+
         if (projectCount) {
+
             projectCount.textContent =
                 projects.length;
+
         }
 
 
-        if (projects.length === 0) {
+        if (
+            projects.length === 0
+        ) {
 
             projectsList.innerHTML = `
                 <div class="empty-state">
@@ -248,106 +390,67 @@ async function loadProjects() {
                 </div>
             `;
 
+
             if (recentProjects) {
+
                 recentProjects.innerHTML = `
                     <div class="empty-state">
                         No recent projects.
                     </div>
                 `;
+
             }
 
             return;
+
         }
 
 
-        projects.forEach(project => {
+        projects.forEach(
+            project => {
 
-            const card =
-                document.createElement("div");
-
-            card.className =
-                "project-item";
-
-            card.innerHTML = `
-                <div>
-                    <h3>
-                        📁 ${project.name}
-                    </h3>
-
-                    <p>
-                        ${
-                            project.description
-                            ||
-                            "No description"
-                        }
-                    </p>
-                </div>
-
-                <button
-                    class="secondary-button open-project"
-                >
-                    Open →
-                </button>
-            `;
-
-            const openButton =
-                card.querySelector(
-                    ".open-project"
-                );
-
-            openButton.addEventListener(
-                "click",
-                () => {
-
-                    openProject(
-                        project.id,
-                        project.name,
-                        project.description
+                const card =
+                    document.createElement(
+                        "div"
                     );
 
-                }
-            );
-
-            projectsList.appendChild(card);
-
-        });
+                card.className =
+                    "project-item";
 
 
-        if (recentProjects) {
+                card.innerHTML = `
+                    <div>
 
-            recentProjects.innerHTML = "";
+                        <h3>
+                            📁 ${project.name}
+                        </h3>
 
-            projects
-                .slice(0, 3)
-                .forEach(project => {
+                        <p>
+                            ${
+                                project.description
+                                ||
+                                "No description"
+                            }
+                        </p>
 
-                    const recent =
-                        document.createElement(
-                            "button"
-                        );
+                    </div>
 
-                    recent.className =
-                        "recent-project-item";
+                    <button
+                        class="secondary-button open-project"
+                    >
+                        Open →
+                    </button>
+                `;
 
-                    recent.innerHTML = `
-                        <span>📁</span>
 
-                        <div>
-                            <strong>
-                                ${project.name}
-                            </strong>
+                const openButton =
+                    card.querySelector(
+                        ".open-project"
+                    );
 
-                            <small>
-                                ${
-                                    project.description
-                                    ||
-                                    "No description"
-                                }
-                            </small>
-                        </div>
-                    `;
 
-                    recent.addEventListener(
+                openButton
+                    ?.addEventListener(
                         "click",
                         () => {
 
@@ -360,11 +463,81 @@ async function loadProjects() {
                         }
                     );
 
-                    recentProjects.appendChild(
-                        recent
+
+                projectsList
+                    .appendChild(
+                        card
                     );
 
-                });
+            }
+        );
+
+
+        if (recentProjects) {
+
+            recentProjects.innerHTML =
+                "";
+
+
+            projects
+                .slice(0, 3)
+                .forEach(
+                    project => {
+
+                        const recent =
+                            document
+                                .createElement(
+                                    "button"
+                                );
+
+                        recent.className =
+                            "recent-project-item";
+
+
+                        recent.innerHTML = `
+                            <span>
+                                📁
+                            </span>
+
+                            <div>
+
+                                <strong>
+                                    ${project.name}
+                                </strong>
+
+                                <small>
+                                    ${
+                                        project.description
+                                        ||
+                                        "No description"
+                                    }
+                                </small>
+
+                            </div>
+                        `;
+
+
+                        recent.addEventListener(
+                            "click",
+                            () => {
+
+                                openProject(
+                                    project.id,
+                                    project.name,
+                                    project.description
+                                );
+
+                            }
+                        );
+
+
+                        recentProjects
+                            .appendChild(
+                                recent
+                            );
+
+                    }
+                );
 
         }
 
@@ -372,7 +545,9 @@ async function loadProjects() {
 
     catch (error) {
 
-        console.error(error);
+        console.error(
+            error
+        );
 
         projectsList.innerHTML = `
             <div class="empty-state">
@@ -385,65 +560,30 @@ async function loadProjects() {
 }
 
 
-createProjectButton?.addEventListener(
-    "click",
-    async () => {
+// ========================================
+// CREATE PROJECT
+// ========================================
 
-        const name =
-            projectNameInput
-                .value
-                .trim();
+createProjectButton
+    ?.addEventListener(
+        "click",
+        async () => {
 
-        const description =
-            projectDescriptionInput
-                .value
-                .trim();
+            const name =
+                projectNameInput
+                    .value
+                    .trim();
 
-
-        if (!name) {
-
-            alert(
-                "Enter a project name."
-            );
-
-            return;
-
-        }
+            const description =
+                projectDescriptionInput
+                    .value
+                    .trim();
 
 
-        try {
-
-            const response =
-                await fetch(
-                    "/api/projects",
-                    {
-
-                        method: "POST",
-
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
-
-                        body:
-                            JSON.stringify({
-                                name,
-                                description
-                            })
-
-                    }
-                );
-
-
-            if (!response.ok) {
-
-                const errorData =
-                    await response.json();
+            if (!name) {
 
                 alert(
-                    errorData.error
-                    ||
-                    "Could not create project."
+                    "Enter a project name."
                 );
 
                 return;
@@ -451,30 +591,106 @@ createProjectButton?.addEventListener(
             }
 
 
-            projectNameInput.value = "";
+            try {
 
-            projectDescriptionInput.value = "";
+                const response =
+                    await fetch(
+                        "/api/projects",
+                        {
+                            method: "POST",
 
-            closeProjectModal();
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
 
-            await loadProjects();
+                            body:
+                                JSON.stringify({
+                                    name,
+                                    description
+                                })
+                        }
+                    );
 
-            openPage("projects");
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    alert(
+                        data.error
+                        ||
+                        "Could not create project."
+                    );
+
+                    return;
+
+                }
+
+
+                projectNameInput.value =
+                    "";
+
+                projectDescriptionInput
+                    .value =
+                    "";
+
+
+                closeProjectModal();
+
+
+                await loadProjects();
+
+
+                openPage(
+                    "projects"
+                );
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    error
+                );
+
+                alert(
+                    "Could not create project."
+                );
+
+            }
 
         }
+    );
 
-        catch (error) {
 
-            console.error(error);
+// ========================================
+// STARTUP PROJECT LOAD
+// ========================================
 
-            alert(
-                "Could not create project."
-            );
+loadProjects();
 
-        }
+// ========================================
+// NOVA V3 - PART 3
+// PROJECT WORKSPACE + TABS
+// ========================================
 
-    }
-);
+const workspaceBack =
+    document.getElementById(
+        "workspace-back"
+    );
+
+const workspaceTabs =
+    document.querySelectorAll(
+        ".workspace-tab"
+    );
+
+const workspacePanels =
+    document.querySelectorAll(
+        ".workspace-panel"
+    );
 
 
 function openProject(
@@ -483,7 +699,10 @@ function openProject(
     description
 ) {
 
-    openPage("workspace");
+    openPage(
+        "workspace"
+    );
+
 
     const title =
         document.getElementById(
@@ -495,12 +714,14 @@ function openProject(
             "workspace-description"
         );
 
+
     if (title) {
 
         title.textContent =
             "📁 " + name;
 
     }
+
 
     if (descriptionElement) {
 
@@ -511,151 +732,160 @@ function openProject(
 
     }
 
+
     window.currentProject = {
         id,
         name,
         description
     };
 
-loadProjectNotes(id);
-loadProjectTasks(id);
-loadProjectFiles(id);
+
+    loadProjectNotes?.(
+        id
+    );
+
+    loadProjectTasks?.(
+        id
+    );
+
+    loadProjectFiles?.(
+        id
+    );
+
+
+    if (
+    typeof prepareProjectConversation
+    === "function"
+) {
+
+    prepareProjectConversation(
+        id
+    );
 
 }
+}
 
+
+
+// ========================================
+// BACK TO PROJECTS
+// ========================================
 
 workspaceBack?.addEventListener(
     "click",
     () => {
 
-        openPage("projects");
+        openPage(
+            "projects"
+        );
 
     }
 );
 
 
-workspaceTabs.forEach(tab => {
+// ========================================
+// WORKSPACE TABS
+// ========================================
 
-    tab.addEventListener(
-        "click",
-        () => {
+workspaceTabs.forEach(
+    tab => {
 
-            workspaceTabs.forEach(
-                item => {
+        tab.addEventListener(
+            "click",
+            () => {
 
-                    item.classList.remove(
-                        "active"
-                    );
+                workspaceTabs.forEach(
+                    item => {
+
+                        item.classList.remove(
+                            "active"
+                        );
+
+                    }
+                );
+
+
+                tab.classList.add(
+                    "active"
+                );
+
+
+                workspacePanels.forEach(
+                    panel => {
+
+                        panel.classList.remove(
+                            "active-workspace-panel"
+                        );
+
+                    }
+                );
+
+
+                const tabName =
+                    tab.dataset
+                        .workspaceTab;
+
+
+                let targetId =
+                    "workspace-"
+                    + tabName;
+
+
+                if (
+                    tabName ===
+                    "chat"
+                ) {
+
+                    targetId =
+                        "workspace-chat-panel";
 
                 }
-            );
-
-            tab.classList.add(
-                "active"
-            );
 
 
-            workspacePanels.forEach(
-                panel => {
+                const target =
+                    document.getElementById(
+                        targetId
+                    );
 
-                    panel.classList.remove(
+
+                if (target) {
+
+                    target.classList.add(
                         "active-workspace-panel"
                     );
 
                 }
-            );
-
-
-            const tabName =
-                tab.dataset.workspaceTab;
-
-            let targetId =
-                "workspace-" + tabName;
-
-
-            if (tabName === "chat") {
-                targetId =
-                    "workspace-chat-panel";
-            }
-
-
-            const target =
-                document.getElementById(
-                    targetId
-                );
-
-            if (target) {
-
-                target.classList.add(
-                    "active-workspace-panel"
-                );
 
             }
-
-        }
-    );
-
-});
-
-
-notificationButton?.addEventListener(
-    "click",
-    () => {
-
-        notificationPanel
-            ?.classList
-            .toggle("show");
+        );
 
     }
 );
 
-
-closeNotifications?.addEventListener(
-    "click",
-    () => {
-
-        notificationPanel
-            ?.classList
-            .remove("show");
-
-    }
-);
-
-
-document.addEventListener(
-    "keydown",
-    event => {
-
-        if (
-            event.key === "Escape"
-        ) {
-
-            closeProjectModal();
-
-            notificationPanel
-                ?.classList
-                .remove("show");
-
-        }
-
-    }
-);
-
-
-loadProjects();
+// ========================================
+// NOVA V3 - PART 4
+// PROJECT NOTES
+// ========================================
 
 const projectNotes =
-    document.getElementById("project-notes");
+    document.getElementById(
+        "project-notes"
+    );
 
 const saveNotesButton =
-    document.getElementById("save-notes");
+    document.getElementById(
+        "save-notes"
+    );
 
 
-async function loadProjectNotes(projectId) {
+async function loadProjectNotes(
+    projectId
+) {
 
     if (!projectNotes) {
         return;
     }
+
 
     try {
 
@@ -664,12 +894,19 @@ async function loadProjectNotes(projectId) {
                 `/api/projects/${projectId}/notes`
             );
 
+
         if (!response.ok) {
-            throw new Error("Could not load notes.");
+
+            throw new Error(
+                "Could not load notes."
+            );
+
         }
+
 
         const data =
             await response.json();
+
 
         projectNotes.value =
             data.content || "";
@@ -678,7 +915,9 @@ async function loadProjectNotes(projectId) {
 
     catch (error) {
 
-        console.error(error);
+        console.error(
+            error
+        );
 
     }
 
@@ -693,13 +932,13 @@ saveNotesButton?.addEventListener(
             return;
         }
 
+
         try {
 
             const response =
                 await fetch(
                     `/api/projects/${window.currentProject.id}/notes`,
                     {
-
                         method: "POST",
 
                         headers: {
@@ -712,53 +951,76 @@ saveNotesButton?.addEventListener(
                                 content:
                                     projectNotes.value
                             })
-
                     }
                 );
 
+
             if (!response.ok) {
+
                 throw new Error(
                     "Could not save notes."
                 );
+
             }
+
 
             saveNotesButton.textContent =
                 "Saved ✓";
 
-            setTimeout(() => {
 
-                saveNotesButton.textContent =
-                    "Save Notes";
+            setTimeout(
+                () => {
 
-            }, 1500);
+                    saveNotesButton
+                        .textContent =
+                        "Save Notes";
+
+                },
+                1500
+            );
 
         }
 
         catch (error) {
 
-            console.error(error);
+            console.error(
+                error
+            );
 
-            alert("Could not save notes.");
+            alert(
+                "Could not save notes."
+            );
 
         }
 
     }
 );
 
+
+// ========================================
+// NOVA V3 - PART 5
+// PROJECT TASKS
+// ========================================
+
 const taskList =
-    document.getElementById("workspace-task-list");
+    document.getElementById(
+        "workspace-task-list"
+    );
 
 const newTaskButton =
     document.querySelector(
-        '#workspace-tasks .primary-button'
+        "#workspace-tasks .primary-button"
     );
 
 
-async function loadProjectTasks(projectId) {
+async function loadProjectTasks(
+    projectId
+) {
 
     if (!taskList) {
         return;
     }
+
 
     try {
 
@@ -767,106 +1029,217 @@ async function loadProjectTasks(projectId) {
                 `/api/projects/${projectId}/tasks`
             );
 
-        const data =
-            await response.json();
 
-        taskList.innerHTML = "";
+        if (!response.ok) {
 
-        if (!data.tasks || data.tasks.length === 0) {
+            throw new Error(
+                "Could not load tasks."
+            );
 
-            taskList.innerHTML =
-                '<div class="empty-state">No tasks yet.</div>';
-
-            return;
         }
 
 
-        data.tasks.forEach(task => {
+        const data =
+            await response.json();
 
-            const row =
-                document.createElement("div");
 
-            row.className = "task-item";
+        taskList.innerHTML =
+            "";
 
-            row.innerHTML = `
-                <label>
-                    <input
-                        type="checkbox"
-                        ${task.completed ? "checked" : ""}
-                    >
-                    <span>
-                        ${task.title}
-                    </span>
-                </label>
 
-                <button class="task-delete">
-                    Delete
-                </button>
+        if (
+            !data.tasks
+            ||
+            data.tasks.length === 0
+        ) {
+
+            taskList.innerHTML = `
+                <div class="empty-state">
+                    No tasks yet.
+                </div>
             `;
 
+            return;
 
-            const checkbox =
-                row.querySelector(
-                    'input[type="checkbox"]'
+        }
+
+
+        data.tasks.forEach(
+            task => {
+
+                const row =
+                    document.createElement(
+                        "div"
+                    );
+
+                row.className =
+                    "task-item";
+
+
+                const label =
+                    document.createElement(
+                        "label"
+                    );
+
+                const checkbox =
+                    document.createElement(
+                        "input"
+                    );
+
+                checkbox.type =
+                    "checkbox";
+
+                checkbox.checked =
+                    Boolean(
+                        task.completed
+                    );
+
+
+                const text =
+                    document.createElement(
+                        "span"
+                    );
+
+                text.textContent =
+                    task.title;
+
+
+                label.appendChild(
+                    checkbox
                 );
 
-            checkbox.addEventListener(
-                "change",
-                async () => {
+                label.appendChild(
+                    text
+                );
 
-                    await fetch(
-                        `/api/projects/${projectId}/tasks/${task.id}`,
-                        {
-                            method: "PATCH",
-                            headers: {
-                                "Content-Type":
-                                    "application/json"
-                            },
-                            body:
-                                JSON.stringify({
-                                    completed:
-                                        checkbox.checked
-                                })
+
+                const deleteButton =
+                    document.createElement(
+                        "button"
+                    );
+
+                deleteButton.className =
+                    "task-delete";
+
+                deleteButton.textContent =
+                    "Delete";
+
+
+                checkbox.addEventListener(
+                    "change",
+                    async () => {
+
+                        const response =
+                            await fetch(
+                                `/api/projects/${projectId}/tasks/${task.id}`,
+                                {
+                                    method:
+                                        "PATCH",
+
+                                    headers: {
+                                        "Content-Type":
+                                            "application/json"
+                                    },
+
+                                    body:
+                                        JSON.stringify({
+                                            completed:
+                                                checkbox
+                                                    .checked
+                                        })
+                                }
+                            );
+
+
+                        if (!response.ok) {
+
+                            checkbox.checked =
+                                !checkbox.checked;
+
+                            alert(
+                                "Could not update task."
+                            );
+
+                        }
+
+                    }
+                );
+
+
+                deleteButton
+                    .addEventListener(
+                        "click",
+                        async () => {
+
+                            const confirmed =
+                                confirm(
+                                    `Delete "${task.title}"?`
+                                );
+
+
+                            if (!confirmed) {
+                                return;
+                            }
+
+
+                            const response =
+                                await fetch(
+                                    `/api/projects/${projectId}/tasks/${task.id}`,
+                                    {
+                                        method:
+                                            "DELETE"
+                                    }
+                                );
+
+
+                            if (!response.ok) {
+
+                                alert(
+                                    "Could not delete task."
+                                );
+
+                                return;
+
+                            }
+
+
+                            await loadProjectTasks(
+                                projectId
+                            );
+
                         }
                     );
 
-                }
-            );
 
-
-            const deleteButton =
-                row.querySelector(
-                    ".task-delete"
+                row.appendChild(
+                    label
                 );
 
-            deleteButton.addEventListener(
-                "click",
-                async () => {
-
-                    await fetch(
-                        `/api/projects/${projectId}/tasks/${task.id}`,
-                        {
-                            method: "DELETE"
-                        }
-                    );
-
-                    loadProjectTasks(
-                        projectId
-                    );
-
-                }
-            );
+                row.appendChild(
+                    deleteButton
+                );
 
 
-            taskList.appendChild(row);
+                taskList.appendChild(
+                    row
+                );
 
-        });
+            }
+        );
 
     }
 
     catch (error) {
 
-        console.error(error);
+        console.error(
+            error
+        );
+
+        taskList.innerHTML = `
+            <div class="empty-state">
+                Could not load tasks.
+            </div>
+        `;
 
     }
 
@@ -881,186 +1254,1529 @@ newTaskButton?.addEventListener(
             return;
         }
 
-        const title =
-            prompt("Enter task:");
 
-        if (!title || !title.trim()) {
+        const title =
+            prompt(
+                "Enter task:"
+            );
+
+
+        if (
+            !title
+            ||
+            !title.trim()
+        ) {
+
             return;
+
         }
 
-        await fetch(
-            `/api/projects/${window.currentProject.id}/tasks`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
-                body:
-                    JSON.stringify({
-                        title: title.trim()
-                    })
-            }
-        );
 
-        loadProjectTasks(
-            window.currentProject.id
-        );
+        try {
+
+            const response =
+                await fetch(
+                    `/api/projects/${window.currentProject.id}/tasks`,
+                    {
+                        method:
+                            "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify({
+                                title:
+                                    title.trim()
+                            })
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                alert(
+                    data.error
+                    ||
+                    "Could not create task."
+                );
+
+                return;
+
+            }
+
+
+            await loadProjectTasks(
+                window.currentProject.id
+            );
+
+        }
+
+        catch (error) {
+
+            console.error(
+                error
+            );
+
+            alert(
+                "Could not create task."
+            );
+
+        }
 
     }
 );
 
 // ========================================
-// PROJECT AI CHAT
+// NOVA V3 - PART 6
+// PROJECT FILES
 // ========================================
 
-const workspaceChat =
-    document.getElementById("workspace-chat");
-
-const workspaceInput =
-    document.getElementById("workspace-input");
-
-const workspaceSend =
-    document.getElementById("workspace-send");
-
-
-async function sendWorkspaceMessage() {
-
-    if (!window.currentProject) {
-        return;
-    }
-
-    const message =
-        workspaceInput.value.trim();
-
-    if (!message) {
-        return;
-    }
-
-
-    // Show user's message
-    const userMessage =
-        document.createElement("div");
-
-    userMessage.className =
-        "message user-message";
-
-    userMessage.innerHTML = `
-        <div>
-            <strong>You</strong>
-            <p>${message}</p>
-        </div>
-    `;
-
-    workspaceChat.appendChild(userMessage);
-
-
-    workspaceInput.value = "";
-
-
-    // Show thinking message
-    const thinkingMessage =
-        document.createElement("div");
-
-    thinkingMessage.className =
-        "message ai-message";
-
-    thinkingMessage.innerHTML = `
-        <div>
-            <strong>Nova</strong>
-            <p>Nova is thinking...</p>
-        </div>
-    `;
-
-    workspaceChat.appendChild(
-        thinkingMessage
+const workspaceFilesList =
+    document.getElementById(
+        "workspace-files-list"
     );
+
+const workspaceFilesPanel =
+    document.getElementById(
+        "workspace-files"
+    );
+
+const workspaceUploadButton =
+    workspaceFilesPanel
+        ?.querySelector(
+            ".primary-button"
+        );
+
+const workspaceFileInput =
+    document.getElementById(
+        "workspace-file-input"
+    );
+
+
+// ========================================
+// FORMAT FILE SIZE
+// ========================================
+
+function formatFileSize(bytes) {
+
+    const size =
+        Number(bytes || 0);
+
+    if (size < 1024) {
+
+        return `${size} B`;
+
+    }
+
+    if (size < 1024 * 1024) {
+
+        return (
+            `${(
+                size / 1024
+            ).toFixed(1)} KB`
+        );
+
+    }
+
+    return (
+        `${(
+            size /
+            (1024 * 1024)
+        ).toFixed(1)} MB`
+    );
+
+}
+
+
+// ========================================
+// LOAD PROJECT FILES
+// ========================================
+
+async function loadProjectFiles(
+    projectId
+) {
+
+    if (!workspaceFilesList) {
+        return;
+    }
 
 
     try {
 
         const response =
-            await fetch("/chat", {
+            await fetch(
+                `/api/projects/${projectId}/files`
+            );
 
-                method: "POST",
 
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
+        if (!response.ok) {
 
-                body: JSON.stringify({
+            throw new Error(
+                "Could not load project files."
+            );
 
-                    message: message,
-
-                    project_id:
-                        window.currentProject.id,
-
-                    project_name:
-                        window.currentProject.name
-
-                })
-
-            });
+        }
 
 
         const data =
             await response.json();
 
 
-        thinkingMessage.remove();
+        workspaceFilesList.innerHTML =
+            "";
 
 
-        const aiMessage =
-            document.createElement("div");
+        if (
+            !data.files
+            ||
+            data.files.length === 0
+        ) {
 
-        aiMessage.className =
-            "message ai-message";
+            workspaceFilesList.innerHTML = `
+                <div class="empty-state">
+                    No files yet.
+                </div>
+            `;
 
-        aiMessage.innerHTML = `
-            <div>
-                <strong>Nova</strong>
-                <p>${data.reply || data.response || data.message || "Nova could not respond."}</p>
-            </div>
-        `;
+            return;
 
-        workspaceChat.appendChild(
-            aiMessage
+        }
+
+
+        data.files.forEach(
+            file => {
+
+                const row =
+                    document.createElement(
+                        "div"
+                    );
+
+                row.className =
+                    "file-item";
+
+
+                const info =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                const name =
+                    document.createElement(
+                        "strong"
+                    );
+
+                name.textContent =
+                    `📄 ${file.filename}`;
+
+
+                const details =
+                    document.createElement(
+                        "small"
+                    );
+
+                details.textContent =
+                    [
+                        formatFileSize(
+                            file.file_size
+                        ),
+
+                        file.mime_type || "",
+
+                        file.uploaded_at || ""
+                    ]
+                        .filter(Boolean)
+                        .join(" • ");
+
+
+                info.appendChild(
+                    name
+                );
+
+                info.appendChild(
+                    details
+                );
+
+
+                const actions =
+                    document.createElement(
+                        "div"
+                    );
+
+                actions.className =
+                    "file-actions";
+
+
+                const downloadButton =
+                    document.createElement(
+                        "button"
+                    );
+
+                downloadButton.className =
+                    "secondary-button";
+
+                downloadButton.textContent =
+                    "Download";
+
+
+                const deleteButton =
+                    document.createElement(
+                        "button"
+                    );
+
+                deleteButton.className =
+                    "task-delete";
+
+                deleteButton.textContent =
+                    "Delete";
+
+
+                downloadButton
+                    .addEventListener(
+                        "click",
+                        () => {
+
+                            window.location.href =
+                                `/api/projects/${projectId}/files/${file.id}/download`;
+
+                        }
+                    );
+
+
+                deleteButton
+                    .addEventListener(
+                        "click",
+                        async () => {
+
+                            const confirmed =
+                                confirm(
+                                    `Delete "${file.filename}"?`
+                                );
+
+
+                            if (!confirmed) {
+                                return;
+                            }
+
+
+                            try {
+
+                                const response =
+                                    await fetch(
+                                        `/api/projects/${projectId}/files/${file.id}`,
+                                        {
+                                            method:
+                                                "DELETE"
+                                        }
+                                    );
+
+
+                                const data =
+                                    await response
+                                        .json();
+
+
+                                if (
+                                    !response.ok
+                                ) {
+
+                                    alert(
+                                        data.error
+                                        ||
+                                        "Could not delete file."
+                                    );
+
+                                    return;
+
+                                }
+
+
+                                await loadProjectFiles(
+                                    projectId
+                                );
+
+                            }
+
+                            catch (error) {
+
+                                console.error(
+                                    error
+                                );
+
+                                alert(
+                                    "Could not delete file."
+                                );
+
+                            }
+
+                        }
+                    );
+
+
+                actions.appendChild(
+                    downloadButton
+                );
+
+                actions.appendChild(
+                    deleteButton
+                );
+
+
+                row.appendChild(
+                    info
+                );
+
+                row.appendChild(
+                    actions
+                );
+
+
+                workspaceFilesList
+                    .appendChild(
+                        row
+                    );
+
+            }
         );
 
     }
 
     catch (error) {
 
-        thinkingMessage.remove();
+        console.error(
+            error
+        );
 
-        const errorMessage =
-            document.createElement("div");
 
-        errorMessage.className =
-            "message ai-message";
-
-        errorMessage.innerHTML = `
-            <div>
-                <strong>Nova</strong>
-                <p>Something went wrong connecting to Nova.</p>
+        workspaceFilesList.innerHTML = `
+            <div class="empty-state">
+                Could not load files.
             </div>
         `;
 
-        workspaceChat.appendChild(
-            errorMessage
+    }
+
+}
+
+
+// ========================================
+// OPEN FILE SELECTOR
+// ========================================
+
+workspaceUploadButton
+    ?.addEventListener(
+        "click",
+        () => {
+
+            if (
+                !window.currentProject
+            ) {
+
+                alert(
+                    "Open a project first."
+                );
+
+                return;
+
+            }
+
+
+            if (
+                !workspaceFileInput
+            ) {
+
+                alert(
+                    "File input is missing."
+                );
+
+                return;
+
+            }
+
+
+            workspaceFileInput.click();
+
+        }
+    );
+
+
+// ========================================
+// UPLOAD FILE
+// ========================================
+
+workspaceFileInput
+    ?.addEventListener(
+        "change",
+        async () => {
+
+            const file =
+                workspaceFileInput
+                    .files[0];
+
+
+            if (!file) {
+                return;
+            }
+
+
+            if (
+                !window.currentProject
+            ) {
+
+                alert(
+                    "Open a project first."
+                );
+
+                workspaceFileInput.value =
+                    "";
+
+                return;
+
+            }
+
+
+            const formData =
+                new FormData();
+
+
+            formData.append(
+                "file",
+                file
+            );
+
+
+            if (workspaceUploadButton) {
+
+                workspaceUploadButton
+                    .disabled =
+                    true;
+
+                workspaceUploadButton
+                    .textContent =
+                    "Uploading...";
+
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/projects/${window.currentProject.id}/files`,
+                        {
+                            method:
+                                "POST",
+
+                            body:
+                                formData
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    alert(
+                        data.error
+                        ||
+                        "Could not upload file."
+                    );
+
+                    return;
+
+                }
+
+
+                await loadProjectFiles(
+                    window.currentProject.id
+                );
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    error
+                );
+
+
+                alert(
+                    "Upload failed. Please try again."
+                );
+
+            }
+
+            finally {
+
+                workspaceFileInput.value =
+                    "";
+
+
+                if (
+                    workspaceUploadButton
+                ) {
+
+                    workspaceUploadButton
+                        .disabled =
+                        false;
+
+                    workspaceUploadButton
+                        .textContent =
+                        "Upload File";
+
+                }
+
+            }
+
+        }
+    );
+
+    // ========================================
+// NOVA V3 - PART 7
+// MAIN NOVA CHAT
+// ========================================
+
+const chatBox =
+    document.getElementById(
+        "chat-box"
+    );
+
+const userInput =
+    document.getElementById(
+        "user-input"
+    );
+
+const sendButton =
+    document.getElementById(
+        "send-button"
+    );
+
+const newChatButton =
+    document.getElementById(
+        "new-chat-button"
+    );
+
+const conversationList =
+    document.getElementById(
+        "conversation-list"
+    );
+
+window.currentConversationId =
+    null;
+
+
+// ========================================
+// CREATE CHAT MESSAGE
+// ========================================
+
+function createChatMessage(
+    role,
+    content,
+    container
+) {
+
+    if (!container) {
+        return null;
+    }
+
+
+    const message =
+        document.createElement(
+            "div"
         );
 
-        console.error(error);
+
+    message.className =
+        role === "user"
+            ? "message user-message"
+            : "message ai-message";
+
+
+    const inner =
+        document.createElement(
+            "div"
+        );
+
+
+    const name =
+        document.createElement(
+            "strong"
+        );
+
+
+    name.textContent =
+        role === "user"
+            ? "You"
+            : "Nova";
+
+
+    const paragraph =
+        document.createElement(
+            "p"
+        );
+
+
+    paragraph.textContent =
+        content;
+
+
+    inner.appendChild(
+        name
+    );
+
+    inner.appendChild(
+        paragraph
+    );
+
+
+    message.appendChild(
+        inner
+    );
+
+
+    container.appendChild(
+        message
+    );
+
+
+    container.scrollTop =
+        container.scrollHeight;
+
+
+    return message;
+
+}
+
+
+// ========================================
+// RESET MAIN CHAT
+// ========================================
+
+function resetMainChat() {
+
+    window.currentConversationId =
+        null;
+
+
+    if (!chatBox) {
+        return;
+    }
+
+
+    chatBox.innerHTML =
+        "";
+
+
+    createChatMessage(
+        "assistant",
+        "What can I help you with today?",
+        chatBox
+    );
+
+
+    userInput?.focus();
+
+}
+
+
+// ========================================
+// LOAD CONVERSATION LIST
+// ========================================
+
+async function loadConversations() {
+
+    if (!conversationList) {
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/conversations"
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Could not load conversations."
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        const conversations =
+            (
+                data.conversations
+                || []
+            )
+                .filter(
+                    conversation =>
+                        conversation
+                            .project_id
+                        === null
+                );
+
+
+        conversationList.innerHTML =
+            "";
+
+
+        if (
+            conversations.length
+            === 0
+        ) {
+
+            const empty =
+                document.createElement(
+                    "div"
+                );
+
+
+            empty.className =
+                "empty-state";
+
+
+            empty.textContent =
+                "No conversations yet.";
+
+
+            conversationList
+                .appendChild(
+                    empty
+                );
+
+
+            return;
+
+        }
+
+
+        conversations.forEach(
+            conversation => {
+
+                const item =
+                    document
+                        .createElement(
+                            "button"
+                        );
+
+
+                item.className =
+                    "conversation-item";
+
+
+                if (
+                    conversation.id
+                    ===
+                    window
+                        .currentConversationId
+                ) {
+
+                    item.classList.add(
+                        "active"
+                    );
+
+                }
+
+
+                item.textContent =
+                    conversation.title
+                    ||
+                    "Conversation";
+
+
+                item.addEventListener(
+                    "click",
+                    () => {
+
+                        openConversation(
+                            conversation.id
+                        );
+
+                    }
+                );
+
+
+                conversationList
+                    .appendChild(
+                        item
+                    );
+
+            }
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+    }
+
+}
+
+
+// ========================================
+// OPEN SAVED CONVERSATION
+// ========================================
+
+async function openConversation(
+    conversationId
+) {
+
+    if (!chatBox) {
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/conversations/${conversationId}`
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Could not open conversation."
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        window.currentConversationId =
+            conversationId;
+
+
+        chatBox.innerHTML =
+            "";
+
+
+        (
+            data.messages
+            || []
+        )
+            .forEach(
+                message => {
+
+                    createChatMessage(
+                        message.role,
+                        message.content,
+                        chatBox
+                    );
+
+                }
+            );
+
+
+        await loadConversations();
+
+
+        userInput?.focus();
+
+    }
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+    }
+
+}
+
+
+// ========================================
+// SEND MAIN CHAT MESSAGE
+// ========================================
+
+async function sendMainMessage() {
+
+    if (
+        !userInput
+        ||
+        !chatBox
+    ) {
+
+        return;
 
     }
 
 
-    workspaceChat.scrollTop =
-        workspaceChat.scrollHeight;
+    const message =
+        userInput
+            .value
+            .trim();
+
+
+    if (!message) {
+        return;
+    }
+
+
+    createChatMessage(
+        "user",
+        message,
+        chatBox
+    );
+
+
+    userInput.value =
+        "";
+
+
+    const thinkingMessage =
+        createChatMessage(
+            "assistant",
+            "Nova is thinking...",
+            chatBox
+        );
+
+
+    if (sendButton) {
+
+        sendButton.disabled =
+            true;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/chat",
+                {
+                    method:
+                        "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+                            message:
+                                message,
+
+                            conversation_id:
+                                window
+                                    .currentConversationId
+                        })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        thinkingMessage?.remove();
+
+
+        if (!response.ok) {
+
+    createChatMessage(
+        "assistant",
+        data.message
+        ||
+        "Nova is temporarily unavailable. Please try again.",
+        chatBox
+    );
+
+    if (data.conversation_id) {
+
+        window.currentConversationId =
+            data.conversation_id;
+
+    }
+
+    await loadConversations();
+
+    return;
 
 }
 
+
+        if (
+            data.conversation_id
+        ) {
+
+            window.currentConversationId =
+                data.conversation_id;
+
+        }
+
+
+        createChatMessage(
+            "assistant",
+            data.reply
+            ||
+            "Nova could not respond.",
+            chatBox
+        );
+
+
+        await loadConversations();
+
+    }
+
+    catch (error) {
+
+        thinkingMessage?.remove();
+
+
+        console.error(
+            error
+        );
+
+
+        createChatMessage(
+            "assistant",
+            "Nova is temporarily unavailable. Please try again.",
+            chatBox
+        );
+
+    }
+
+    finally {
+
+        if (sendButton) {
+
+            sendButton.disabled =
+                false;
+
+        }
+
+
+        userInput?.focus();
+
+    }
+
+}
+
+
+// ========================================
+// MAIN CHAT BUTTONS
+// ========================================
+
+sendButton?.addEventListener(
+    "click",
+    sendMainMessage
+);
+
+
+userInput?.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key === "Enter"
+            &&
+            !event.shiftKey
+        ) {
+
+            event.preventDefault();
+
+
+            sendMainMessage();
+
+        }
+
+    }
+);
+
+
+newChatButton?.addEventListener(
+    "click",
+    resetMainChat
+);
+
+
+// ========================================
+// LOAD SAVED CONVERSATIONS
+// ========================================
+
+loadConversations();
+
+// ========================================
+// NOVA V3 - PART 8
+// PROJECT AI CHAT
+// ========================================
+
+const workspaceChat =
+    document.getElementById(
+        "workspace-chat"
+    );
+
+const workspaceInput =
+    document.getElementById(
+        "workspace-input"
+    );
+
+const workspaceSend =
+    document.getElementById(
+        "workspace-send"
+    );
+
+window.workspaceConversationId =
+    null;
+
+
+// ========================================
+// RESET PROJECT CHAT
+// ========================================
+
+function resetWorkspaceChat() {
+
+    window.workspaceConversationId =
+        null;
+
+
+    if (!workspaceChat) {
+        return;
+    }
+
+
+    workspaceChat.innerHTML =
+        "";
+
+
+    createChatMessage(
+        "assistant",
+        "Ask Nova anything about this project.",
+        workspaceChat
+    );
+
+}
+
+
+// ========================================
+// LOAD SAVED PROJECT CONVERSATION
+// ========================================
+
+async function loadProjectConversation(
+    projectId
+) {
+
+    if (!workspaceChat) {
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/conversations"
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Could not load project conversation."
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        const conversation =
+            (
+                data.conversations
+                || []
+            )
+                .find(
+                    item =>
+                        item.project_id
+                        === projectId
+                );
+
+
+        if (!conversation) {
+
+            resetWorkspaceChat();
+
+            return;
+
+        }
+
+
+        const detailResponse =
+            await fetch(
+                `/api/conversations/${conversation.id}`
+            );
+
+
+        if (!detailResponse.ok) {
+
+            throw new Error(
+                "Could not load project messages."
+            );
+
+        }
+
+
+        const detail =
+            await detailResponse.json();
+
+
+        window.workspaceConversationId =
+            conversation.id;
+
+
+        workspaceChat.innerHTML =
+            "";
+
+
+        (
+            detail.messages
+            || []
+        )
+            .forEach(
+                message => {
+
+                    createChatMessage(
+                        message.role,
+                        message.content,
+                        workspaceChat
+                    );
+
+                }
+            );
+
+
+        workspaceChat.scrollTop =
+            workspaceChat.scrollHeight;
+
+    }
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+
+        resetWorkspaceChat();
+
+    }
+
+}
+
+
+// ========================================
+// SEND PROJECT MESSAGE
+// ========================================
+
+async function sendWorkspaceMessage() {
+
+    if (
+        !window.currentProject
+        ||
+        !workspaceInput
+        ||
+        !workspaceChat
+    ) {
+
+        return;
+
+    }
+
+
+    const message =
+        workspaceInput
+            .value
+            .trim();
+
+
+    if (!message) {
+        return;
+    }
+
+
+    createChatMessage(
+        "user",
+        message,
+        workspaceChat
+    );
+
+
+    workspaceInput.value =
+        "";
+
+
+    const thinkingMessage =
+        createChatMessage(
+            "assistant",
+            "Nova is thinking...",
+            workspaceChat
+        );
+
+
+    if (workspaceSend) {
+
+        workspaceSend.disabled =
+            true;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/chat",
+                {
+                    method:
+                        "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+
+                            message:
+                                message,
+
+                            project_id:
+                                window
+                                    .currentProject
+                                    .id,
+
+                            conversation_id:
+                                window
+                                    .workspaceConversationId
+                        })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        thinkingMessage?.remove();
+
+
+        if (!response.ok) {
+
+            createChatMessage(
+                "assistant",
+                data.message
+                ||
+                "Nova is temporarily unavailable. Please try again.",
+                workspaceChat
+            );
+
+
+            if (
+                data.conversation_id
+            ) {
+
+                window.workspaceConversationId =
+                    data.conversation_id;
+
+            }
+
+
+            return;
+
+        }
+
+
+        if (
+            data.conversation_id
+        ) {
+
+            window.workspaceConversationId =
+                data.conversation_id;
+
+        }
+
+
+        createChatMessage(
+            "assistant",
+            data.reply
+            ||
+            "Nova could not respond.",
+            workspaceChat
+        );
+
+    }
+
+    catch (error) {
+
+        thinkingMessage?.remove();
+
+
+        console.error(
+            error
+        );
+
+
+        createChatMessage(
+            "assistant",
+            "Nova is temporarily unavailable. Please try again.",
+            workspaceChat
+        );
+
+    }
+
+    finally {
+
+        if (workspaceSend) {
+
+            workspaceSend.disabled =
+                false;
+
+        }
+
+
+        workspaceInput?.focus();
+
+    }
+
+}
+
+
+// ========================================
+// PROJECT CHAT BUTTONS
+// ========================================
 
 workspaceSend?.addEventListener(
     "click",
@@ -1073,11 +2789,13 @@ workspaceInput?.addEventListener(
     event => {
 
         if (
-            event.key === "Enter" &&
+            event.key === "Enter"
+            &&
             !event.shiftKey
         ) {
 
             event.preventDefault();
+
 
             sendWorkspaceMessage();
 
@@ -1087,178 +2805,428 @@ workspaceInput?.addEventListener(
 );
 
 // ========================================
-// PROJECT FILES
+// NOVA V3 - PART 9
+// CONVERSATION MANAGEMENT
 // ========================================
 
-const workspaceFilesList =
-    document.getElementById("workspace-files-list");
+async function deleteConversation(
+    conversationId
+) {
 
-const workspaceFilesPanel =
-    document.getElementById("workspace-files");
-
-const workspaceUploadButton =
-    document.getElementById(
-        "workspace-upload-button"
-    );
-
-const workspaceFileInput =
-    document.getElementById(
-        "workspace-file-input"
-    );
+    const confirmed =
+        confirm(
+            "Delete this conversation?"
+        );
 
 
-async function loadProjectFiles(projectId) {
-
-    if (!workspaceFilesList) {
+    if (!confirmed) {
         return;
     }
+
 
     try {
 
         const response =
             await fetch(
-                `/api/projects/${projectId}/files`
+                `/api/conversations/${conversationId}`,
+                {
+                    method:
+                        "DELETE"
+                }
             );
+
 
         if (!response.ok) {
+
             throw new Error(
-                "Could not load project files."
+                "Could not delete conversation."
             );
+
         }
 
-        const data =
-            await response.json();
 
-        workspaceFilesList.innerHTML = "";
+        if (
+            window.currentConversationId
+            === conversationId
+        ) {
 
-        if (!data.files || data.files.length === 0) {
+            resetMainChat();
 
-            workspaceFilesList.innerHTML = `
-                <div class="empty-state">
-                    No files yet.
-                </div>
-            `;
-
-            return;
         }
 
-        data.files.forEach(file => {
 
-            const row =
-                document.createElement("div");
-
-            row.className = "file-item";
-
-            row.innerHTML = `
-                <div>
-                    <strong>
-                        📄 ${file.filename}
-                    </strong>
-
-                    <small>
-                        ${file.uploaded_at || ""}
-                    </small>
-                </div>
-            `;
-
-            workspaceFilesList.appendChild(row);
-
-        });
+        await loadConversations();
 
     }
 
     catch (error) {
 
-        console.error(error);
+        console.error(
+            error
+        );
 
-        workspaceFilesList.innerHTML = `
-            <div class="empty-state">
-                Could not load files.
-            </div>
-        `;
+
+        alert(
+            "Could not delete conversation."
+        );
 
     }
 
 }
 
-workspaceUploadButton?.addEventListener(
-    "click",
-    () => {
 
-        if (!window.currentProject) {
+// ========================================
+// UPGRADED CONVERSATION LIST
+// ========================================
 
-            alert("Open a project first.");
-            return;
+async function loadConversations() {
 
-        }
-
-        workspaceFileInput.click();
-
+    if (!conversationList) {
+        return;
     }
-);
 
 
-workspaceFileInput?.addEventListener(
-    "change",
-    async () => {
+    try {
 
-        const file =
-            workspaceFileInput.files[0];
+        const response =
+            await fetch(
+                "/api/conversations"
+            );
 
-        if (!file) {
-            return;
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Could not load conversations."
+            );
+
         }
 
-        const formData =
-            new FormData();
 
-        formData.append(
-            "file",
-            file
-        );
+        const data =
+            await response.json();
 
-        try {
 
-            const response =
-                await fetch(
-                    `/api/projects/${window.currentProject.id}/files`,
-                    {
-                        method: "POST",
-                        body: formData
+        const conversations =
+            (
+                data.conversations
+                || []
+            )
+                .filter(
+                    conversation =>
+                        conversation
+                            .project_id
+                        === null
+                );
+
+
+        conversationList.innerHTML =
+            "";
+
+
+        if (
+            conversations.length
+            === 0
+        ) {
+
+            const empty =
+                document.createElement(
+                    "div"
+                );
+
+
+            empty.className =
+                "empty-state";
+
+
+            empty.textContent =
+                "No conversations yet.";
+
+
+            conversationList
+                .appendChild(
+                    empty
+                );
+
+
+            return;
+
+        }
+
+
+        conversations.forEach(
+            conversation => {
+
+                const wrapper =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                wrapper.className =
+                    "conversation-row";
+
+
+                const item =
+                    document.createElement(
+                        "button"
+                    );
+
+
+                item.className =
+                    "conversation-item";
+
+
+                if (
+                    conversation.id
+                    ===
+                    window
+                        .currentConversationId
+                ) {
+
+                    item.classList.add(
+                        "active"
+                    );
+
+                }
+
+
+                item.textContent =
+                    conversation.title
+                    ||
+                    "Conversation";
+
+
+                item.addEventListener(
+                    "click",
+                    () => {
+
+                        openConversation(
+                            conversation.id
+                        );
+
                     }
                 );
 
-            const data =
-                await response.json();
 
-            if (!response.ok) {
+                const deleteButton =
+                    document.createElement(
+                        "button"
+                    );
 
-                alert(
-                    data.error ||
-                    "Could not upload file."
+
+                deleteButton.className =
+                    "conversation-delete";
+
+
+                deleteButton.textContent =
+                    "×";
+
+
+                deleteButton.title =
+                    "Delete conversation";
+
+
+                deleteButton.addEventListener(
+                    "click",
+                    event => {
+
+                        event.stopPropagation();
+
+
+                        deleteConversation(
+                            conversation.id
+                        );
+
+                    }
                 );
 
-                return;
+
+                wrapper.appendChild(
+                    item
+                );
+
+
+                wrapper.appendChild(
+                    deleteButton
+                );
+
+
+                conversationList
+                    .appendChild(
+                        wrapper
+                    );
 
             }
-
-            await loadProjectFiles(
-                window.currentProject.id
-            );
-
-            workspaceFileInput.value = "";
-
-        }
-
-        catch (error) {
-
-            console.error(error);
-
-            alert(
-                "Upload failed. Please try again."
-            );
-
-        }
+        );
 
     }
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+    }
+
+}
+
+// ========================================
+// NOVA V3 - PART 10
+// STARTUP + CHAT POLISH
+// ========================================
+
+
+// ========================================
+// CLEAN NEW CHAT
+// ========================================
+
+function startNewConversation() {
+
+    window.currentConversationId =
+        null;
+
+
+    if (chatBox) {
+
+        chatBox.innerHTML =
+            "";
+
+        createChatMessage(
+            "assistant",
+            "What can I help you with today?",
+            chatBox
+        );
+
+    }
+
+
+    loadConversations();
+
+
+    userInput?.focus();
+
+}
+
+
+newChatButton?.addEventListener(
+    "click",
+    startNewConversation
 );
+
+
+// ========================================
+// RESTORE MOST RECENT MAIN CHAT
+// ========================================
+
+async function restoreLatestConversation() {
+
+    if (
+        !conversationList
+        ||
+        !chatBox
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/conversations"
+            );
+
+
+        if (!response.ok) {
+            return;
+        }
+
+
+        const data =
+            await response.json();
+
+
+        const conversations =
+            (
+                data.conversations
+                || []
+            )
+                .filter(
+                    conversation =>
+                        conversation
+                            .project_id
+                        === null
+                );
+
+
+        if (
+            conversations.length
+            === 0
+        ) {
+
+            resetMainChat();
+
+            return;
+
+        }
+
+
+        const latest =
+            conversations[0];
+
+
+        await openConversation(
+            latest.id
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+    }
+
+}
+
+
+// ========================================
+// PROJECT CHAT RESET WHEN SWITCHING PROJECTS
+// ========================================
+
+function prepareProjectConversation(
+    projectId
+) {
+
+    window.workspaceConversationId =
+        null;
+
+
+    if (workspaceChat) {
+
+        workspaceChat.innerHTML =
+            "";
+
+    }
+
+
+    loadProjectConversation(
+        projectId
+    );
+
+}
+
+
+// ========================================
+// FINAL STARTUP
+// ========================================
+
+restoreLatestConversation();
+
+loadConversations();

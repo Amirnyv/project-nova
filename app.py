@@ -1,5 +1,6 @@
 import os
 import sqlite3
+import uuid
 
 from flask import (
     Flask,
@@ -8,7 +9,8 @@ from flask import (
     jsonify,
     redirect,
     url_for,
-    flash
+    flash,
+    send_from_directory
 )
 
 from flask_login import (
@@ -19,11 +21,8 @@ from flask_login import (
     current_user
 )
 
-from werkzeug.security import (
-    generate_password_hash,
-    check_password_hash
-)
-
+from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
 from openai import OpenAI
 from dotenv import load_dotenv
 
@@ -34,7 +33,6 @@ from agents.portfolio_agent import (
     get_portfolio,
     get_trade_history
 )
-
 from agents.project_agent import (
     create_project,
     get_projects
@@ -51,7 +49,6 @@ from user_model import User, get_user_by_id
 load_dotenv()
 
 app = Flask(__name__)
-
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
 if not app.secret_key:
@@ -65,11 +62,8 @@ if not app.secret_key:
 # -------------------------------------------------
 
 login_manager = LoginManager()
-
 login_manager.init_app(app)
-
 login_manager.login_view = "login"
-
 login_manager.login_message = (
     "Please log in to access Project Nova."
 )
@@ -102,12 +96,10 @@ client = OpenAI(
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
-
     if current_user.is_authenticated:
         return redirect(url_for("home"))
 
     if request.method == "POST":
-
         username = request.form.get(
             "username",
             ""
@@ -132,24 +124,19 @@ def signup():
             flash(
                 "Username, email, and password are required."
             )
-
             return render_template("signup.html")
 
         if password != confirm_password:
             flash("Passwords do not match.")
-
             return render_template("signup.html")
 
         if len(password) < 8:
             flash(
                 "Password must be at least 8 characters."
             )
-
             return render_template("signup.html")
 
-        password_hash = generate_password_hash(
-            password
-        )
+        password_hash = generate_password_hash(password)
 
         connection = get_db()
 
@@ -189,15 +176,12 @@ def signup():
             connection.commit()
 
         except sqlite3.IntegrityError:
-
             connection.rollback()
+            connection.close()
 
             flash(
                 "That username or email is already registered."
             )
-
-            connection.close()
-
             return render_template("signup.html")
 
         connection.close()
@@ -221,12 +205,10 @@ def signup():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-
     if current_user.is_authenticated:
         return redirect(url_for("home"))
 
     if request.method == "POST":
-
         email = request.form.get(
             "email",
             ""
@@ -261,10 +243,7 @@ def login():
                 password
             )
         ):
-            flash(
-                "Incorrect email or password."
-            )
-
+            flash("Incorrect email or password.")
             return render_template("login.html")
 
         user = User(
@@ -287,9 +266,7 @@ def login():
 @app.route("/logout")
 @login_required
 def logout():
-
     logout_user()
-
     return redirect(url_for("login"))
 
 
@@ -300,19 +277,468 @@ def logout():
 @app.route("/")
 @login_required
 def home():
-
-    return render_template(
-        "index.html",
-        user=current_user
-    )
-@app.route("/v3")
-@login_required
-def v3():
-
     return render_template(
         "index_v3.html",
         user=current_user
     )
+
+
+@app.route("/v3")
+@login_required
+def v3():
+    return render_template(
+        "index_v3.html",
+        user=current_user
+    )
+
+
+# -------------------------------------------------
+# AI ACCESS + CONVERSATION HELPERS
+# -------------------------------------------------
+
+def get_active_subscription(user_id):
+    connection = get_db()
+
+    row = connection.execute(
+        """
+        SELECT
+            plan,
+            status,
+            current_period_start,
+            current_period_end
+        FROM subscriptions
+        WHERE user_id = ?
+        """,
+        (user_id,)
+    ).fetchone()
+
+    connection.close()
+
+    return row
+
+
+def user_has_ai_access(user_id):
+    subscription = get_active_subscription(user_id)
+
+    if not subscription:
+        return False
+
+    return subscription["status"] == "active"
+
+
+def validate_project_access(user_id, project_id):
+    if project_id is None:
+        return True
+
+    connection = get_db()
+
+    row = connection.execute(
+        """
+        SELECT id
+        FROM projects
+        WHERE id = ?
+        AND user_id = ?
+        """,
+        (
+            project_id,
+            user_id
+        )
+    ).fetchone()
+
+    connection.close()
+
+    return row is not None
+
+
+def create_conversation(
+    user_id,
+    project_id=None,
+    title="New Conversation"
+):
+    connection = get_db()
+
+    cursor = connection.execute(
+        """
+        INSERT INTO conversations (
+            user_id,
+            project_id,
+            title
+        )
+        VALUES (?, ?, ?)
+        """,
+        (
+            user_id,
+            project_id,
+            title
+        )
+    )
+
+    connection.commit()
+    conversation_id = cursor.lastrowid
+    connection.close()
+
+    return conversation_id
+
+
+def save_conversation_message(
+    conversation_id,
+    user_id,
+    role,
+    content,
+    input_tokens=0,
+    output_tokens=0
+):
+    connection = get_db()
+
+    connection.execute(
+        """
+        INSERT INTO conversation_messages (
+            conversation_id,
+            user_id,
+            role,
+            content,
+            input_tokens,
+            output_tokens
+        )
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (
+            conversation_id,
+            user_id,
+            role,
+            content,
+            input_tokens,
+            output_tokens
+        )
+    )
+
+    connection.execute(
+        """
+        UPDATE conversations
+        SET updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+        AND user_id = ?
+        """,
+        (
+            conversation_id,
+            user_id
+        )
+    )
+
+    connection.commit()
+    connection.close()
+
+
+def get_conversation_messages(
+    conversation_id,
+    user_id
+):
+    connection = get_db()
+
+    rows = connection.execute(
+        """
+        SELECT
+            role,
+            content
+        FROM conversation_messages
+        WHERE conversation_id = ?
+        AND user_id = ?
+        ORDER BY id ASC
+        """,
+        (
+            conversation_id,
+            user_id
+        )
+    ).fetchall()
+
+    connection.close()
+
+    return [
+        {
+            "role": row["role"],
+            "content": row["content"]
+        }
+        for row in rows
+    ]
+
+
+def record_ai_usage(
+    user_id,
+    conversation_id,
+    model,
+    input_tokens,
+    output_tokens
+):
+    total_tokens = input_tokens + output_tokens
+
+    connection = get_db()
+
+    connection.execute(
+        """
+        INSERT INTO ai_usage (
+            user_id,
+            conversation_id,
+            model,
+            input_tokens,
+            output_tokens,
+            total_tokens
+        )
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (
+            user_id,
+            conversation_id,
+            model,
+            input_tokens,
+            output_tokens,
+            total_tokens
+        )
+    )
+
+    connection.commit()
+    connection.close()
+
+
+def get_user_usage_total(user_id):
+    connection = get_db()
+
+    row = connection.execute(
+        """
+        SELECT
+            COALESCE(
+                SUM(total_tokens),
+                0
+            ) AS total_tokens
+        FROM ai_usage
+        WHERE user_id = ?
+        """,
+        (user_id,)
+    ).fetchone()
+
+    connection.close()
+
+    return row["total_tokens"]
+
+
+# -------------------------------------------------
+# CONVERSATION API
+# -------------------------------------------------
+
+@app.route("/api/conversations", methods=["GET"])
+@login_required
+def list_conversations():
+    user_id = int(current_user.id)
+
+    connection = get_db()
+
+    rows = connection.execute(
+        """
+        SELECT
+            id,
+            project_id,
+            title,
+            created_at,
+            updated_at
+        FROM conversations
+        WHERE user_id = ?
+        ORDER BY updated_at DESC
+        """,
+        (user_id,)
+    ).fetchall()
+
+    connection.close()
+
+    conversations = [
+        {
+            "id": row["id"],
+            "project_id": row["project_id"],
+            "title": row["title"],
+            "created_at": row["created_at"],
+            "updated_at": row["updated_at"]
+        }
+        for row in rows
+    ]
+
+    return jsonify({
+        "conversations": conversations
+    })
+
+
+@app.route(
+    "/api/conversations/<int:conversation_id>",
+    methods=["GET"]
+)
+@login_required
+def get_conversation(conversation_id):
+    user_id = int(current_user.id)
+
+    connection = get_db()
+
+    conversation = connection.execute(
+        """
+        SELECT
+            id,
+            project_id,
+            title,
+            created_at,
+            updated_at
+        FROM conversations
+        WHERE id = ?
+        AND user_id = ?
+        """,
+        (
+            conversation_id,
+            user_id
+        )
+    ).fetchone()
+
+    if not conversation:
+        connection.close()
+        return jsonify({
+            "error": "Conversation not found."
+        }), 404
+
+    rows = connection.execute(
+        """
+        SELECT
+            id,
+            role,
+            content,
+            created_at
+        FROM conversation_messages
+        WHERE conversation_id = ?
+        AND user_id = ?
+        ORDER BY id ASC
+        """,
+        (
+            conversation_id,
+            user_id
+        )
+    ).fetchall()
+
+    connection.close()
+
+    messages = [
+        {
+            "id": row["id"],
+            "role": row["role"],
+            "content": row["content"],
+            "created_at": row["created_at"]
+        }
+        for row in rows
+    ]
+
+    return jsonify({
+        "conversation": {
+            "id": conversation["id"],
+            "project_id": conversation["project_id"],
+            "title": conversation["title"],
+            "created_at": conversation["created_at"],
+            "updated_at": conversation["updated_at"]
+        },
+        "messages": messages
+    })
+
+
+@app.route(
+    "/api/conversations/<int:conversation_id>",
+    methods=["DELETE"]
+)
+@login_required
+def delete_conversation(conversation_id):
+    user_id = int(current_user.id)
+
+    connection = get_db()
+
+    conversation = connection.execute(
+        """
+        SELECT id
+        FROM conversations
+        WHERE id = ?
+        AND user_id = ?
+        """,
+        (
+            conversation_id,
+            user_id
+        )
+    ).fetchone()
+
+    if not conversation:
+        connection.close()
+        return jsonify({
+            "error": "Conversation not found."
+        }), 404
+
+    connection.execute(
+        """
+        DELETE FROM conversation_messages
+        WHERE conversation_id = ?
+        AND user_id = ?
+        """,
+        (
+            conversation_id,
+            user_id
+        )
+    )
+
+    connection.execute(
+        """
+        DELETE FROM ai_usage
+        WHERE conversation_id = ?
+        AND user_id = ?
+        """,
+        (
+            conversation_id,
+            user_id
+        )
+    )
+
+    connection.execute(
+        """
+        DELETE FROM conversations
+        WHERE id = ?
+        AND user_id = ?
+        """,
+        (
+            conversation_id,
+            user_id
+        )
+    )
+
+    connection.commit()
+    connection.close()
+
+    return jsonify({
+        "success": True
+    })
+
+
+@app.route("/api/ai/usage", methods=["GET"])
+@login_required
+def ai_usage():
+    user_id = int(current_user.id)
+
+    subscription = get_active_subscription(
+        user_id
+    )
+
+    return jsonify({
+        "total_tokens": get_user_usage_total(
+            user_id
+        ),
+        "subscription": {
+            "plan": (
+                subscription["plan"]
+                if subscription
+                else "none"
+            ),
+            "status": (
+                subscription["status"]
+                if subscription
+                else "inactive"
+            )
+        }
+    })
 
 
 # -------------------------------------------------
@@ -322,7 +748,6 @@ def v3():
 @app.route("/chat", methods=["POST"])
 @login_required
 def chat():
-
     data = request.get_json() or {}
 
     user_message = data.get(
@@ -330,20 +755,113 @@ def chat():
         ""
     ).strip()
 
-    conversation_history = data.get(
-        "history",
-        []
-    )
-
     if not user_message:
         return jsonify({
             "error": "A message is required."
         }), 400
 
+    user_id = int(current_user.id)
 
-    # -------------------------------------------------
-    # OPENAI MESSAGE CONTEXT
-    # -------------------------------------------------
+    if not user_has_ai_access(user_id):
+        return jsonify({
+            "error": "subscription_required",
+            "message": (
+                "Nova AI requires an active subscription."
+            )
+        }), 402
+
+    project_id = data.get("project_id")
+
+    if project_id is not None:
+        try:
+            project_id = int(project_id)
+        except (TypeError, ValueError):
+            return jsonify({
+                "error": "Invalid project."
+            }), 400
+
+        if not validate_project_access(
+            user_id,
+            project_id
+        ):
+            return jsonify({
+                "error": "Project not found."
+            }), 404
+
+    conversation_id = data.get(
+        "conversation_id"
+    )
+
+    if conversation_id is not None:
+        try:
+            conversation_id = int(
+                conversation_id
+            )
+        except (TypeError, ValueError):
+            return jsonify({
+                "error": "Invalid conversation."
+            }), 400
+
+        connection = get_db()
+
+        conversation = connection.execute(
+            """
+            SELECT
+                id,
+                project_id
+            FROM conversations
+            WHERE id = ?
+            AND user_id = ?
+            """,
+            (
+                conversation_id,
+                user_id
+            )
+        ).fetchone()
+
+        connection.close()
+
+        if not conversation:
+            return jsonify({
+                "error": "Conversation not found."
+            }), 404
+
+        if (
+            project_id is not None
+            and conversation["project_id"] not in (
+                None,
+                project_id
+            )
+        ):
+            return jsonify({
+                "error": (
+                    "Conversation does not belong "
+                    "to this project."
+                )
+            }), 400
+
+    else:
+        title = user_message[:60]
+
+        conversation_id = create_conversation(
+            user_id,
+            project_id,
+            title
+        )
+
+    conversation_history = (
+        get_conversation_messages(
+            conversation_id,
+            user_id
+        )
+    )
+
+    save_conversation_message(
+        conversation_id,
+        user_id,
+        "user",
+        user_message
+    )
 
     messages = [
         {
@@ -360,9 +878,38 @@ def chat():
         }
     ]
 
+    if project_id is not None:
+        connection = get_db()
+
+        project = connection.execute(
+            """
+            SELECT
+                name,
+                description
+            FROM projects
+            WHERE id = ?
+            AND user_id = ?
+            """,
+            (
+                project_id,
+                user_id
+            )
+        ).fetchone()
+
+        connection.close()
+
+        if project:
+            messages.append({
+                "role": "system",
+                "content": (
+                    f"The user is currently working inside "
+                    f"a Nova project named '{project['name']}'. "
+                    f"Project description: "
+                    f"{project['description'] or 'No description.'}"
+                )
+            })
 
     for item in conversation_history:
-
         role = item.get("role")
 
         content = item.get(
@@ -374,129 +921,86 @@ def chat():
             role in ("user", "assistant")
             and content
         ):
-
             messages.append({
                 "role": role,
                 "content": content
             })
-
-
-    messages.append({
-        "role": "system",
-        "content": (
-            f"The current conversation contains "
-            f"{len(conversation_history)} previous messages. "
-            f"Use the earlier discussion when answering "
-            f"if it is relevant."
-        )
-    })
-
 
     messages.append({
         "role": "user",
         "content": user_message
     })
 
-
     lower_message = user_message.lower()
 
-
-    # -------------------------------------------------
     # TRADE HISTORY
-    # -------------------------------------------------
-
     if "trade history" in lower_message:
-
-        trades = get_trade_history(
-    int(current_user.id)
-)
+        trades = get_trade_history(user_id)
 
         if not trades:
-
-            return jsonify({
-                "reply": (
-                    "📜 Trade History\n\n"
-                    "No paper trades recorded yet."
-                )
-            })
-
-        history_text = ""
-
-        for trade in reversed(trades):
-
-            history_text += (
-                f"\n\n{trade['action']} "
-                f"{trade['symbol']}\n"
-                f"Shares: {trade['shares']}\n"
-                f"Price: ${trade['price']:.2f}\n"
-                f"Total: ${trade['total']:.2f}\n"
-                f"Time: {trade['timestamp']}"
+            reply = (
+                "📜 Trade History\n\n"
+                "No paper trades recorded yet."
             )
+        else:
+            history_text = ""
 
-        return jsonify({
-            "reply": (
+            for trade in reversed(trades):
+                history_text += (
+                    f"\n\n{trade['action']} "
+                    f"{trade['symbol']}\n"
+                    f"Shares: {trade['shares']}\n"
+                    f"Price: ${trade['price']:.2f}\n"
+                    f"Total: ${trade['total']:.2f}\n"
+                    f"Time: {trade['timestamp']}"
+                )
+
+            reply = (
                 f"📜 Paper Trade History"
                 f"{history_text}\n\n"
                 f"🧪 Simulation Mode"
             )
+
+        save_conversation_message(
+            conversation_id,
+            user_id,
+            "assistant",
+            reply
+        )
+
+        return jsonify({
+            "reply": reply,
+            "conversation_id": conversation_id
         })
 
-
-    # -------------------------------------------------
     # SHOW PORTFOLIO
-    # -------------------------------------------------
-
     if "portfolio" in lower_message:
-
-        portfolio = get_portfolio(
-    int(current_user.id)
-)
-
+        portfolio = get_portfolio(user_id)
         positions = portfolio["positions"]
 
         total_positions_value = 0
-
         position_text = ""
 
-
         for symbol, position in positions.items():
-
             stock = analyze_stock(symbol)
 
             if "error" in stock:
-
                 current_price = position[
                     "average_price"
                 ]
-
             else:
-
                 current_price = stock["price"]
 
-
             shares = position["shares"]
-
             average_price = position[
                 "average_price"
             ]
 
+            market_value = shares * current_price
+            cost_basis = shares * average_price
+            profit_loss = market_value - cost_basis
 
-            market_value = (
-                shares * current_price
-            )
-
-            cost_basis = (
-                shares * average_price
-            )
-
-            profit_loss = (
-                market_value - cost_basis
-            )
-
-            total_positions_value += (
-                market_value
-            )
-
+            total_positions_value += market_value
 
             position_text += (
                 f"\n\n📈 {symbol}\n"
@@ -510,205 +1014,169 @@ def chat():
                 f"P/L: ${profit_loss:+.2f}"
             )
 
-
         if not positions:
-
-            position_text = (
-                "\n\nNo positions yet."
-            )
-
+            position_text = "\n\nNo positions yet."
 
         portfolio_value = (
             portfolio["cash"]
             + total_positions_value
         )
 
-
         total_profit_loss = (
             portfolio_value
             - 10000.00
         )
 
+        reply = (
+            f"💼 Paper Portfolio\n\n"
+            f"💵 Cash: "
+            f"${portfolio['cash']:.2f}\n"
+            f"📊 Investments: "
+            f"${total_positions_value:.2f}\n"
+            f"💰 Portfolio Value: "
+            f"${portfolio_value:.2f}\n"
+            f"📈 Total P/L: "
+            f"${total_profit_loss:+.2f}"
+            f"{position_text}\n\n"
+            f"🧪 Simulation Mode"
+        )
+
+        save_conversation_message(
+            conversation_id,
+            user_id,
+            "assistant",
+            reply
+        )
 
         return jsonify({
-            "reply": (
-                f"💼 Paper Portfolio\n\n"
-                f"💵 Cash: "
-                f"${portfolio['cash']:.2f}\n"
-                f"📊 Investments: "
-                f"${total_positions_value:.2f}\n"
-                f"💰 Portfolio Value: "
-                f"${portfolio_value:.2f}\n"
-                f"📈 Total P/L: "
-                f"${total_profit_loss:+.2f}"
-                f"{position_text}\n\n"
-                f"🧪 Simulation Mode"
-            )
+            "reply": reply,
+            "conversation_id": conversation_id
         })
 
-
-    # -------------------------------------------------
     # BUY
-    # Example:
-    # buy AAPL 2
-    # -------------------------------------------------
-
     if lower_message.startswith("buy "):
-
         parts = user_message.split()
 
         if len(parts) != 3:
-
-            return jsonify({
-                "reply": (
-                    "Use this format:\n"
-                    "buy AAPL 2"
-                )
-            })
-
-        symbol = parts[1].upper()
-
-        try:
-
-            shares = float(
-                parts[2]
+            reply = (
+                "Use this format:\n"
+                "buy AAPL 2"
             )
+        else:
+            symbol = parts[1].upper()
 
-        except ValueError:
+            try:
+                shares = float(parts[2])
+            except ValueError:
+                shares = None
 
-            return jsonify({
-                "reply": (
-                    "Enter shares as a number."
-                )
-            })
+            if shares is None:
+                reply = "Enter shares as a number."
+            else:
+                stock = analyze_stock(symbol)
 
+                if "error" in stock:
+                    reply = (
+                        f"Stock Agent Error: "
+                        f"{stock['error']}"
+                    )
+                else:
+                    result = buy_stock(
+                        user_id,
+                        symbol,
+                        shares,
+                        stock["price"]
+                    )
 
-        stock = analyze_stock(symbol)
+                    if "error" in result:
+                        reply = result["error"]
+                    else:
+                        reply = (
+                            f"✅ Paper Trade Executed\n\n"
+                            f"Bought {result['shares']} "
+                            f"shares of {result['symbol']}\n"
+                            f"Price: ${result['price']}\n"
+                            f"Cost: ${result['cost']}\n\n"
+                            f"Cash Remaining: "
+                            f"${result['cash']}\n"
+                            f"🧪 Simulation Mode"
+                        )
 
-        if "error" in stock:
-
-            return jsonify({
-                "reply": (
-                    f"Stock Agent Error: "
-                    f"{stock['error']}"
-                )
-            })
-
-
-        result = buy_stock(
-    int(current_user.id),
-    symbol,
-    shares,
-    stock["price"]
-)
-
-
-        if "error" in result:
-
-            return jsonify({
-                "reply": result["error"]
-            })
-
+        save_conversation_message(
+            conversation_id,
+            user_id,
+            "assistant",
+            reply
+        )
 
         return jsonify({
-            "reply": (
-                f"✅ Paper Trade Executed\n\n"
-                f"Bought {result['shares']} "
-                f"shares of {result['symbol']}\n"
-                f"Price: ${result['price']}\n"
-                f"Cost: ${result['cost']}\n\n"
-                f"Cash Remaining: "
-                f"${result['cash']}\n"
-                f"🧪 Simulation Mode"
-            )
+            "reply": reply,
+            "conversation_id": conversation_id
         })
 
-
-    # -------------------------------------------------
     # SELL
-    # Example:
-    # sell AAPL 1
-    # -------------------------------------------------
-
     if lower_message.startswith("sell "):
-
         parts = user_message.split()
 
         if len(parts) != 3:
-
-            return jsonify({
-                "reply": (
-                    "Use this format:\n"
-                    "sell AAPL 1"
-                )
-            })
-
-
-        symbol = parts[1].upper()
-
-
-        try:
-
-            shares = float(
-                parts[2]
+            reply = (
+                "Use this format:\n"
+                "sell AAPL 1"
             )
+        else:
+            symbol = parts[1].upper()
 
-        except ValueError:
+            try:
+                shares = float(parts[2])
+            except ValueError:
+                shares = None
 
-            return jsonify({
-                "reply": (
-                    "Enter shares as a number."
-                )
-            })
+            if shares is None:
+                reply = "Enter shares as a number."
+            else:
+                stock = analyze_stock(symbol)
 
+                if "error" in stock:
+                    reply = (
+                        f"Stock Agent Error: "
+                        f"{stock['error']}"
+                    )
+                else:
+                    result = sell_stock(
+                        user_id,
+                        symbol,
+                        shares,
+                        stock["price"]
+                    )
 
-        stock = analyze_stock(symbol)
+                    if "error" in result:
+                        reply = result["error"]
+                    else:
+                        reply = (
+                            f"✅ Paper Trade Executed\n\n"
+                            f"Sold {result['shares']} "
+                            f"shares of {result['symbol']}\n"
+                            f"Price: ${result['price']}\n"
+                            f"Proceeds: "
+                            f"${result['proceeds']}\n\n"
+                            f"Cash Available: "
+                            f"${result['cash']}\n"
+                            f"🧪 Simulation Mode"
+                        )
 
-
-        if "error" in stock:
-
-            return jsonify({
-                "reply": (
-                    f"Stock Agent Error: "
-                    f"{stock['error']}"
-                )
-            })
-
-
-        result = sell_stock(
-    int(current_user.id),
-    symbol,
-    shares,
-    stock["price"]
-)
-
-
-        if "error" in result:
-
-            return jsonify({
-                "reply": result["error"]
-            })
-
+        save_conversation_message(
+            conversation_id,
+            user_id,
+            "assistant",
+            reply
+        )
 
         return jsonify({
-            "reply": (
-                f"✅ Paper Trade Executed\n\n"
-                f"Sold {result['shares']} "
-                f"shares of {result['symbol']}\n"
-                f"Price: ${result['price']}\n"
-                f"Proceeds: "
-                f"${result['proceeds']}\n\n"
-                f"Cash Available: "
-                f"${result['cash']}\n"
-                f"🧪 Simulation Mode"
-            )
+            "reply": reply,
+            "conversation_id": conversation_id
         })
 
-
-    # -------------------------------------------------
     # STOCK ANALYSIS
-    # -------------------------------------------------
-
     stock_keywords = [
         "aapl",
         "tsla",
@@ -719,138 +1187,167 @@ def chat():
         "analyze"
     ]
 
-
     if any(
         word in lower_message
         for word in stock_keywords
     ):
-
         symbol = None
 
-
         if "aapl" in lower_message:
-
             symbol = "AAPL"
-
-
         elif "tsla" in lower_message:
-
             symbol = "TSLA"
-
-
         elif (
             "btc" in lower_message
             or "bitcoin" in lower_message
         ):
-
             symbol = "BTC"
 
-
         if symbol:
-
-            result = analyze_stock(
-                symbol
-            )
-
+            result = analyze_stock(symbol)
 
             if "error" in result:
+                reply = (
+                    f"Stock Agent Error: "
+                    f"{result['error']}"
+                )
+
+                save_conversation_message(
+                    conversation_id,
+                    user_id,
+                    "assistant",
+                    reply
+                )
 
                 return jsonify({
-                    "reply": (
-                        f"Stock Agent Error: "
-                        f"{result['error']}"
-                    )
+                    "reply": reply,
+                    "conversation_id": conversation_id
                 })
 
+            reply = (
+                f"📈 {result['company']} "
+                f"({result['symbol']})\n\n"
+                f"💲 Current Price: "
+                f"${result['price']}\n"
+                f"📊 Daily Change: "
+                f"{result['change']}%\n\n"
+                f"📉 20-Day Average: "
+                f"${result['ma20']}\n"
+                f"📉 50-Day Average: "
+                f"${result['ma50']}\n"
+                f"⚡ RSI (14): "
+                f"{result['rsi']}\n"
+                f"🚀 5-Day Momentum: "
+                f"{result['momentum']}%\n"
+                f"⚠️ Volatility: "
+                f"{result['volatility']}%\n\n"
+                f"🧠 Nova Score: "
+                f"{result['score']}/100\n"
+                f"🎯 Signal: "
+                f"{result['signal']}\n"
+                f"⚠️ Risk: "
+                f"{result['risk']}\n\n"
+                f"💡 Analysis:\n"
+                f"{result['reason']}\n\n"
+                f"🌐 {result['mode']}"
+            )
+
+            save_conversation_message(
+                conversation_id,
+                user_id,
+                "assistant",
+                reply
+            )
 
             return jsonify({
-
-                "reply": (
-
-                    f"📈 {result['company']} "
-                    f"({result['symbol']})\n\n"
-
-                    f"💲 Current Price: "
-                    f"${result['price']}\n"
-
-                    f"📊 Daily Change: "
-                    f"{result['change']}%\n\n"
-
-                    f"📉 20-Day Average: "
-                    f"${result['ma20']}\n"
-
-                    f"📉 50-Day Average: "
-                    f"${result['ma50']}\n"
-
-                    f"⚡ RSI (14): "
-                    f"{result['rsi']}\n"
-
-                    f"🚀 5-Day Momentum: "
-                    f"{result['momentum']}%\n"
-
-                    f"⚠️ Volatility: "
-                    f"{result['volatility']}%\n\n"
-
-                    f"🧠 Nova Score: "
-                    f"{result['score']}/100\n"
-
-                    f"🎯 Signal: "
-                    f"{result['signal']}\n"
-
-                    f"⚠️ Risk: "
-                    f"{result['risk']}\n\n"
-
-                    f"💡 Analysis:\n"
-                    f"{result['reason']}\n\n"
-
-                    f"🌐 {result['mode']}"
-                ),
-
+                "reply": reply,
+                "conversation_id": conversation_id,
                 "stock_data": {
-
-                    "symbol":
-                        result["symbol"],
-
-                    "dates":
-                        result["chart_dates"],
-
-                    "prices":
-                        result["chart_prices"],
-
-                    "ma20":
-                        result["chart_ma20"],
-
-                    "ma50":
-                        result["chart_ma50"]
+                    "symbol": result["symbol"],
+                    "dates": result["chart_dates"],
+                    "prices": result["chart_prices"],
+                    "ma20": result["chart_ma20"],
+                    "ma50": result["chart_ma50"]
                 }
             })
 
-
-    # -------------------------------------------------
     # NORMAL OPENAI CHAT
-    # -------------------------------------------------
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=messages
+        )
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=messages
-    )
+        reply = (
+            response
+            .choices[0]
+            .message
+            .content
+            or ""
+        )
 
+        usage = response.usage
 
-    reply = (
-        response
-        .choices[0]
-        .message
-        .content
-    )
+        input_tokens = (
+            usage.prompt_tokens
+            if usage
+            else 0
+        )
 
+        output_tokens = (
+            usage.completion_tokens
+            if usage
+            else 0
+        )
 
-    return jsonify({
-        "reply": reply
-    })
+        save_conversation_message(
+            conversation_id,
+            user_id,
+            "assistant",
+            reply,
+            input_tokens=0,
+            output_tokens=output_tokens
+        )
+
+        record_ai_usage(
+            user_id,
+            conversation_id,
+            "gpt-4o-mini",
+            input_tokens,
+            output_tokens
+        )
+
+        return jsonify({
+            "reply": reply,
+            "conversation_id": conversation_id,
+            "usage": {
+                "input_tokens": input_tokens,
+                "output_tokens": output_tokens,
+                "total_tokens": (
+                    input_tokens
+                    + output_tokens
+                )
+            }
+        })
+
+    except Exception as error:
+        print(
+            "Nova AI error:",
+            repr(error)
+        )
+
+        return jsonify({
+            "error": "ai_unavailable",
+            "message": (
+                "Nova is temporarily unavailable. "
+                "Please try again shortly."
+            ),
+            "conversation_id": conversation_id
+        }), 503
 
 
 # -------------------------------------------------
-# RUN
+# PROJECTS
 # -------------------------------------------------
 
 @app.route("/api/projects", methods=["GET"])
@@ -859,8 +1356,6 @@ def list_projects():
     projects = get_projects(
         int(current_user.id)
     )
-
-    print(projects)
 
     return jsonify({
         "projects": projects
@@ -872,8 +1367,15 @@ def list_projects():
 def add_project():
     data = request.get_json() or {}
 
-    name = data.get("name", "").strip()
-    description = data.get("description", "").strip()
+    name = data.get(
+        "name",
+        ""
+    ).strip()
+
+    description = data.get(
+        "description",
+        ""
+    ).strip()
 
     result = create_project(
         int(current_user.id),
@@ -886,9 +1388,26 @@ def add_project():
 
     return jsonify(result), 201
 
-@app.route("/api/projects/<int:project_id>/notes", methods=["GET"])
+
+# -------------------------------------------------
+# PROJECT NOTES
+# -------------------------------------------------
+
+@app.route(
+    "/api/projects/<int:project_id>/notes",
+    methods=["GET"]
+)
 @login_required
 def get_project_notes(project_id):
+    user_id = int(current_user.id)
+
+    if not validate_project_access(
+        user_id,
+        project_id
+    ):
+        return jsonify({
+            "error": "Project not found."
+        }), 404
 
     connection = get_db()
 
@@ -901,23 +1420,38 @@ def get_project_notes(project_id):
         """,
         (
             project_id,
-            int(current_user.id)
+            user_id
         )
     ).fetchone()
 
     connection.close()
 
     return jsonify({
-        "content": row["content"] if row else ""
+        "content": (
+            row["content"]
+            if row
+            else ""
+        )
     })
 
 
-@app.route("/api/projects/<int:project_id>/notes", methods=["POST"])
+@app.route(
+    "/api/projects/<int:project_id>/notes",
+    methods=["POST"]
+)
 @login_required
 def save_project_notes(project_id):
+    user_id = int(current_user.id)
+
+    if not validate_project_access(
+        user_id,
+        project_id
+    ):
+        return jsonify({
+            "error": "Project not found."
+        }), 404
 
     data = request.get_json() or {}
-
     content = data.get("content", "")
 
     connection = get_db()
@@ -933,11 +1467,12 @@ def save_project_notes(project_id):
 
         ON CONFLICT(project_id)
         DO UPDATE SET
+            user_id = excluded.user_id,
             content = excluded.content,
             updated_at = CURRENT_TIMESTAMP
         """,
         (
-            int(current_user.id),
+            user_id,
             project_id,
             content
         )
@@ -950,9 +1485,26 @@ def save_project_notes(project_id):
         "success": True
     })
 
-@app.route("/api/projects/<int:project_id>/tasks", methods=["GET"])
+
+# -------------------------------------------------
+# PROJECT TASKS
+# -------------------------------------------------
+
+@app.route(
+    "/api/projects/<int:project_id>/tasks",
+    methods=["GET"]
+)
 @login_required
 def get_project_tasks(project_id):
+    user_id = int(current_user.id)
+
+    if not validate_project_access(
+        user_id,
+        project_id
+    ):
+        return jsonify({
+            "error": "Project not found."
+        }), 404
 
     connection = get_db()
 
@@ -971,7 +1523,7 @@ def get_project_tasks(project_id):
         """,
         (
             project_id,
-            int(current_user.id)
+            user_id
         )
     ).fetchall()
 
@@ -993,12 +1545,23 @@ def get_project_tasks(project_id):
     })
 
 
-@app.route("/api/projects/<int:project_id>/tasks", methods=["POST"])
+@app.route(
+    "/api/projects/<int:project_id>/tasks",
+    methods=["POST"]
+)
 @login_required
 def create_project_task(project_id):
+    user_id = int(current_user.id)
+
+    if not validate_project_access(
+        user_id,
+        project_id
+    ):
+        return jsonify({
+            "error": "Project not found."
+        }), 404
 
     data = request.get_json() or {}
-
     title = data.get("title", "").strip()
 
     if not title:
@@ -1019,16 +1582,14 @@ def create_project_task(project_id):
         VALUES (?, ?, ?, 0)
         """,
         (
-            int(current_user.id),
+            user_id,
             project_id,
             title
         )
     )
 
     connection.commit()
-
     task_id = cursor.lastrowid
-
     connection.close()
 
     return jsonify({
@@ -1046,12 +1607,18 @@ def create_project_task(project_id):
     methods=["PATCH"]
 )
 @login_required
-def update_project_task(project_id, task_id):
+def update_project_task(
+    project_id,
+    task_id
+):
+    user_id = int(current_user.id)
 
     data = request.get_json() or {}
-
     completed = bool(
-        data.get("completed", False)
+        data.get(
+            "completed",
+            False
+        )
     )
 
     connection = get_db()
@@ -1070,7 +1637,7 @@ def update_project_task(project_id, task_id):
             int(completed),
             task_id,
             project_id,
-            int(current_user.id)
+            user_id
         )
     )
 
@@ -1092,7 +1659,11 @@ def update_project_task(project_id, task_id):
     methods=["DELETE"]
 )
 @login_required
-def delete_project_task(project_id, task_id):
+def delete_project_task(
+    project_id,
+    task_id
+):
+    user_id = int(current_user.id)
 
     connection = get_db()
 
@@ -1106,7 +1677,7 @@ def delete_project_task(project_id, task_id):
         (
             task_id,
             project_id,
-            int(current_user.id)
+            user_id
         )
     )
 
@@ -1122,9 +1693,61 @@ def delete_project_task(project_id, task_id):
         "success": True
     })
 
-@app.route("/api/projects/<int:project_id>/files", methods=["GET"])
+
+# -------------------------------------------------
+# PROJECT FILES
+# -------------------------------------------------
+
+MAX_FILE_SIZE = 10 * 1024 * 1024
+
+ALLOWED_EXTENSIONS = {
+    "png",
+    "jpg",
+    "jpeg",
+    "gif",
+    "webp",
+    "pdf",
+    "txt",
+    "md",
+    "csv",
+    "json",
+    "py",
+    "js",
+    "html",
+    "css",
+    "doc",
+    "docx"
+}
+
+
+def allowed_file(filename):
+    if "." not in filename:
+        return False
+
+    extension = (
+        filename
+        .rsplit(".", 1)[1]
+        .lower()
+    )
+
+    return extension in ALLOWED_EXTENSIONS
+
+
+@app.route(
+    "/api/projects/<int:project_id>/files",
+    methods=["GET"]
+)
 @login_required
 def get_project_files(project_id):
+    user_id = int(current_user.id)
+
+    if not validate_project_access(
+        user_id,
+        project_id
+    ):
+        return jsonify({
+            "error": "Project not found."
+        }), 404
 
     connection = get_db()
 
@@ -1134,6 +1757,8 @@ def get_project_files(project_id):
             id,
             filename,
             stored_name,
+            file_size,
+            mime_type,
             uploaded_at
         FROM project_files
         WHERE project_id = ?
@@ -1142,7 +1767,7 @@ def get_project_files(project_id):
         """,
         (
             project_id,
-            int(current_user.id)
+            user_id
         )
     ).fetchall()
 
@@ -1153,6 +1778,8 @@ def get_project_files(project_id):
             "id": row["id"],
             "filename": row["filename"],
             "stored_name": row["stored_name"],
+            "file_size": row["file_size"],
+            "mime_type": row["mime_type"],
             "uploaded_at": row["uploaded_at"]
         }
         for row in rows
@@ -1163,9 +1790,21 @@ def get_project_files(project_id):
     })
 
 
-@app.route("/api/projects/<int:project_id>/files", methods=["POST"])
+@app.route(
+    "/api/projects/<int:project_id>/files",
+    methods=["POST"]
+)
 @login_required
 def upload_project_file(project_id):
+    user_id = int(current_user.id)
+
+    if not validate_project_access(
+        user_id,
+        project_id
+    ):
+        return jsonify({
+            "error": "Project not found."
+        }), 404
 
     if "file" not in request.files:
         return jsonify({
@@ -1179,15 +1818,43 @@ def upload_project_file(project_id):
             "error": "No file was selected."
         }), 400
 
-    original_name = uploaded_file.filename
+    if not allowed_file(
+        uploaded_file.filename
+    ):
+        return jsonify({
+            "error": "This file type is not allowed."
+        }), 400
 
-    safe_name = original_name.replace("/", "_")
+    uploaded_file.seek(
+        0,
+        os.SEEK_END
+    )
+
+    file_size = uploaded_file.tell()
+    uploaded_file.seek(0)
+
+    if file_size > MAX_FILE_SIZE:
+        return jsonify({
+            "error": (
+                "File is too large. "
+                "Maximum size is 10 MB."
+            )
+        }), 400
+
+    original_name = secure_filename(
+        uploaded_file.filename
+    )
+
+    if not original_name:
+        return jsonify({
+            "error": "Invalid file name."
+        }), 400
 
     unique_name = (
-        f"{current_user.id}_"
+        f"{user_id}_"
         f"{project_id}_"
-        f"{int(__import__('time').time())}_"
-        f"{safe_name}"
+        f"{uuid.uuid4().hex}_"
+        f"{original_name}"
     )
 
     upload_folder = os.path.join(
@@ -1207,29 +1874,47 @@ def upload_project_file(project_id):
 
     uploaded_file.save(file_path)
 
-    connection = get_db()
-
-    cursor = connection.execute(
-        """
-        INSERT INTO project_files (
-            user_id,
-            project_id,
-            filename,
-            stored_name
-        )
-        VALUES (?, ?, ?, ?)
-        """,
-        (
-            int(current_user.id),
-            project_id,
-            original_name,
-            unique_name
-        )
+    mime_type = (
+        uploaded_file.mimetype
+        or ""
     )
 
-    connection.commit()
+    connection = get_db()
 
-    file_id = cursor.lastrowid
+    try:
+        cursor = connection.execute(
+            """
+            INSERT INTO project_files (
+                user_id,
+                project_id,
+                filename,
+                stored_name,
+                file_size,
+                mime_type
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                user_id,
+                project_id,
+                original_name,
+                unique_name,
+                file_size,
+                mime_type
+            )
+        )
+
+        connection.commit()
+        file_id = cursor.lastrowid
+
+    except Exception:
+        connection.rollback()
+
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+        connection.close()
+        raise
 
     connection.close()
 
@@ -1238,12 +1923,133 @@ def upload_project_file(project_id):
         "file": {
             "id": file_id,
             "filename": original_name,
-            "stored_name": unique_name
+            "file_size": file_size,
+            "mime_type": mime_type
         }
     }), 201
 
-if __name__ == "__main__":
 
+@app.route(
+    "/api/projects/<int:project_id>/files/<int:file_id>/download",
+    methods=["GET"]
+)
+@login_required
+def download_project_file(
+    project_id,
+    file_id
+):
+    user_id = int(current_user.id)
+
+    connection = get_db()
+
+    row = connection.execute(
+        """
+        SELECT
+            filename,
+            stored_name
+        FROM project_files
+        WHERE id = ?
+        AND project_id = ?
+        AND user_id = ?
+        """,
+        (
+            file_id,
+            project_id,
+            user_id
+        )
+    ).fetchone()
+
+    connection.close()
+
+    if not row:
+        return jsonify({
+            "error": "File not found."
+        }), 404
+
+    upload_folder = os.path.join(
+        app.root_path,
+        "uploads"
+    )
+
+    return send_from_directory(
+        upload_folder,
+        row["stored_name"],
+        as_attachment=True,
+        download_name=row["filename"]
+    )
+
+
+@app.route(
+    "/api/projects/<int:project_id>/files/<int:file_id>",
+    methods=["DELETE"]
+)
+@login_required
+def delete_project_file(
+    project_id,
+    file_id
+):
+    user_id = int(current_user.id)
+
+    connection = get_db()
+
+    row = connection.execute(
+        """
+        SELECT stored_name
+        FROM project_files
+        WHERE id = ?
+        AND project_id = ?
+        AND user_id = ?
+        """,
+        (
+            file_id,
+            project_id,
+            user_id
+        )
+    ).fetchone()
+
+    if not row:
+        connection.close()
+
+        return jsonify({
+            "error": "File not found."
+        }), 404
+
+    connection.execute(
+        """
+        DELETE FROM project_files
+        WHERE id = ?
+        AND project_id = ?
+        AND user_id = ?
+        """,
+        (
+            file_id,
+            project_id,
+            user_id
+        )
+    )
+
+    connection.commit()
+    connection.close()
+
+    file_path = os.path.join(
+        app.root_path,
+        "uploads",
+        row["stored_name"]
+    )
+
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+    return jsonify({
+        "success": True
+    })
+
+
+# -------------------------------------------------
+# RUN
+# -------------------------------------------------
+
+if __name__ == "__main__":
     app.run(
         debug=True,
         host="0.0.0.0",

@@ -1428,3 +1428,99 @@ button {
         grid-template-columns: 1fr;
     }
 }
+.file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 18px;
+
+    padding: 16px 0;
+
+    border-bottom:
+        1px solid rgba(
+            255,
+            255,
+            255,
+            0.06
+        );
+}
+
+.file-info {
+    display: flex;
+    flex-direction: column;
+
+    gap: 6px;
+}
+
+.file-info small {
+    color: var(--muted);
+}
+
+.file-actions {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+}
+
+.file-actions a {
+    text-decoration: none;
+}
+
+.task-delete {
+    padding: 9px 12px;
+
+    border: 1px solid rgba(
+        239,
+        68,
+        68,
+        0.35
+    );
+
+    border-radius: 10px;
+
+    background: rgba(
+        239,
+        68,
+        68,
+        0.1
+    );
+
+    color: #fca5a5;
+
+    cursor: pointer;
+}
+
+.conversation-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+}
+
+.conversation-row .conversation-item {
+    flex: 1;
+    text-align: left;
+}
+
+.conversation-delete {
+    width: 30px;
+    height: 30px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: transparent;
+
+    color: #9ca3af;
+
+    cursor: pointer;
+
+    font-size: 18px;
+}
+
+.conversation-delete:hover {
+    background: rgba(239, 68, 68, 0.12);
+    color: #fca5a5;
+}
