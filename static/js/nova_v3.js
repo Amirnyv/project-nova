@@ -3230,3 +3230,145 @@ function prepareProjectConversation(
 restoreLatestConversation();
 
 loadConversations();
+
+// ========================================
+// NOVA V3 - PART 11E
+// SETTINGS - AI USAGE
+// ========================================
+
+const settingsPlan =
+    document.getElementById(
+        "settings-plan"
+    );
+
+const settingsSubscriptionStatus =
+    document.getElementById(
+        "settings-subscription-status"
+    );
+
+const settingsAiUsage =
+    document.getElementById(
+        "settings-ai-usage"
+    );
+
+const settingsAiRemaining =
+    document.getElementById(
+        "settings-ai-remaining"
+    );
+
+
+async function loadAiUsage() {
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/ai/usage"
+            );
+
+        if (!response.ok) {
+            throw new Error(
+                "Could not load AI usage."
+            );
+        }
+
+        const data =
+            await response.json();
+
+
+        const plan =
+            data.subscription?.plan
+            || "none";
+
+        const status =
+            data.subscription?.status
+            || "inactive";
+
+
+        if (settingsPlan) {
+
+            settingsPlan.textContent =
+                plan.charAt(0).toUpperCase()
+                + plan.slice(1);
+
+        }
+
+
+        if (
+            settingsSubscriptionStatus
+        ) {
+
+            settingsSubscriptionStatus
+                .textContent =
+                status.charAt(0).toUpperCase()
+                + status.slice(1);
+
+        }
+
+
+        if (settingsAiUsage) {
+
+            if (
+                data.limit === null
+                ||
+                data.limit === undefined
+            ) {
+
+                settingsAiUsage.textContent =
+                    `${data.total_tokens || 0} tokens`;
+
+            }
+
+            else {
+
+                settingsAiUsage.textContent =
+                    `${data.used || 0} / ${data.limit} tokens`;
+
+            }
+
+        }
+
+
+        if (settingsAiRemaining) {
+
+            if (
+                data.remaining === null
+                ||
+                data.remaining === undefined
+            ) {
+
+                settingsAiRemaining.textContent =
+                    "Unlimited";
+
+            }
+
+            else {
+
+                settingsAiRemaining.textContent =
+                    `${data.remaining} tokens`;
+
+            }
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+        if (settingsAiUsage) {
+
+            settingsAiUsage.textContent =
+                "Unavailable";
+
+        }
+
+    }
+
+}
+
+
+loadAiUsage();

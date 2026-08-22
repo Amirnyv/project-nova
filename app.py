@@ -296,6 +296,15 @@ def v3():
 # AI ACCESS + CONVERSATION HELPERS
 # -------------------------------------------------
 
+# -------------------------------------------------
+# AI PLAN LIMITS
+# -------------------------------------------------
+
+PLAN_TOKEN_LIMITS = {
+    "developer": None,
+    "paid": 250000
+}
+
 def get_active_subscription(user_id):
     connection = get_db()
 
@@ -519,6 +528,144 @@ def get_user_usage_total(user_id):
 
     return row["total_tokens"]
 
+def get_current_period_usage(
+    user_id,
+    subscription
+):
+
+    connection = get_db()
+
+    period_start = (
+        subscription[
+            "current_period_start"
+        ]
+    )
+
+    period_end = (
+        subscription[
+            "current_period_end"
+        ]
+    )
+
+
+    if (
+        period_start
+        and period_end
+    ):
+
+        row = connection.execute(
+            """
+            SELECT
+                COALESCE(
+                    SUM(total_tokens),
+                    0
+                ) AS total_tokens
+            FROM ai_usage
+            WHERE user_id = ?
+            AND created_at >= ?
+            AND created_at < ?
+            """,
+            (
+                user_id,
+                period_start,
+                period_end
+            )
+        ).fetchone()
+
+    else:
+
+        row = connection.execute(
+            """
+            SELECT
+                COALESCE(
+                    SUM(total_tokens),
+                    0
+                ) AS total_tokens
+            FROM ai_usage
+            WHERE user_id = ?
+            AND created_at >=
+                datetime(
+                    'now',
+                    'start of month'
+                )
+            """,
+            (
+                user_id,
+            )
+        ).fetchone()
+
+
+    connection.close()
+
+    return int(
+        row["total_tokens"]
+        or 0
+    )
+
+def check_ai_usage_limit(user_id):
+
+    subscription = get_active_subscription(
+        user_id
+    )
+
+    if not subscription:
+
+        return {
+            "allowed": False,
+            "reason": "subscription_required"
+        }
+
+    if subscription["status"] != "active":
+
+        return {
+            "allowed": False,
+            "reason": "subscription_required"
+        }
+
+    plan = subscription["plan"]
+
+    token_limit = PLAN_TOKEN_LIMITS.get(
+        plan
+    )
+
+    if token_limit is None:
+
+        return {
+            "allowed": True,
+            "plan": plan,
+            "used": 0,
+            "limit": None,
+            "remaining": None
+        }
+
+    used = get_current_period_usage(
+        user_id,
+        subscription
+    )
+
+    remaining = max(
+        token_limit - used,
+        0
+    )
+
+    if used >= token_limit:
+
+        return {
+            "allowed": False,
+            "reason": "usage_limit_reached",
+            "plan": plan,
+            "used": used,
+            "limit": token_limit,
+            "remaining": 0
+        }
+
+    return {
+        "allowed": True,
+        "plan": plan,
+        "used": used,
+        "limit": token_limit,
+        "remaining": remaining
+    }
 
 # -------------------------------------------------
 # CONVERSATION API
@@ -716,28 +863,78 @@ def delete_conversation(conversation_id):
 @app.route("/api/ai/usage", methods=["GET"])
 @login_required
 def ai_usage():
+
     user_id = int(current_user.id)
 
     subscription = get_active_subscription(
         user_id
     )
 
+    if not subscription:
+
+        return jsonify({
+            "subscription": {
+                "plan": "none",
+                "status": "inactive"
+            },
+            "used": 0,
+            "limit": 0,
+            "remaining": 0,
+            "total_tokens": get_user_usage_total(
+                user_id
+            )
+        })
+
+    access = check_ai_usage_limit(
+        user_id
+    )
+
+    plan = subscription["plan"]
+
+    token_limit = PLAN_TOKEN_LIMITS.get(
+        plan
+    )
+
+    if token_limit is None:
+
+        period_usage = get_current_period_usage(
+            user_id,
+            subscription
+        )
+
+        return jsonify({
+            "subscription": {
+                "plan": plan,
+                "status": subscription["status"]
+            },
+            "used": period_usage,
+            "limit": None,
+            "remaining": None,
+            "total_tokens": get_user_usage_total(
+                user_id
+            )
+        })
+
     return jsonify({
+        "subscription": {
+            "plan": plan,
+            "status": subscription["status"]
+        },
+        "used": access.get(
+            "used",
+            0
+        ),
+        "limit": access.get(
+            "limit",
+            token_limit
+        ),
+        "remaining": access.get(
+            "remaining",
+            0
+        ),
         "total_tokens": get_user_usage_total(
             user_id
-        ),
-        "subscription": {
-            "plan": (
-                subscription["plan"]
-                if subscription
-                else "none"
-            ),
-            "status": (
-                subscription["status"]
-                if subscription
-                else "inactive"
-            )
-        }
+        )
     })
 
 
@@ -762,7 +959,27 @@ def chat():
 
     user_id = int(current_user.id)
 
-    if not user_has_ai_access(user_id):
+    access = check_ai_usage_limit(
+        user_id
+    )
+
+    if not access["allowed"]:
+
+        if access.get("reason") == "usage_limit_reached":
+
+            return jsonify({
+                "error": "usage_limit_reached",
+                "message": (
+                    "You have reached your AI usage limit "
+                    "for this billing period."
+                ),
+                "usage": {
+                    "used": access.get("used", 0),
+                    "limit": access.get("limit", 0),
+                    "remaining": 0
+                }
+            }), 429
+
         return jsonify({
             "error": "subscription_required",
             "message": (
