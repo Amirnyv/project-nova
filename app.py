@@ -886,6 +886,362 @@ def add_project():
 
     return jsonify(result), 201
 
+@app.route("/api/projects/<int:project_id>/notes", methods=["GET"])
+@login_required
+def get_project_notes(project_id):
+
+    connection = get_db()
+
+    row = connection.execute(
+        """
+        SELECT content
+        FROM project_notes
+        WHERE project_id = ?
+        AND user_id = ?
+        """,
+        (
+            project_id,
+            int(current_user.id)
+        )
+    ).fetchone()
+
+    connection.close()
+
+    return jsonify({
+        "content": row["content"] if row else ""
+    })
+
+
+@app.route("/api/projects/<int:project_id>/notes", methods=["POST"])
+@login_required
+def save_project_notes(project_id):
+
+    data = request.get_json() or {}
+
+    content = data.get("content", "")
+
+    connection = get_db()
+
+    connection.execute(
+        """
+        INSERT INTO project_notes (
+            user_id,
+            project_id,
+            content
+        )
+        VALUES (?, ?, ?)
+
+        ON CONFLICT(project_id)
+        DO UPDATE SET
+            content = excluded.content,
+            updated_at = CURRENT_TIMESTAMP
+        """,
+        (
+            int(current_user.id),
+            project_id,
+            content
+        )
+    )
+
+    connection.commit()
+    connection.close()
+
+    return jsonify({
+        "success": True
+    })
+
+@app.route("/api/projects/<int:project_id>/tasks", methods=["GET"])
+@login_required
+def get_project_tasks(project_id):
+
+    connection = get_db()
+
+    rows = connection.execute(
+        """
+        SELECT
+            id,
+            title,
+            completed,
+            created_at,
+            updated_at
+        FROM project_tasks
+        WHERE project_id = ?
+        AND user_id = ?
+        ORDER BY created_at DESC
+        """,
+        (
+            project_id,
+            int(current_user.id)
+        )
+    ).fetchall()
+
+    connection.close()
+
+    tasks = [
+        {
+            "id": row["id"],
+            "title": row["title"],
+            "completed": bool(row["completed"]),
+            "created_at": row["created_at"],
+            "updated_at": row["updated_at"]
+        }
+        for row in rows
+    ]
+
+    return jsonify({
+        "tasks": tasks
+    })
+
+
+@app.route("/api/projects/<int:project_id>/tasks", methods=["POST"])
+@login_required
+def create_project_task(project_id):
+
+    data = request.get_json() or {}
+
+    title = data.get("title", "").strip()
+
+    if not title:
+        return jsonify({
+            "error": "Task title is required."
+        }), 400
+
+    connection = get_db()
+
+    cursor = connection.execute(
+        """
+        INSERT INTO project_tasks (
+            user_id,
+            project_id,
+            title,
+            completed
+        )
+        VALUES (?, ?, ?, 0)
+        """,
+        (
+            int(current_user.id),
+            project_id,
+            title
+        )
+    )
+
+    connection.commit()
+
+    task_id = cursor.lastrowid
+
+    connection.close()
+
+    return jsonify({
+        "success": True,
+        "task": {
+            "id": task_id,
+            "title": title,
+            "completed": False
+        }
+    }), 201
+
+
+@app.route(
+    "/api/projects/<int:project_id>/tasks/<int:task_id>",
+    methods=["PATCH"]
+)
+@login_required
+def update_project_task(project_id, task_id):
+
+    data = request.get_json() or {}
+
+    completed = bool(
+        data.get("completed", False)
+    )
+
+    connection = get_db()
+
+    cursor = connection.execute(
+        """
+        UPDATE project_tasks
+        SET
+            completed = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+        AND project_id = ?
+        AND user_id = ?
+        """,
+        (
+            int(completed),
+            task_id,
+            project_id,
+            int(current_user.id)
+        )
+    )
+
+    connection.commit()
+    connection.close()
+
+    if cursor.rowcount == 0:
+        return jsonify({
+            "error": "Task not found."
+        }), 404
+
+    return jsonify({
+        "success": True
+    })
+
+
+@app.route(
+    "/api/projects/<int:project_id>/tasks/<int:task_id>",
+    methods=["DELETE"]
+)
+@login_required
+def delete_project_task(project_id, task_id):
+
+    connection = get_db()
+
+    cursor = connection.execute(
+        """
+        DELETE FROM project_tasks
+        WHERE id = ?
+        AND project_id = ?
+        AND user_id = ?
+        """,
+        (
+            task_id,
+            project_id,
+            int(current_user.id)
+        )
+    )
+
+    connection.commit()
+    connection.close()
+
+    if cursor.rowcount == 0:
+        return jsonify({
+            "error": "Task not found."
+        }), 404
+
+    return jsonify({
+        "success": True
+    })
+
+@app.route("/api/projects/<int:project_id>/files", methods=["GET"])
+@login_required
+def get_project_files(project_id):
+
+    connection = get_db()
+
+    rows = connection.execute(
+        """
+        SELECT
+            id,
+            filename,
+            stored_name,
+            uploaded_at
+        FROM project_files
+        WHERE project_id = ?
+        AND user_id = ?
+        ORDER BY uploaded_at DESC
+        """,
+        (
+            project_id,
+            int(current_user.id)
+        )
+    ).fetchall()
+
+    connection.close()
+
+    files = [
+        {
+            "id": row["id"],
+            "filename": row["filename"],
+            "stored_name": row["stored_name"],
+            "uploaded_at": row["uploaded_at"]
+        }
+        for row in rows
+    ]
+
+    return jsonify({
+        "files": files
+    })
+
+
+@app.route("/api/projects/<int:project_id>/files", methods=["POST"])
+@login_required
+def upload_project_file(project_id):
+
+    if "file" not in request.files:
+        return jsonify({
+            "error": "No file was uploaded."
+        }), 400
+
+    uploaded_file = request.files["file"]
+
+    if not uploaded_file.filename:
+        return jsonify({
+            "error": "No file was selected."
+        }), 400
+
+    original_name = uploaded_file.filename
+
+    safe_name = original_name.replace("/", "_")
+
+    unique_name = (
+        f"{current_user.id}_"
+        f"{project_id}_"
+        f"{int(__import__('time').time())}_"
+        f"{safe_name}"
+    )
+
+    upload_folder = os.path.join(
+        app.root_path,
+        "uploads"
+    )
+
+    os.makedirs(
+        upload_folder,
+        exist_ok=True
+    )
+
+    file_path = os.path.join(
+        upload_folder,
+        unique_name
+    )
+
+    uploaded_file.save(file_path)
+
+    connection = get_db()
+
+    cursor = connection.execute(
+        """
+        INSERT INTO project_files (
+            user_id,
+            project_id,
+            filename,
+            stored_name
+        )
+        VALUES (?, ?, ?, ?)
+        """,
+        (
+            int(current_user.id),
+            project_id,
+            original_name,
+            unique_name
+        )
+    )
+
+    connection.commit()
+
+    file_id = cursor.lastrowid
+
+    connection.close()
+
+    return jsonify({
+        "success": True,
+        "file": {
+            "id": file_id,
+            "filename": original_name,
+            "stored_name": unique_name
+        }
+    }), 201
+
 if __name__ == "__main__":
 
     app.run(

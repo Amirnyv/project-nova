@@ -65,79 +65,75 @@ class="create-button">
 
 <nav>
 
-<p class="sidebar-title">
+    <p class="sidebar-title">
+        WORKSPACE
+    </p>
 
-WORKSPACE
+    <button
+        class="sidebar-button active"
+        data-page="dashboard"
+    >
+        🏠 Dashboard
+    </button>
 
-</p>
+    <button
+        class="sidebar-button"
+        data-page="chat"
+    >
+        💬 Nova Chat
+    </button>
 
-<button
-class="sidebar-button active">
+    <button
+        class="sidebar-button"
+        data-page="projects"
+    >
+        📁 Projects
+    </button>
 
-🏠 Dashboard
+    <button
+        class="sidebar-button"
+        data-page="files"
+    >
+        📄 Files
+    </button>
 
-</button>
 
-<button
-class="sidebar-button">
+    <p class="sidebar-title">
+        AI
+    </p>
 
-💬 Nova Chat
+    <button
+        class="sidebar-button"
+        data-page="agents"
+    >
+        🤖 Agents
+    </button>
 
-</button>
+    <button
+        class="sidebar-button"
+        data-page="markets"
+    >
+        📈 Markets
+    </button>
 
-<button
-class="sidebar-button">
+    <button
+        class="sidebar-button"
+        data-page="portfolio"
+    >
+        💼 Portfolio
+    </button>
 
-📁 Projects
 
-</button>
+    <p class="sidebar-title">
+        ACCOUNT
+    </p>
 
-<button
-class="sidebar-button">
-
-📄 Files
-
-</button>
-
-<p class="sidebar-title">
-
-AI
-
-</p>
-
-<button
-class="sidebar-button">
-
-🤖 Agents
-
-</button>
-
-<button
-class="sidebar-button">
-
-📈 Markets
-
-</button>
-
-<button
-class="sidebar-button">
-
-💼 Portfolio
-
-</button>
-
-<p class="sidebar-title">
-
-ACCOUNT
-
-</p>
-
-<button
-class="sidebar-button">
-
-⚙️ Settings
-
-</button>
+    <button
+        class="sidebar-button"
+        data-page="settings"
+    >
+        ⚙️ Settings
+    </button>
 
 </nav>
 
@@ -358,6 +354,114 @@ Pro Workspace
 </section>
 
 <!-- ================================= -->
+<!-- PROJECTS -->
+<!-- ================================= -->
+
+<section
+    id="projects-page"
+    class="page"
+>
+
+    <div class="page-header">
+
+        <div>
+
+            <h1>📁 Projects</h1>
+
+            <p>
+                Build, organize, and manage your workspaces.
+            </p>
+
+        </div>
+
+        <button
+            class="primary-button"
+            id="new-project-button"
+        >
+            + New Project
+        </button>
+
+    </div>
+
+
+    <div class="projects-toolbar">
+
+        <input
+            id="project-search"
+            type="text"
+            placeholder="Search projects..."
+        >
+
+        <select id="project-filter">
+
+            <option>All Projects</option>
+
+            <option>Favorites</option>
+
+            <option>Recently Updated</option>
+
+        </select>
+
+    </div>
+
+
+    <div class="project-overview">
+
+        <div class="overview-card">
+
+            <h3>Total Projects</h3>
+
+            <span id="project-count">
+                0
+            </span>
+
+        </div>
+
+        <div class="overview-card">
+
+            <h3>⭐ Favorites</h3>
+
+            <span>
+                0
+            </span>
+
+        </div>
+
+        <div class="overview-card">
+
+            <h3>💬 AI Chats</h3>
+
+            <span>
+                0
+            </span>
+
+        </div>
+
+        <div class="overview-card">
+
+            <h3>📄 Files</h3>
+
+            <span>
+                0
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div
+        id="projects-list"
+        class="projects-grid"
+    >
+        <div class="loading-state">
+            Loading projects...
+        </div>
+    </div>
+
+</section>
+
+<!-- ================================= -->
 <!-- NOVA CHAT -->
 <!-- ================================= -->
 
@@ -528,17 +632,18 @@ Pro Workspace
 
         <div class="workspace-actions">
 
-            <button class="secondary-button">
-                ⭐ Favorite
-            </button>
+    <button class="secondary-button">
+        ⭐ Favorite
+    </button>
 
-            <button class="primary-button">
-                Ask Nova
-            </button>
+    <button class="primary-button">
+        Ask Nova
+    </button>
+
+</div>
 
         </div>
 
-    </div>
 
 
     <!-- WORKSPACE NAVIGATION -->
@@ -835,15 +940,24 @@ Pro Workspace
 
                 <div class="card-header">
 
-                    <h2>
-                        📄 Project Files
-                    </h2>
+    <h2>
+        📄 Project Files
+    </h2>
 
-                    <button class="primary-button">
-                        + Upload File
-                    </button>
+    <button
+        class="primary-button"
+        id="workspace-upload-button"
+    >
+        + Upload File
+    </button>
 
-                </div>
+    <input
+        id="workspace-file-input"
+        type="file"
+        hidden
+    >
+
+</div>
 
                 <div
                     id="workspace-files-list"
