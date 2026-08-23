@@ -275,6 +275,36 @@ def logout():
 # -------------------------------------------------
 
 @app.route("/")
+def landing():
+    return render_template(
+        "landing.html"
+    )
+
+@app.route("/privacy")
+def privacy():
+    return render_template(
+        "privacy.html"
+    )
+
+@app.route("/refund-policy")
+def refund_policy():
+    return render_template(
+        "refund.html"
+    )
+
+@app.route("/terms")
+def terms():
+    return render_template(
+        "terms.html"
+    )
+
+@app.route("/contact")
+def contact():
+    return render_template(
+        "contact.html"
+    )
+
+@app.route("/app")
 @login_required
 def home():
     return render_template(
@@ -286,9 +316,8 @@ def home():
 @app.route("/v3")
 @login_required
 def v3():
-    return render_template(
-        "index_v3.html",
-        user=current_user
+    return redirect(
+        url_for("home")
     )
 
 

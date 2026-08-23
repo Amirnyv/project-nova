@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Project Nova | Your Intelligent Workspace</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/landing.css') }}"
+    >
+</head>
+
+
+<body>
+
+    <!-- NAVBAR -->
+
+    <nav class="landing-nav">
+
+        <a href="/" class="landing-logo">
+            NOVA
+        </a>
+
+        <div class="nav-links">
+
+            <a href="#features">Features</a>
+
+            <a href="#students">Students</a>
+
+            <a href="#pricing">Pricing</a>
+
+            <a href="#faq">FAQ</a>
+
+        </div>
+
+        <div class="nav-actions">
+
+            <a
+                href="{{ url_for('login') }}"
+                class="login-link"
+            >
+                Log In
+            </a>
+
+            <a
+                href="{{ url_for('signup') }}"
+                class="nav-cta"
+            >
+                Get Started
+            </a>
+
+        </div>
+
+    </nav>
+
+
+    <main>
+
+        <!-- HERO -->
+
+        <section class="hero">
+
+            <div class="hero-badge">
+                ✦ Your AI-powered workspace
+            </div>
+
+            <h1>
+                One workspace.<br>
+                More ways to get things done.
+            </h1>
+
+            <p class="hero-description">
+                Nova brings AI conversations, projects,
+                notes, tasks, files and intelligent assistance
+                together in one workspace built to help you
+                stay organized and move faster.
+            </p>
+
+            <div class="hero-actions">
+
+                <a
+                    href="{{ url_for('signup') }}"
+                    class="primary-button"
+                >
+                    Start with Nova
+                </a>
+
+                <a
+                    href="#features"
+                    class="secondary-button"
+                >
+                    Explore Features
+                </a>
+
+            </div>
+
+            <p class="hero-small">
+                Create an account and build your first workspace.
+            </p>
+
+        </section>
+
+
+        <!-- FEATURES -->
+
+        <section
+            id="features"
+            class="landing-section"
+        >
+
+            <div class="section-heading">
+
+                <span>EVERYTHING IN ONE PLACE</span>
+
+                <h2>
+                    Your work doesn't happen in one tool.<br>
+                    Nova brings it together.
+                </h2>
+
+                <p>
+                    Keep your conversations, projects and
+                    everyday work organized without jumping
+                    between disconnected apps.
+                </p>
+
+            </div>
+
+
+            <div class="feature-grid">
+
+                <article class="feature-card">
+                    <div class="feature-icon">✦</div>
+
+                    <h3>Nova AI</h3>
+
+                    <p>
+                        Ask questions, explore ideas and keep
+                        persistent AI conversations available
+                        when you return.
+                    </p>
+                </article>
+
+
+                <article class="feature-card">
+                    <div class="feature-icon">◫</div>
+
+                    <h3>Project Workspaces</h3>
+
+                    <p>
+                        Create dedicated spaces for school,
+                        work, personal goals or anything else
+                        you're building.
+                    </p>
+                </article>
+
+
+                <article class="feature-card">
+                    <div class="feature-icon">✓</div>
+
+                    <h3>Tasks</h3>
+
+                    <p>
+                        Keep track of what needs to get done
+                        directly inside each project.
+                    </p>
+                </article>
+
+
+                <article class="feature-card">
+                    <div class="feature-icon">✎</div>
+
+                    <h3>Notes</h3>
+
+                    <p>
+                        Keep important ideas and information
+                        connected to the project where they
+                        belong.
+                    </p>
+                </article>
+
+
+                <article class="feature-card">
+                    <div class="feature-icon">↑</div>
+
+                    <h3>Project Files</h3>
+
+                    <p>
+                        Upload and organize important files
+                        alongside the projects you're working on.
+                    </p>
+                </article>
+
+
+                <article class="feature-card">
+                    <div class="feature-icon">◎</div>
+
+                    <h3>Conversation History</h3>
+
+                    <p>
+                        Return to previous Nova conversations
+                        instead of starting over every time.
+                    </p>
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- STUDENTS -->
+
+        <section
+            id="students"
+            class="student-section"
+        >
+
+            <div class="student-content">
+
+                <div class="coming-soon">
+                    COMING SOON
+                </div>
+
+                <h2>
+                    Nova for students.
+                </h2>
+
+                <p class="student-lead">
+                    A workspace designed to help students
+                    organize assignments, understand difficult
+                    topics and keep schoolwork in one place.
+                </p>
+
+
+                <div class="student-features">
+
+                    <div>
+                        <strong>Homework Help</strong>
+
+                        <p>
+                            Get AI assistance when working
+                            through questions, assignments
+                            and difficult concepts.
+                        </p>
+                    </div>
+
+
+                    <div>
+                        <strong>Study Organization</strong>
+
+                        <p>
+                            Keep class notes, tasks, files and
+                            projects organized in one workspace.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="offline-card">
+
+                    <span class="offline-label">
+                        IN DEVELOPMENT
+                    </span>
+
+                    <h3>
+                        Student Offline Mode
+                    </h3>
+
+                    <p>
+                        We're exploring ways to make useful
+                        Nova study tools available when internet
+                        access is limited — helping students
+                        keep learning wherever they are.
+                    </p>
+
+                    <span class="offline-coming">
+                        Coming Soon →
+                    </span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- PRICING -->
+
+        <section
+            id="pricing"
+            class="landing-section"
+        >
+
+            <div class="section-heading">
+
+                <span>PRICING</span>
+
+                <h2>
+                    Simple access to your Nova workspace.
+                </h2>
+
+                <p>
+                    We're preparing Nova's subscription plans
+                    for public release.
+                </p>
+
+            </div>
+
+
+            <div class="pricing-card">
+
+                <div>
+
+                    <span class="pricing-label">
+                        NOVA
+                    </span>
+
+                    <h3>
+                        Developer Preview
+                    </h3>
+
+                    <p>
+                        Nova is currently being prepared for
+                        wider availability.
+                    </p>
+
+                </div>
+
+
+                <a
+                    href="{{ url_for('signup') }}"
+                    class="primary-button"
+                >
+                    Create Account
+                </a>
+
+            </div>
+
+        </section>
+
+
+        <!-- FAQ -->
+
+        <section
+            id="faq"
+            class="landing-section"
+        >
+
+            <div class="section-heading">
+
+                <span>FAQ</span>
+
+                <h2>
+                    Questions about Nova.
+                </h2>
+
+            </div>
+
+
+            <div class="faq-list">
+
+                <details>
+                    <summary>
+                        What is Project Nova?
+                    </summary>
+
+                    <p>
+                        Nova is an AI-powered workspace that
+                        combines AI conversations, projects,
+                        notes, tasks and files in one place.
+                    </p>
+                </details>
+
+
+                <details>
+                    <summary>
+                        Is Nova only for students?
+                    </summary>
+
+                    <p>
+                        No. Nova is designed for anyone who
+                        wants one organized place for projects,
+                        everyday work and AI assistance.
+                        Student-focused tools are an additional
+                        direction we're developing.
+                    </p>
+                </details>
+
+
+                <details>
+                    <summary>
+                        Does Student Offline Mode work now?
+                    </summary>
+
+                    <p>
+                        Not yet. Student Offline Mode is an
+                        upcoming feature and is currently in
+                        development.
+                    </p>
+                </details>
+
+
+                <details>
+                    <summary>
+                        Do I need an account?
+                    </summary>
+
+                    <p>
+                        You can explore this website without an
+                        account. An account is required to use
+                        the Nova workspace.
+                    </p>
+                </details>
+
+            </div>
+
+        </section>
+
+
+        <!-- FINAL CTA -->
+
+        <section class="final-cta">
+
+            <div>
+
+                <span>READY TO EXPLORE NOVA?</span>
+
+                <h2>
+                    Put your work in one place.
+                </h2>
+
+                <p>
+                    Create your Nova account and start building
+                    your workspace.
+                </p>
+
+            </div>
+
+            <a
+                href="{{ url_for('signup') }}"
+                class="primary-button"
+            >
+                Get Started
+            </a>
+
+        </section>
+
+    </main>
+
+
+    <!-- FOOTER -->
+
+    <footer class="landing-footer">
+
+        <div>
+            <strong>NOVA</strong>
+
+            <p>
+                An intelligent workspace for your projects,
+                ideas and everyday work.
+            </p>
+        </div>
+
+
+        <div class="footer-links">
+
+            <a href="{{ url_for('privacy') }}">
+    Privacy
+</a>
+
+<a href="{{ url_for('terms') }}">
+    Terms
+</a>
+
+<a href="{{ url_for('refund_policy') }}">
+    Refund Policy
+</a>
+
+<a href="{{ url_for('contact') }}">
+    Contact
+</a>
+
+        </div>
+
+
+        <p class="copyright">
+            © 2026 Project Nova. All rights reserved.
+        </p>
+
+    </footer>
+
+</body>
+
+</html>
