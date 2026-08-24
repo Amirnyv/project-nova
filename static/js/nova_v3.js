@@ -3257,6 +3257,11 @@ const settingsAiRemaining =
     );
 
 
+const upgradeNovaProButton =
+    document.getElementById(
+        "upgrade-nova-pro"
+    );
+
 async function loadAiUsage() {
 
     try {
@@ -3304,6 +3309,35 @@ async function loadAiUsage() {
                 + status.slice(1);
 
         }
+
+        if (upgradeNovaProButton) {
+
+    const isPaidAndActive =
+        plan === "paid"
+        &&
+        status === "active";
+
+    if (isPaidAndActive) {
+
+        upgradeNovaProButton.disabled =
+            true;
+
+        upgradeNovaProButton.textContent =
+            "Nova Pro Active";
+
+    }
+
+    else {
+
+        upgradeNovaProButton.disabled =
+            false;
+
+        upgradeNovaProButton.textContent =
+            "Upgrade to Nova Pro";
+
+    }
+
+}
 
 
         if (settingsAiUsage) {
@@ -3372,11 +3406,6 @@ async function loadAiUsage() {
 
 
 loadAiUsage();
-
-const upgradeNovaProButton =
-    document.getElementById(
-        "upgrade-nova-pro"
-    );
 
 
 upgradeNovaProButton
