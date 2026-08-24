@@ -3452,3 +3452,154 @@ upgradeNovaProButton
 
         }
     );
+
+    // ========================================
+// NOVA THEME PICKER
+// ========================================
+
+const themePickerButton =
+    document.getElementById(
+        "theme-picker-button"
+    );
+
+const themePickerMenu =
+    document.getElementById(
+        "theme-picker-menu"
+    );
+
+const themePickerLabel =
+    document.getElementById(
+        "theme-picker-label"
+    );
+
+const themeOptions =
+    document.querySelectorAll(
+        ".theme-option"
+    );
+
+
+function applyTheme(theme) {
+
+    document.documentElement.setAttribute(
+        "data-theme",
+        theme
+    );
+
+    localStorage.setItem(
+        "nova-theme",
+        theme
+    );
+
+
+    themeOptions.forEach(
+        option => {
+
+            const isActive =
+                option.dataset.theme
+                === theme;
+
+            option.classList.toggle(
+                "active",
+                isActive
+            );
+
+            const check =
+                option.querySelector(
+                    ".theme-check"
+                );
+
+            if (check) {
+                check.textContent =
+                    isActive ? "✓" : "";
+            }
+
+        }
+    );
+
+
+    if (themePickerLabel) {
+
+        if (theme === "light") {
+            themePickerLabel.textContent =
+                "Light";
+        }
+
+        else if (theme === "system") {
+            themePickerLabel.textContent =
+                "System";
+        }
+
+        else {
+            themePickerLabel.textContent =
+                "Dark";
+        }
+
+    }
+
+}
+
+
+themePickerButton?.addEventListener(
+    "click",
+    () => {
+
+        const isOpen =
+            themePickerButton.getAttribute(
+                "aria-expanded"
+            ) === "true";
+
+        themePickerButton.setAttribute(
+            "aria-expanded",
+            String(!isOpen)
+        );
+
+        if (themePickerMenu) {
+            themePickerMenu.hidden =
+                isOpen;
+        }
+
+    }
+);
+
+
+themeOptions.forEach(
+    option => {
+
+        option.addEventListener(
+            "click",
+            () => {
+
+                const theme =
+                    option.dataset.theme;
+
+                applyTheme(
+                    theme
+                );
+
+                if (themePickerMenu) {
+                    themePickerMenu.hidden =
+                        true;
+                }
+
+                themePickerButton
+                    ?.setAttribute(
+                        "aria-expanded",
+                        "false"
+                    );
+
+            }
+        );
+
+    }
+);
+
+
+const savedTheme =
+    localStorage.getItem(
+        "nova-theme"
+    )
+    || "dark";
+
+applyTheme(
+    savedTheme
+);

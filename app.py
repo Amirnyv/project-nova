@@ -402,8 +402,8 @@ def stripe_webhook():
     event_type = event["type"]
 
     data_object = (
-        event["data"]["object"]
-    )
+    event["data"]["object"].to_dict()
+)
 
 
     if event_type == "checkout.session.completed":

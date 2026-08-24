@@ -1524,3 +1524,923 @@ button {
     background: rgba(239, 68, 68, 0.12);
     color: #fca5a5;
 }
+
+#theme-select {
+    background: #16141f;
+    color: #ffffff;
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+
+    padding: 12px 38px 12px 16px;
+
+    font-size: 15px;
+    font-weight: 600;
+
+    cursor: pointer;
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+#theme-select:hover {
+    border-color: rgba(139, 92, 246, 0.6);
+}
+
+
+#theme-select:focus {
+    border-color: #8b5cf6;
+
+    box-shadow:
+        0 0 0 3px rgba(139, 92, 246, 0.15);
+}
+
+
+#theme-select option {
+    background: #16141f;
+    color: #ffffff;
+}
+
+/* =========================================
+   NOVA SETTINGS — POLISHED RESPONSIVE UI
+   ========================================= */
+
+.settings-layout {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding-bottom: 40px;
+
+    display: grid;
+    gap: 18px;
+}
+
+
+/* SETTINGS CARDS */
+
+.settings-layout .settings-card {
+    padding: 26px 28px;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.025),
+            rgba(255, 255, 255, 0.008)
+        ),
+        #11101a;
+
+    box-shadow:
+        0 18px 45px rgba(0, 0, 0, 0.18);
+}
+
+
+.settings-layout .settings-card h2 {
+    margin: 0 0 22px;
+
+    font-size: 19px;
+    font-weight: 700;
+
+    letter-spacing: -0.01em;
+}
+
+
+/* SETTING ROWS */
+
+.settings-layout .setting-row {
+    min-height: 62px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 24px;
+}
+
+
+.settings-layout .setting-row + .setting-row {
+    margin-top: 0;
+    padding-top: 18px;
+
+    border-top:
+        1px solid rgba(255, 255, 255, 0.06);
+}
+
+
+.settings-layout .setting-row strong {
+    display: block;
+
+    color: #f5f3ff;
+
+    font-size: 15px;
+    font-weight: 650;
+}
+
+
+.settings-layout .setting-row p {
+    margin: 6px 0 0;
+
+    color: #8f8a9f;
+
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+
+/* PROFILE */
+
+.settings-layout .profile-settings {
+    gap: 18px;
+}
+
+
+.settings-layout .settings-avatar {
+    width: 58px;
+    height: 58px;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    display: grid;
+    place-items: center;
+
+    background:
+        linear-gradient(
+            135deg,
+            #7c3aed,
+            #4c1d95
+        );
+
+    color: white;
+
+    font-size: 19px;
+    font-weight: 800;
+
+    box-shadow:
+        0 8px 24px rgba(124, 58, 237, 0.25);
+}
+
+
+/* NOVA PRO */
+
+#upgrade-nova-pro {
+    flex-shrink: 0;
+
+    min-width: 190px;
+
+    padding: 13px 20px;
+
+    border: 0;
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #8b5cf6,
+            #6d28d9
+        );
+
+    color: white;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 8px 22px rgba(124, 58, 237, 0.28);
+
+    transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease,
+        opacity 0.18s ease;
+}
+
+
+#upgrade-nova-pro:hover {
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 12px 28px rgba(124, 58, 237, 0.38);
+}
+
+
+#upgrade-nova-pro:active {
+    transform: translateY(0);
+}
+
+
+/* THEME SELECT */
+
+#theme-select {
+    min-width: 150px;
+
+    padding: 11px 38px 11px 14px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.10);
+
+    border-radius: 11px;
+
+    background: #181621;
+    color: #f5f3ff;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    outline: none;
+    cursor: pointer;
+}
+
+
+#theme-select:hover {
+    border-color:
+        rgba(139, 92, 246, 0.55);
+}
+
+
+#theme-select:focus {
+    border-color: #8b5cf6;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(139, 92, 246, 0.14);
+}
+
+
+#theme-select option {
+    background: #181621;
+    color: white;
+}
+
+
+/* BETTER SWITCHES */
+
+.settings-layout .switch {
+    width: 48px;
+    height: 26px;
+
+    flex-shrink: 0;
+}
+
+
+.settings-layout .slider {
+    background: #302d3d;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.08);
+
+    transition: 0.2s ease;
+}
+
+
+.settings-layout .switch input:checked + .slider {
+    background:
+        linear-gradient(
+            135deg,
+            #8b5cf6,
+            #6d28d9
+        );
+}
+
+
+.settings-layout .slider::before {
+    width: 18px;
+    height: 18px;
+
+    top: 3px;
+    left: 3px;
+
+    box-shadow:
+        0 2px 7px rgba(0, 0, 0, 0.35);
+}
+
+
+.settings-layout
+.switch input:checked
++ .slider::before {
+    transform: translateX(22px);
+}
+
+
+/* =========================================
+   PHONE / SMALL TABLET
+   ========================================= */
+
+@media (max-width: 700px) {
+
+    .settings-layout {
+        max-width: none;
+
+        gap: 14px;
+
+        padding:
+            0 12px
+            30px;
+    }
+
+
+    .settings-layout .settings-card {
+        padding: 20px 18px;
+
+        border-radius: 16px;
+    }
+
+
+    .settings-layout .settings-card h2 {
+        margin-bottom: 18px;
+
+        font-size: 18px;
+    }
+
+
+    .settings-layout .setting-row {
+        min-height: auto;
+
+        gap: 16px;
+
+        padding:
+            14px 0;
+    }
+
+
+    .settings-layout
+    .setting-row + .setting-row {
+        padding-top: 16px;
+    }
+
+
+    /* NOVA PRO STACKS ON PHONE */
+
+    .settings-layout
+    .setting-row:has(#upgrade-nova-pro) {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+
+    #upgrade-nova-pro {
+        width: 100%;
+        min-width: 0;
+
+        margin-top: 4px;
+
+        padding: 14px 16px;
+    }
+
+
+    /* THEME CONTROL */
+
+    #theme-select {
+        min-width: 120px;
+        max-width: 145px;
+    }
+
+
+    .settings-layout .setting-row p {
+        font-size: 13px;
+    }
+
+}
+
+
+/* VERY SMALL PHONES */
+
+@media (max-width: 430px) {
+
+    .settings-layout {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
+
+    .settings-layout .settings-card {
+        padding: 18px 16px;
+    }
+
+
+    .settings-layout
+    .setting-row:not(:has(#upgrade-nova-pro)) {
+        gap: 12px;
+    }
+
+
+    #theme-select {
+        min-width: 110px;
+
+        padding-left: 12px;
+        padding-right: 30px;
+    }
+
+}
+
+/* SETTINGS INFO ICONS */
+
+.settings-info-row {
+    justify-content: flex-start !important;
+    gap: 16px !important;
+}
+
+.settings-row-icon {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 10px;
+
+    color: #a855f7;
+    font-size: 21px;
+
+    background: rgba(139, 92, 246, 0.08);
+    border: 1px solid rgba(139, 92, 246, 0.12);
+}
+
+.settings-row-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.settings-row-content strong {
+    font-size: 15px;
+}
+
+.settings-row-content p {
+    margin-top: 3px !important;
+}
+
+
+/* PHONE */
+
+@media (max-width: 700px) {
+
+    .settings-row-icon {
+        width: 34px;
+        height: 34px;
+        flex-basis: 34px;
+
+        font-size: 18px;
+    }
+
+    .settings-info-row {
+        gap: 13px !important;
+    }
+}
+
+/* =========================================
+   NOVA THEME PICKER
+   ========================================= */
+
+.theme-picker {
+    position: relative;
+    min-width: 170px;
+}
+
+.theme-picker-button {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding: 12px 14px;
+
+    border-radius: 12px;
+    border: 1px solid rgba(139, 92, 246, 0.55);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(139, 92, 246, 0.08),
+            rgba(255, 255, 255, 0.015)
+        ),
+        #171521;
+
+    color: #ffffff;
+
+    font-size: 14px;
+    font-weight: 650;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 0 0 1px rgba(139, 92, 246, 0.05),
+        0 8px 20px rgba(0, 0, 0, 0.18);
+
+    transition:
+        border-color 0.18s ease,
+        box-shadow 0.18s ease,
+        transform 0.18s ease;
+}
+
+.theme-picker-button:hover {
+    border-color: #a855f7;
+
+    box-shadow:
+        0 0 0 3px rgba(139, 92, 246, 0.10),
+        0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+.theme-picker-button:focus-visible {
+    outline: none;
+
+    border-color: #a855f7;
+
+    box-shadow:
+        0 0 0 3px rgba(139, 92, 246, 0.16);
+}
+
+.theme-picker-icon {
+    color: #a855f7;
+    font-size: 18px;
+}
+
+.theme-picker-arrow {
+    margin-left: auto;
+
+    color: #9d96ad;
+
+    font-size: 12px;
+
+    transition: transform 0.18s ease;
+}
+
+.theme-picker-button[aria-expanded="true"]
+.theme-picker-arrow {
+    transform: rotate(180deg);
+}
+
+
+/* MENU */
+
+.theme-picker-menu {
+    position: absolute;
+    z-index: 100;
+
+    top: calc(100% + 8px);
+    right: 0;
+
+    width: 100%;
+
+    padding: 6px;
+
+    border-radius: 14px;
+
+    border:
+        1px solid rgba(139, 92, 246, 0.28);
+
+    background: #171521;
+
+    box-shadow:
+        0 18px 40px rgba(0, 0, 0, 0.35);
+
+    overflow: hidden;
+}
+
+.theme-picker-menu[hidden] {
+    display: none;
+}
+
+
+/* OPTIONS */
+
+.theme-option {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: 24px 1fr 20px;
+    align-items: center;
+    gap: 9px;
+
+    padding: 10px 11px;
+
+    border: 0;
+    border-radius: 9px;
+
+    background: transparent;
+    color: #d8d4e1;
+
+    text-align: left;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.16s ease,
+        color 0.16s ease;
+}
+
+.theme-option:hover {
+    background:
+        rgba(139, 92, 246, 0.10);
+
+    color: #ffffff;
+}
+
+.theme-option.active {
+    background:
+        rgba(139, 92, 246, 0.16);
+
+    color: #ffffff;
+}
+
+.theme-option > span:first-child {
+    color: #a855f7;
+    font-size: 16px;
+}
+
+.theme-check {
+    color: #c084fc;
+    text-align: right;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 700px) {
+
+    .theme-picker {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .theme-picker-button {
+        width: 100%;
+    }
+
+    .theme-picker-menu {
+        width: 100%;
+    }
+
+}
+
+/* =========================================
+   NOVA THEMES
+   ========================================= */
+
+/* LIGHT THEME */
+
+:root[data-theme="light"] {
+    --bg: #f5f6fa;
+    --sidebar: #ffffff;
+
+    --panel: #ffffff;
+    --panel-2: #f3f4f8;
+
+    --border: #e2e4eb;
+
+    --text: #17131f;
+    --muted: #6f6b7a;
+
+    --accent: #7c3aed;
+    --accent-2: #6d28d9;
+    --accent-soft: rgba(124, 58, 237, 0.10);
+
+    --green: #16a34a;
+    --red: #dc2626;
+}
+
+
+/* MAIN PAGE */
+
+:root[data-theme="light"] body {
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(139, 92, 246, 0.10),
+            transparent 32%
+        ),
+        var(--bg);
+
+    color: var(--text);
+}
+
+
+/* SIDEBAR */
+
+:root[data-theme="light"] .sidebar {
+    background:
+        rgba(255, 255, 255, 0.96);
+
+    border-right-color:
+        var(--border);
+}
+
+
+/* GENERAL CARDS */
+
+:root[data-theme="light"]
+.dashboard-card,
+
+:root[data-theme="light"]
+.content-panel,
+
+:root[data-theme="light"]
+.settings-card,
+
+:root[data-theme="light"]
+.agent-card,
+
+:root[data-theme="light"]
+.market-index-card,
+
+:root[data-theme="light"]
+.overview-card,
+
+:root[data-theme="light"]
+.stat-card {
+    background: #ffffff;
+
+    border-color: var(--border);
+
+    box-shadow:
+        0 14px 35px
+        rgba(30, 25, 45, 0.07);
+}
+
+
+/* SETTINGS CARDS */
+
+:root[data-theme="light"]
+.settings-layout .settings-card {
+    background:
+        linear-gradient(
+            145deg,
+            rgba(124, 58, 237, 0.025),
+            rgba(255, 255, 255, 0)
+        ),
+        #ffffff;
+
+    border-color: var(--border);
+
+    box-shadow:
+        0 16px 38px
+        rgba(30, 25, 45, 0.07);
+}
+
+
+:root[data-theme="light"]
+.settings-layout .setting-row strong {
+    color: #1b1722;
+}
+
+
+:root[data-theme="light"]
+.settings-layout .setting-row p,
+
+:root[data-theme="light"]
+.profile-settings p {
+    color: #777180;
+}
+
+
+/* DIVIDERS */
+
+:root[data-theme="light"]
+.settings-layout
+.setting-row + .setting-row {
+    border-top-color:
+        rgba(20, 17, 28, 0.08);
+}
+
+
+/* THEME PICKER */
+
+:root[data-theme="light"]
+.theme-picker-button {
+    background: #f7f5fa;
+    color: #201a29;
+
+    border-color:
+        rgba(124, 58, 237, 0.30);
+}
+
+
+:root[data-theme="light"]
+.theme-picker-menu {
+    background: #ffffff;
+
+    border-color:
+        rgba(124, 58, 237, 0.22);
+
+    box-shadow:
+        0 18px 40px
+        rgba(30, 25, 45, 0.14);
+}
+
+
+:root[data-theme="light"]
+.theme-option {
+    color: #514b5c;
+}
+
+
+:root[data-theme="light"]
+.theme-option:hover,
+
+:root[data-theme="light"]
+.theme-option.active {
+    color: #17131f;
+
+    background:
+        rgba(124, 58, 237, 0.10);
+}
+
+
+/* SWITCH */
+
+:root[data-theme="light"]
+.settings-layout .slider {
+    background: #d4d1dc;
+
+    border-color:
+        rgba(20, 17, 28, 0.08);
+}
+
+
+/* =========================================
+   SYSTEM THEME
+   follows phone/computer preference
+   ========================================= */
+
+@media (prefers-color-scheme: light) {
+
+    :root[data-theme="system"] {
+        --bg: #f5f6fa;
+        --sidebar: #ffffff;
+
+        --panel: #ffffff;
+        --panel-2: #f3f4f8;
+
+        --border: #e2e4eb;
+
+        --text: #17131f;
+        --muted: #6f6b7a;
+
+        --accent: #7c3aed;
+        --accent-2: #6d28d9;
+        --accent-soft:
+            rgba(124, 58, 237, 0.10);
+    }
+
+
+    :root[data-theme="system"] body {
+        background:
+            radial-gradient(
+                circle at top right,
+                rgba(139, 92, 246, 0.10),
+                transparent 32%
+            ),
+            var(--bg);
+
+        color: var(--text);
+    }
+
+
+    :root[data-theme="system"] .sidebar {
+        background:
+            rgba(255, 255, 255, 0.96);
+    }
+
+
+    :root[data-theme="system"]
+    .settings-layout .settings-card {
+        background: #ffffff;
+
+        border-color: var(--border);
+
+        box-shadow:
+            0 16px 38px
+            rgba(30, 25, 45, 0.07);
+    }
+
+
+    :root[data-theme="system"]
+    .settings-layout .setting-row strong {
+        color: #1b1722;
+    }
+
+
+    :root[data-theme="system"]
+    .theme-picker-button {
+        background: #f7f5fa;
+        color: #201a29;
+    }
+
+
+    :root[data-theme="system"]
+    .theme-picker-menu {
+        background: #ffffff;
+    }
+
+}

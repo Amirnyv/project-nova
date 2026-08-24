@@ -1919,73 +1919,88 @@ Pro Workspace
                 Subscription & AI Usage
             </h2>
 
-            <div class="setting-row">
+            <div class="setting-row settings-info-row">
 
-                <div>
+    <div class="settings-row-icon">
+        ♛
+    </div>
 
-                    <strong>
-                        Plan
-                    </strong>
+    <div class="settings-row-content">
 
-                    <p id="settings-plan">
-                        Loading...
-                    </p>
+        <strong>
+            Plan
+        </strong>
 
-                </div>
+        <p id="settings-plan">
+            Loading...
+        </p>
 
-            </div>
+    </div>
 
-
-            <div class="setting-row">
-
-                <div>
-
-                    <strong>
-                        Status
-                    </strong>
-
-                    <p id="settings-subscription-status">
-                        Loading...
-                    </p>
-
-                </div>
-
-            </div>
+</div>
 
 
-            <div class="setting-row">
+            <div class="setting-row settings-info-row">
 
-                <div>
+    <div class="settings-row-icon">
+        〽
+    </div>
 
-                    <strong>
-                        AI Usage
-                    </strong>
+    <div class="settings-row-content">
 
-                    <p id="settings-ai-usage">
-                        Loading...
-                    </p>
+        <strong>
+            Status
+        </strong>
 
-                </div>
+        <p id="settings-subscription-status">
+            Loading...
+        </p>
 
-            </div>
+    </div>
+
+</div>
 
 
-            <div class="setting-row">
+            <div class="setting-row settings-info-row">
 
-                <div>
+    <div class="settings-row-icon">
+        ✦
+    </div>
 
-                    <strong>
-                        Remaining
-                    </strong>
+    <div class="settings-row-content">
 
-                    <p id="settings-ai-remaining">
-                        Loading...
-                    </p>
+        <strong>
+            AI Usage
+        </strong>
 
-                </div>
+        <p id="settings-ai-usage">
+            Loading...
+        </p>
 
-            </div>
-            </div>
+    </div>
+
+</div>
+
+
+            <div class="setting-row settings-info-row">
+
+    <div class="settings-row-icon">
+        ∞
+    </div>
+
+    <div class="settings-row-content">
+
+        <strong>
+            Remaining
+        </strong>
+
+        <p id="settings-ai-remaining">
+            Loading...
+        </p>
+
+    </div>
+
+</div>
 
 
             <div class="setting-row">
@@ -2037,15 +2052,71 @@ Pro Workspace
 
                 </div>
 
-                <select id="theme-select">
+                <div class="theme-picker">
 
-                    <option>Dark</option>
+    <button
+        type="button"
+        class="theme-picker-button"
+        id="theme-picker-button"
+        aria-haspopup="listbox"
+        aria-expanded="false"
+    >
+        <span class="theme-picker-icon">
+            ☾
+        </span>
 
-                    <option>Light</option>
+        <span id="theme-picker-label">
+            Dark
+        </span>
 
-                    <option>System</option>
+        <span class="theme-picker-arrow">
+            ▾
+        </span>
+    </button>
 
-                </select>
+
+    <div
+        class="theme-picker-menu"
+        id="theme-picker-menu"
+        role="listbox"
+        hidden
+    >
+
+        <button
+            type="button"
+            class="theme-option active"
+            data-theme="dark"
+        >
+            <span>☾</span>
+            <span>Dark</span>
+            <span class="theme-check">✓</span>
+        </button>
+
+
+        <button
+            type="button"
+            class="theme-option"
+            data-theme="light"
+        >
+            <span>☀</span>
+            <span>Light</span>
+            <span class="theme-check"></span>
+        </button>
+
+
+        <button
+            type="button"
+            class="theme-option"
+            data-theme="system"
+        >
+            <span>▣</span>
+            <span>System</span>
+            <span class="theme-check"></span>
+        </button>
+
+    </div>
+
+</div>
 
             </div>
 
