@@ -3319,13 +3319,16 @@ async function loadAiUsage() {
 
     if (isPaidAndActive) {
 
-        upgradeNovaProButton.disabled =
-            true;
+    upgradeNovaProButton.disabled =
+        false;
 
-        upgradeNovaProButton.textContent =
-            "Nova Pro Active";
+    upgradeNovaProButton.textContent =
+        "Manage Subscription";
 
-    }
+    upgradeNovaProButton.dataset.mode =
+        "manage";
+
+}
 
     else {
 
@@ -3335,6 +3338,8 @@ async function loadAiUsage() {
         upgradeNovaProButton.textContent =
             "Upgrade to Nova Pro";
 
+            upgradeNovaProButton.dataset.mode =
+    "upgrade";
     }
 
 }
@@ -3417,18 +3422,26 @@ upgradeNovaProButton
                 true;
 
             upgradeNovaProButton.textContent =
-                "Opening Checkout...";
+    upgradeNovaProButton.dataset.mode === "manage"
+        ? "Opening Subscription..."
+        : "Opening Checkout...";
 
 
             try {
 
-                const response =
-                    await fetch(
-                        "/create-checkout-session",
-                        {
-                            method: "POST"
-                        }
-                    );
+    const endpoint =
+        upgradeNovaProButton.dataset.mode === "manage"
+            ? "/create-portal-session"
+            : "/create-checkout-session";
+
+
+    const response =
+        await fetch(
+            endpoint,
+            {
+                method: "POST"
+            }
+        );
 
 
                 const data =

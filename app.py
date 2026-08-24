@@ -368,6 +368,70 @@ def create_checkout_session():
             "error": "Could not start checkout."
         }), 500
 
+@app.route("/create-portal-session", methods=["POST"])
+@login_required
+def create_portal_session():
+
+    subscription = get_active_subscription(
+        int(current_user.id)
+    )
+
+    if not subscription:
+        return jsonify({
+            "error": "No active subscription found."
+        }), 400
+
+
+    connection = get_db()
+
+    row = connection.execute(
+        """
+        SELECT provider_customer_id
+        FROM subscriptions
+        WHERE user_id = ?
+        """,
+        (
+            int(current_user.id),
+        )
+    ).fetchone()
+
+    connection.close()
+
+
+    if (
+        not row
+        or not row["provider_customer_id"]
+    ):
+        return jsonify({
+            "error": "Stripe customer is not available."
+        }), 400
+
+
+    try:
+
+        portal_session = stripe.billing_portal.Session.create(
+            customer=row["provider_customer_id"],
+            return_url=(
+                request.host_url.rstrip("/")
+                + "/app"
+            )
+        )
+
+        return jsonify({
+            "url": portal_session.url
+        })
+
+    except Exception as error:
+
+        print(
+            "Stripe portal error:",
+            repr(error)
+        )
+
+        return jsonify({
+            "error": "Could not open subscription management."
+        }), 500
+
 @app.route("/stripe/webhook", methods=["POST"])
 def stripe_webhook():
 
@@ -498,59 +562,6 @@ def stripe_webhook():
 
 
     return "", 200
-@login_required
-def create_checkout_session():
-
-    if not STRIPE_PRICE_ID:
-        return jsonify({
-            "error": "Stripe price is not configured."
-        }), 500
-
-    try:
-
-        session = stripe.checkout.Session.create(
-            mode="subscription",
-
-            line_items=[
-                {
-                    "price": STRIPE_PRICE_ID,
-                    "quantity": 1
-                }
-            ],
-
-            customer_email=current_user.email,
-
-            success_url=(
-                request.host_url.rstrip("/")
-                + "/app?checkout=success"
-            ),
-
-            cancel_url=(
-                request.host_url.rstrip("/")
-                + "/app?checkout=canceled"
-            ),
-
-            metadata={
-                "user_id": str(
-                    current_user.id
-                )
-            }
-        )
-
-        return jsonify({
-            "url": session.url
-        })
-
-    except Exception as error:
-
-        print(
-            "Stripe checkout error:",
-            repr(error)
-        )
-
-        return jsonify({
-            "error": "Could not start checkout."
-        }), 500
 
 @app.route("/app")
 @login_required
