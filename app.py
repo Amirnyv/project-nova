@@ -1,6 +1,7 @@
 import os
 import sqlite3
 import uuid
+import stripe
 
 from flask import (
     Flask,
@@ -87,6 +88,14 @@ init_db()
 
 client = OpenAI(
     api_key=os.getenv("OPENAI_API_KEY")
+)
+
+stripe.api_key = os.getenv(
+    "STRIPE_SECRET_KEY"
+)
+
+STRIPE_PRICE_ID = os.getenv(
+    "STRIPE_PRICE_ID"
 )
 
 
@@ -304,6 +313,245 @@ def contact():
         "contact.html"
     )
 
+@app.route("/create-checkout-session", methods=["POST"])
+@login_required
+def create_checkout_session():
+
+    if not STRIPE_PRICE_ID:
+        return jsonify({
+            "error": "Stripe price is not configured."
+        }), 500
+
+    try:
+
+        session = stripe.checkout.Session.create(
+            mode="subscription",
+
+            line_items=[
+                {
+                    "price": STRIPE_PRICE_ID,
+                    "quantity": 1
+                }
+            ],
+
+            customer_email=current_user.email,
+
+            success_url=(
+                request.host_url.rstrip("/")
+                + "/app?checkout=success"
+            ),
+
+            cancel_url=(
+                request.host_url.rstrip("/")
+                + "/app?checkout=canceled"
+            ),
+
+            metadata={
+                "user_id": str(
+                    current_user.id
+                )
+            }
+        )
+
+        return jsonify({
+            "url": session.url
+        })
+
+    except Exception as error:
+
+        print(
+            "Stripe checkout error:",
+            repr(error)
+        )
+
+        return jsonify({
+            "error": "Could not start checkout."
+        }), 500
+
+@app.route("/stripe/webhook", methods=["POST"])
+def stripe_webhook():
+
+    payload = request.data
+
+    signature = request.headers.get(
+        "Stripe-Signature"
+    )
+
+    webhook_secret = os.getenv(
+        "STRIPE_WEBHOOK_SECRET"
+    )
+
+    try:
+
+        event = stripe.Webhook.construct_event(
+            payload,
+            signature,
+            webhook_secret
+        )
+
+    except Exception as error:
+
+        print(
+            "Stripe webhook error:",
+            repr(error)
+        )
+
+        return "", 400
+
+
+    event_type = event["type"]
+
+    data_object = (
+        event["data"]["object"]
+    )
+
+
+    if event_type == "checkout.session.completed":
+
+        user_id = (
+            data_object
+            .get("metadata", {})
+            .get("user_id")
+        )
+
+        if user_id:
+
+            user_id = int(user_id)
+
+            save_subscription(
+                user_id=user_id,
+                plan="paid",
+                status="active",
+                provider="stripe",
+                provider_customer_id=(
+                    data_object.get(
+                        "customer",
+                        ""
+                    )
+                    or ""
+                ),
+                provider_subscription_id=(
+                    data_object.get(
+                        "subscription",
+                        ""
+                    )
+                    or ""
+                )
+            )
+
+
+    elif event_type in (
+        "customer.subscription.deleted",
+        "customer.subscription.paused"
+    ):
+
+        stripe_subscription_id = (
+            data_object.get("id")
+        )
+
+        connection = get_db()
+
+        connection.execute(
+            """
+            UPDATE subscriptions
+            SET
+                status = 'inactive',
+                updated_at = CURRENT_TIMESTAMP
+            WHERE provider_subscription_id = ?
+            """,
+            (
+                stripe_subscription_id,
+            )
+        )
+
+        connection.commit()
+        connection.close()
+
+
+    elif event_type == "invoice.payment_failed":
+
+        stripe_subscription_id = (
+            data_object.get(
+                "subscription"
+            )
+        )
+
+        if stripe_subscription_id:
+
+            connection = get_db()
+
+            connection.execute(
+                """
+                UPDATE subscriptions
+                SET
+                    status = 'past_due',
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE provider_subscription_id = ?
+                """,
+                (
+                    stripe_subscription_id,
+                )
+            )
+
+            connection.commit()
+            connection.close()
+
+
+    return "", 200
+@login_required
+def create_checkout_session():
+
+    if not STRIPE_PRICE_ID:
+        return jsonify({
+            "error": "Stripe price is not configured."
+        }), 500
+
+    try:
+
+        session = stripe.checkout.Session.create(
+            mode="subscription",
+
+            line_items=[
+                {
+                    "price": STRIPE_PRICE_ID,
+                    "quantity": 1
+                }
+            ],
+
+            customer_email=current_user.email,
+
+            success_url=(
+                request.host_url.rstrip("/")
+                + "/app?checkout=success"
+            ),
+
+            cancel_url=(
+                request.host_url.rstrip("/")
+                + "/app?checkout=canceled"
+            ),
+
+            metadata={
+                "user_id": str(
+                    current_user.id
+                )
+            }
+        )
+
+        return jsonify({
+            "url": session.url
+        })
+
+    except Exception as error:
+
+        print(
+            "Stripe checkout error:",
+            repr(error)
+        )
+
+        return jsonify({
+            "error": "Could not start checkout."
+        }), 500
+
 @app.route("/app")
 @login_required
 def home():
@@ -354,6 +602,75 @@ def get_active_subscription(user_id):
 
     return row
 
+def save_subscription(
+    user_id,
+    plan,
+    status,
+    provider="stripe",
+    provider_customer_id="",
+    provider_subscription_id=""
+):
+    connection = get_db()
+
+    existing = connection.execute(
+        """
+        SELECT id
+        FROM subscriptions
+        WHERE user_id = ?
+        """,
+        (user_id,)
+    ).fetchone()
+
+    if existing:
+
+        connection.execute(
+            """
+            UPDATE subscriptions
+            SET
+                plan = ?,
+                status = ?,
+                provider = ?,
+                provider_customer_id = ?,
+                provider_subscription_id = ?,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE user_id = ?
+            """,
+            (
+                plan,
+                status,
+                provider,
+                provider_customer_id,
+                provider_subscription_id,
+                user_id
+            )
+        )
+
+    else:
+
+        connection.execute(
+            """
+            INSERT INTO subscriptions (
+                user_id,
+                plan,
+                status,
+                provider,
+                provider_customer_id,
+                provider_subscription_id
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                user_id,
+                plan,
+                status,
+                provider,
+                provider_customer_id,
+                provider_subscription_id
+            )
+        )
+
+    connection.commit()
+    connection.close()
 
 def user_has_ai_access(user_id):
     subscription = get_active_subscription(user_id)

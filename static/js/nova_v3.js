@@ -3372,3 +3372,83 @@ async function loadAiUsage() {
 
 
 loadAiUsage();
+
+const upgradeNovaProButton =
+    document.getElementById(
+        "upgrade-nova-pro"
+    );
+
+
+upgradeNovaProButton
+    ?.addEventListener(
+        "click",
+        async () => {
+
+            upgradeNovaProButton.disabled =
+                true;
+
+            upgradeNovaProButton.textContent =
+                "Opening Checkout...";
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/create-checkout-session",
+                        {
+                            method: "POST"
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    alert(
+                        data.error
+                        ||
+                        "Could not start checkout."
+                    );
+
+                    return;
+
+                }
+
+
+                if (data.url) {
+
+                    window.location.href =
+                        data.url;
+
+                }
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    error
+                );
+
+                alert(
+                    "Could not start checkout."
+                );
+
+            }
+
+            finally {
+
+                upgradeNovaProButton.disabled =
+                    false;
+
+                upgradeNovaProButton.textContent =
+                    "Upgrade to Nova Pro";
+
+            }
+
+        }
+    );
