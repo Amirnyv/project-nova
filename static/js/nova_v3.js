@@ -3289,6 +3289,16 @@ async function loadAiUsage() {
             data.subscription?.status
             || "inactive";
 
+            const statusLabelMap = {
+    active: "Active",
+    past_due: "Past Due",
+    inactive: "Inactive",
+    canceled: "Canceled",
+    unpaid: "Unpaid",
+    paused: "Paused",
+    trialing: "Trialing"
+};
+
 
         if (settingsPlan) {
 
@@ -3300,35 +3310,53 @@ async function loadAiUsage() {
 
 
         if (
-            settingsSubscriptionStatus
-        ) {
+    settingsSubscriptionStatus
+) {
 
-            settingsSubscriptionStatus
-                .textContent =
-                status.charAt(0).toUpperCase()
-                + status.slice(1);
+    settingsSubscriptionStatus
+        .textContent =
+        statusLabelMap[status]
+        || status;
 
-        }
+}
 
         if (upgradeNovaProButton) {
 
-    const isPaidAndActive =
-        plan === "paid"
-        &&
+    const isPaid =
+        plan === "paid";
+
+    const isActive =
         status === "active";
 
-    if (isPaidAndActive) {
+    const isPastDue =
+        status === "past_due";
 
-    upgradeNovaProButton.disabled =
-        false;
 
-    upgradeNovaProButton.textContent =
-        "Manage Subscription";
+    if (isPaid && isActive) {
 
-    upgradeNovaProButton.dataset.mode =
-        "manage";
+        upgradeNovaProButton.disabled =
+            false;
 
-}
+        upgradeNovaProButton.textContent =
+            "Manage Subscription";
+
+        upgradeNovaProButton.dataset.mode =
+            "manage";
+
+    }
+
+    else if (isPaid && isPastDue) {
+
+        upgradeNovaProButton.disabled =
+            false;
+
+        upgradeNovaProButton.textContent =
+            "Fix Billing";
+
+        upgradeNovaProButton.dataset.mode =
+            "manage";
+
+    }
 
     else {
 
@@ -3338,8 +3366,9 @@ async function loadAiUsage() {
         upgradeNovaProButton.textContent =
             "Upgrade to Nova Pro";
 
-            upgradeNovaProButton.dataset.mode =
-    "upgrade";
+        upgradeNovaProButton.dataset.mode =
+            "upgrade";
+
     }
 
 }

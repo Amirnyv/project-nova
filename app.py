@@ -2,6 +2,7 @@ import os
 import sqlite3
 import uuid
 import stripe
+from datetime import datetime, timezone
 
 from flask import (
     Flask,
@@ -478,30 +479,118 @@ def stripe_webhook():
             .get("user_id")
         )
 
-        if user_id:
+        stripe_subscription_id = (
+            data_object.get("subscription")
+        )
+
+        if user_id and stripe_subscription_id:
 
             user_id = int(user_id)
 
-            save_subscription(
-                user_id=user_id,
-                plan="paid",
-                status="active",
-                provider="stripe",
-                provider_customer_id=(
-                    data_object.get(
-                        "customer",
-                        ""
+            try:
+
+                stripe_subscription = (
+                    stripe.Subscription.retrieve(
+                        stripe_subscription_id
                     )
-                    or ""
-                ),
-                provider_subscription_id=(
-                    data_object.get(
-                        "subscription",
-                        ""
+                )
+
+                subscription_data = (
+                    stripe_subscription.to_dict()
+                )
+
+                save_subscription(
+                    user_id=user_id,
+                    plan="paid",
+                    status=subscription_data.get(
+                        "status",
+                        "active"
+                    ),
+                    provider="stripe",
+                    provider_customer_id=(
+                        data_object.get("customer")
+                        or ""
+                    ),
+                    provider_subscription_id=(
+                        stripe_subscription_id
+                    ),
+                    current_period_start=(
+                        stripe_timestamp_to_datetime(
+                            subscription_data.get(
+                                "current_period_start"
+                            )
+                        )
+                    ),
+                    current_period_end=(
+                        stripe_timestamp_to_datetime(
+                            subscription_data.get(
+                                "current_period_end"
+                            )
+                        )
                     )
-                    or ""
+                )
+
+            except Exception as error:
+
+                print(
+                    "Stripe subscription sync error:",
+                    repr(error)
+                )
+
+                return "", 500
+
+
+    elif event_type in (
+        "customer.subscription.created",
+        "customer.subscription.updated"
+    ):
+
+        stripe_subscription_id = (
+            data_object.get("id")
+        )
+
+        stripe_status = (
+            data_object.get("status")
+        )
+
+        period_start = (
+            stripe_timestamp_to_datetime(
+                data_object.get(
+                    "current_period_start"
                 )
             )
+        )
+
+        period_end = (
+            stripe_timestamp_to_datetime(
+                data_object.get(
+                    "current_period_end"
+                )
+            )
+        )
+
+        connection = get_db()
+
+        connection.execute(
+            """
+            UPDATE subscriptions
+            SET
+                status = ?,
+                current_period_start = ?,
+                current_period_end = ?,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE provider_subscription_id = ?
+            """,
+            (
+                stripe_status,
+                period_start,
+                period_end,
+                stripe_subscription_id
+            )
+        )
+
+        connection.commit()
+        connection.close()
 
 
     elif event_type in (
@@ -535,9 +624,7 @@ def stripe_webhook():
     elif event_type == "invoice.payment_failed":
 
         stripe_subscription_id = (
-            data_object.get(
-                "subscription"
-            )
+            data_object.get("subscription")
         )
 
         if stripe_subscription_id:
@@ -560,6 +647,72 @@ def stripe_webhook():
             connection.commit()
             connection.close()
 
+
+    elif event_type in (
+        "invoice.paid",
+        "invoice.payment_succeeded"
+    ):
+
+        stripe_subscription_id = (
+            data_object.get("subscription")
+        )
+
+        if stripe_subscription_id:
+
+            try:
+
+                stripe_subscription = (
+                    stripe.Subscription.retrieve(
+                        stripe_subscription_id
+                    )
+                )
+
+                subscription_data = (
+                    stripe_subscription.to_dict()
+                )
+
+                connection = get_db()
+
+                connection.execute(
+                    """
+                    UPDATE subscriptions
+                    SET
+                        status = ?,
+                        current_period_start = ?,
+                        current_period_end = ?,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE provider_subscription_id = ?
+                    """,
+                    (
+                        subscription_data.get(
+                            "status",
+                            "active"
+                        ),
+                        stripe_timestamp_to_datetime(
+                            subscription_data.get(
+                                "current_period_start"
+                            )
+                        ),
+                        stripe_timestamp_to_datetime(
+                            subscription_data.get(
+                                "current_period_end"
+                            )
+                        ),
+                        stripe_subscription_id
+                    )
+                )
+
+                connection.commit()
+                connection.close()
+
+            except Exception as error:
+
+                print(
+                    "Stripe renewal sync error:",
+                    repr(error)
+                )
+
+                return "", 500
 
     return "", 200
 
@@ -613,13 +766,28 @@ def get_active_subscription(user_id):
 
     return row
 
+def stripe_timestamp_to_datetime(timestamp):
+
+    if not timestamp:
+        return None
+
+    return (
+        datetime.fromtimestamp(
+            timestamp,
+            tz=timezone.utc
+        )
+        .replace(tzinfo=None)
+    )
+
 def save_subscription(
     user_id,
     plan,
     status,
     provider="stripe",
     provider_customer_id="",
-    provider_subscription_id=""
+    provider_subscription_id="",
+    current_period_start=None,
+    current_period_end=None
 ):
     connection = get_db()
 
@@ -632,6 +800,7 @@ def save_subscription(
         (user_id,)
     ).fetchone()
 
+
     if existing:
 
         connection.execute(
@@ -643,6 +812,8 @@ def save_subscription(
                 provider = ?,
                 provider_customer_id = ?,
                 provider_subscription_id = ?,
+                current_period_start = ?,
+                current_period_end = ?,
                 updated_at = CURRENT_TIMESTAMP
             WHERE user_id = ?
             """,
@@ -652,9 +823,12 @@ def save_subscription(
                 provider,
                 provider_customer_id,
                 provider_subscription_id,
+                current_period_start,
+                current_period_end,
                 user_id
             )
         )
+
 
     else:
 
@@ -666,9 +840,11 @@ def save_subscription(
                 status,
                 provider,
                 provider_customer_id,
-                provider_subscription_id
+                provider_subscription_id,
+                current_period_start,
+                current_period_end
             )
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 user_id,
@@ -676,9 +852,12 @@ def save_subscription(
                 status,
                 provider,
                 provider_customer_id,
-                provider_subscription_id
+                provider_subscription_id,
+                current_period_start,
+                current_period_end
             )
         )
+
 
     connection.commit()
     connection.close()
