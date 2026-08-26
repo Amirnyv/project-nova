@@ -4,3 +4,12 @@ __pycache__/
 *.pyc
 nova.db
 uploads/
+.env*
+!.env.example
+app_backup.py
+app_before_period_date_fix.py
+app_after_period_date_fix.py
+app_stripe_test_working.py
+database_backup.py
+database_before_render.py
+.DS_Store

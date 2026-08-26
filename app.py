@@ -499,6 +499,12 @@ def stripe_webhook():
                     stripe_subscription.to_dict()
                 )
 
+                period_start_timestamp, period_end_timestamp = (
+    get_stripe_period(
+        subscription_data
+    )
+)
+
                 save_subscription(
                     user_id=user_id,
                     plan="paid",
@@ -515,19 +521,15 @@ def stripe_webhook():
                         stripe_subscription_id
                     ),
                     current_period_start=(
-                        stripe_timestamp_to_datetime(
-                            subscription_data.get(
-                                "current_period_start"
-                            )
-                        )
-                    ),
-                    current_period_end=(
-                        stripe_timestamp_to_datetime(
-                            subscription_data.get(
-                                "current_period_end"
-                            )
-                        )
-                    )
+    stripe_timestamp_to_datetime(
+        period_start_timestamp
+    )
+),
+current_period_end=(
+    stripe_timestamp_to_datetime(
+        period_end_timestamp
+    )
+)
                 )
 
             except Exception as error:
@@ -553,20 +555,43 @@ def stripe_webhook():
             data_object.get("status")
         )
 
+        period_start_timestamp, period_end_timestamp = (
+            get_stripe_period(
+                data_object
+            )
+        )
+
         period_start = (
             stripe_timestamp_to_datetime(
-                data_object.get(
-                    "current_period_start"
-                )
+                period_start_timestamp
             )
         )
 
         period_end = (
             stripe_timestamp_to_datetime(
+                period_end_timestamp
+            )
+        )
+
+        cancel_at_timestamp = (
+            data_object.get("cancel_at")
+        )
+
+        cancel_at_period_end = (
+            1
+            if (
                 data_object.get(
-                    "current_period_end"
+                    "cancel_at_period_end",
+                    False
+                )
+                or (
+                    cancel_at_timestamp
+                    and period_end_timestamp
+                    and int(cancel_at_timestamp)
+                    == int(period_end_timestamp)
                 )
             )
+            else 0
         )
 
         connection = get_db()
@@ -578,6 +603,7 @@ def stripe_webhook():
                 status = ?,
                 current_period_start = ?,
                 current_period_end = ?,
+                cancel_at_period_end = ?,
                 updated_at = CURRENT_TIMESTAMP
             WHERE provider_subscription_id = ?
             """,
@@ -585,6 +611,7 @@ def stripe_webhook():
                 stripe_status,
                 period_start,
                 period_end,
+                cancel_at_period_end,
                 stripe_subscription_id
             )
         )
@@ -609,6 +636,7 @@ def stripe_webhook():
             UPDATE subscriptions
             SET
                 status = 'inactive',
+                cancel_at_period_end = 0,
                 updated_at = CURRENT_TIMESTAMP
             WHERE provider_subscription_id = ?
             """,
@@ -620,6 +648,29 @@ def stripe_webhook():
         connection.commit()
         connection.close()
 
+        stripe_subscription_id = (
+            data_object.get("subscription")
+        )
+
+        if stripe_subscription_id:
+
+            connection = get_db()
+
+            connection.execute(
+                """
+                UPDATE subscriptions
+                SET
+                    status = 'past_due',
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE provider_subscription_id = ?
+                """,
+                (
+                    stripe_subscription_id,
+                )
+            )
+
+            connection.commit()
+            connection.close()
 
     elif event_type == "invoice.payment_failed":
 
@@ -648,6 +699,7 @@ def stripe_webhook():
             connection.close()
 
 
+
     elif event_type in (
         "invoice.paid",
         "invoice.payment_succeeded"
@@ -670,6 +722,11 @@ def stripe_webhook():
                 subscription_data = (
                     stripe_subscription.to_dict()
                 )
+                period_start_timestamp, period_end_timestamp = (
+    get_stripe_period(
+        subscription_data
+    )
+)
 
                 connection = get_db()
 
@@ -689,15 +746,11 @@ def stripe_webhook():
                             "active"
                         ),
                         stripe_timestamp_to_datetime(
-                            subscription_data.get(
-                                "current_period_start"
-                            )
-                        ),
-                        stripe_timestamp_to_datetime(
-                            subscription_data.get(
-                                "current_period_end"
-                            )
-                        ),
+    period_start_timestamp
+),
+stripe_timestamp_to_datetime(
+    period_end_timestamp
+),
                         stripe_subscription_id
                     )
                 )
@@ -752,11 +805,12 @@ def get_active_subscription(user_id):
     row = connection.execute(
         """
         SELECT
-            plan,
-            status,
-            current_period_start,
-            current_period_end
-        FROM subscriptions
+    plan,
+    status,
+    current_period_start,
+    current_period_end,
+    cancel_at_period_end
+FROM subscriptions
         WHERE user_id = ?
         """,
         (user_id,)
@@ -777,6 +831,54 @@ def stripe_timestamp_to_datetime(timestamp):
             tz=timezone.utc
         )
         .replace(tzinfo=None)
+    )
+
+def get_stripe_period(subscription_data):
+
+    items = (
+        subscription_data
+        .get("items", {})
+        .get("data", [])
+    )
+
+    if items:
+
+        period_starts = [
+            item.get("current_period_start")
+            for item in items
+            if item.get("current_period_start")
+        ]
+
+        period_ends = [
+            item.get("current_period_end")
+            for item in items
+            if item.get("current_period_end")
+        ]
+
+        period_start = (
+            max(period_starts)
+            if period_starts
+            else None
+        )
+
+        period_end = (
+            min(period_ends)
+            if period_ends
+            else None
+        )
+
+        return (
+            period_start,
+            period_end
+        )
+
+    return (
+        subscription_data.get(
+            "current_period_start"
+        ),
+        subscription_data.get(
+            "current_period_end"
+        )
     )
 
 def save_subscription(
@@ -1440,9 +1542,15 @@ def ai_usage():
 
         return jsonify({
             "subscription": {
-                "plan": plan,
-                "status": subscription["status"]
-            },
+    "plan": plan,
+    "status": subscription["status"],
+    "current_period_start": subscription[
+        "current_period_start"
+    ],
+    "current_period_end": subscription[
+        "current_period_end"
+    ]
+},
             "used": period_usage,
             "limit": None,
             "remaining": None,
@@ -1453,9 +1561,15 @@ def ai_usage():
 
     return jsonify({
         "subscription": {
-            "plan": plan,
-            "status": subscription["status"]
-        },
+    "plan": plan,
+    "status": subscription["status"],
+    "current_period_start": subscription[
+        "current_period_start"
+    ],
+    "current_period_end": subscription[
+        "current_period_end"
+    ]
+},
         "used": access.get(
             "used",
             0

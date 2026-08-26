@@ -495,26 +495,30 @@ async function loadProjects() {
 
 
                         recent.innerHTML = `
-                            <span>
-                                📁
-                            </span>
+    <span class="recent-project-icon">
+        📁
+    </span>
 
-                            <div>
+    <div class="recent-project-info">
 
-                                <strong>
-                                    ${project.name}
-                                </strong>
+        <strong>
+            ${project.name}
+        </strong>
 
-                                <small>
-                                    ${
-                                        project.description
-                                        ||
-                                        "No description"
-                                    }
-                                </small>
+        <small>
+            ${
+                project.description
+                ||
+                "No description"
+            }
+        </small>
 
-                            </div>
-                        `;
+    </div>
+
+    <span class="recent-project-arrow">
+        →
+    </span>
+`;
 
 
                         recent.addEventListener(
@@ -1882,7 +1886,8 @@ window.currentConversationId =
 function createChatMessage(
     role,
     content,
-    container
+    container,
+    autoScroll = true
 ) {
 
     if (!container) {
@@ -1902,17 +1907,42 @@ function createChatMessage(
             : "message ai-message";
 
 
+    if (role !== "user") {
+
+        const avatar =
+            document.createElement(
+                "div"
+            );
+
+        avatar.className =
+            "message-avatar";
+
+        avatar.textContent =
+            "✦";
+
+        message.appendChild(
+            avatar
+        );
+
+    }
+
+
     const inner =
         document.createElement(
             "div"
         );
 
+    inner.className =
+        "message-content";
+
 
     const name =
         document.createElement(
-            "strong"
+            "div"
         );
 
+    name.className =
+        "message-author";
 
     name.textContent =
         role === "user"
@@ -1924,7 +1954,6 @@ function createChatMessage(
         document.createElement(
             "p"
         );
-
 
     paragraph.textContent =
         content;
@@ -1949,12 +1978,15 @@ function createChatMessage(
     );
 
 
+    if (autoScroll) {
+
     container.scrollTop =
         container.scrollHeight;
 
+}
+
 
     return message;
-
 }
 
 
@@ -2178,20 +2210,24 @@ async function openConversation(
 
 
         (
-            data.messages
-            || []
-        )
-            .forEach(
-                message => {
+    data.messages
+    || []
+)
+    .forEach(
+        message => {
 
-                    createChatMessage(
-                        message.role,
-                        message.content,
-                        chatBox
-                    );
-
-                }
+            createChatMessage(
+                message.role,
+                message.content,
+                chatBox,
+                false
             );
+
+        }
+    );
+
+
+chatBox.scrollTop = 0;
 
 
         await loadConversations();
@@ -3256,6 +3292,14 @@ const settingsAiRemaining =
         "settings-ai-remaining"
     );
 
+    const settingsRenewalDate =
+    document.getElementById(
+        "settings-renewal-date"
+    );
+    const settingsBillingPeriod =
+    document.getElementById(
+        "settings-billing-period"
+    );
 
 const upgradeNovaProButton =
     document.getElementById(
@@ -3289,6 +3333,10 @@ async function loadAiUsage() {
             data.subscription?.status
             || "inactive";
 
+            const currentPeriodEnd =
+    data.subscription?.current_period_end
+    || null;
+
             const statusLabelMap = {
     active: "Active",
     past_due: "Past Due",
@@ -3317,6 +3365,64 @@ async function loadAiUsage() {
         .textContent =
         statusLabelMap[status]
         || status;
+
+}
+
+if (settingsRenewalDate) {
+
+    if (settingsBillingPeriod) {
+
+    if (plan === "paid") {
+
+        settingsBillingPeriod.textContent =
+            "Monthly";
+
+    }
+
+    else if (plan === "developer") {
+
+        settingsBillingPeriod.textContent =
+            "Developer Access";
+
+    }
+
+    else {
+
+        settingsBillingPeriod.textContent =
+            "No active billing";
+
+    }
+
+}
+
+    if (currentPeriodEnd) {
+
+        const renewalDate =
+            new Date(
+                currentPeriodEnd.replace(
+                    " ",
+                    "T"
+                )
+            );
+
+        settingsRenewalDate.textContent =
+            renewalDate.toLocaleDateString(
+                undefined,
+                {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric"
+                }
+            );
+
+    }
+
+    else {
+
+        settingsRenewalDate.textContent =
+            "Not available";
+
+    }
 
 }
 

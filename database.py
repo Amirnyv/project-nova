@@ -430,6 +430,7 @@ def init_sqlite_db():
             provider_subscription_id TEXT DEFAULT '',
             current_period_start TIMESTAMP,
             current_period_end TIMESTAMP,
+            cancel_at_period_end INTEGER NOT NULL DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id)
@@ -617,7 +618,7 @@ def init_postgres_db():
         """,
 
 
-        """
+                      """
         CREATE TABLE IF NOT EXISTS subscriptions (
             id SERIAL PRIMARY KEY,
             user_id INTEGER NOT NULL UNIQUE,
@@ -628,6 +629,7 @@ def init_postgres_db():
             provider_subscription_id TEXT DEFAULT '',
             current_period_start TIMESTAMP,
             current_period_end TIMESTAMP,
+            cancel_at_period_end INTEGER NOT NULL DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id)
