@@ -3962,18 +3962,24 @@ if (settingsRenewalDate) {
 
             if (upgradeNovaMaxButton) {
 
-                upgradeNovaMaxButton.disabled =
-                    true;
+    const isMax =
+        plan === "max";
 
-                upgradeNovaMaxButton.textContent =
-                    plan === "max"
-                        ? "Nova Max — Current Plan"
-                        : "Nova Max — Manage to Upgrade";
 
-                upgradeNovaMaxButton.dataset.mode =
-                    "manage";
+    upgradeNovaMaxButton.disabled =
+        isMax;
 
-            }
+
+    upgradeNovaMaxButton.textContent =
+        isMax
+            ? "Nova Max — Current Plan"
+            : "Upgrade to Nova Max";
+
+
+    upgradeNovaMaxButton.dataset.mode =
+        "manage";
+
+}
 
         }
 
