@@ -2209,7 +2209,7 @@ def chat():
                 }
             })
 
-    
+
         # NORMAL OPENAI CHAT
     nova_model = "gpt-5-mini"
 
@@ -2372,7 +2372,7 @@ def chat():
             "charset=utf-8"
         )
     )
-    
+
 
 
 # -------------------------------------------------
