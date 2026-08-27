@@ -2427,6 +2427,52 @@ async function sendMainMessage() {
 
         }
 
+        const contentType =
+            response.headers.get(
+                "content-type"
+            )
+            || "";
+
+
+        if (
+            contentType.includes(
+                "application/json"
+            )
+        ) {
+
+            const data =
+                await response.json();
+
+
+            thinkingMessage?.remove();
+
+
+            if (
+                data.conversation_id
+            ) {
+
+                window.currentConversationId =
+                    data.conversation_id;
+
+            }
+
+
+            createChatMessage(
+                "assistant",
+                data.reply
+                ||
+                data.message
+                ||
+                "Nova could not respond.",
+                chatBox
+            );
+
+
+            await loadConversations();
+
+            return;
+
+        }
 
         const reader =
             response.body.getReader();
@@ -2947,6 +2993,49 @@ async function sendWorkspaceMessage() {
 
         }
 
+        const contentType =
+            response.headers.get(
+                "content-type"
+            )
+            || "";
+
+
+        if (
+            contentType.includes(
+                "application/json"
+            )
+        ) {
+
+            const data =
+                await response.json();
+
+
+            thinkingMessage?.remove();
+
+
+            if (
+                data.conversation_id
+            ) {
+
+                window.workspaceConversationId =
+                    data.conversation_id;
+
+            }
+
+
+            createChatMessage(
+                "assistant",
+                data.reply
+                ||
+                data.message
+                ||
+                "Nova could not respond.",
+                workspaceChat
+            );
+
+            return;
+
+        }
 
         const reader =
             response.body.getReader();
