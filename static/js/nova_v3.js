@@ -1951,13 +1951,82 @@ function createChatMessage(
 
 
     const paragraph =
-        document.createElement(
-            "p"
-        );
+    document.createElement(
+        "div"
+    );
+
+paragraph.className =
+    "message-text";
+
+
+if (role === "user") {
 
     paragraph.textContent =
         content;
 
+} else {
+
+    const renderedMarkdown =
+        marked.parse(
+            content
+        );
+
+    paragraph.innerHTML =
+        DOMPurify.sanitize(
+            renderedMarkdown
+        );
+
+        paragraph
+    .querySelectorAll("pre")
+    .forEach((codeBlock) => {
+
+        const copyButton =
+            document.createElement(
+                "button"
+            );
+
+        copyButton.className =
+            "code-copy-button";
+
+        copyButton.textContent =
+            "Copy";
+
+        copyButton.addEventListener(
+            "click",
+            async () => {
+
+                const code =
+                    codeBlock.querySelector(
+                        "code"
+                    );
+
+                if (!code) {
+                    return;
+                }
+
+                await navigator.clipboard.writeText(
+                    code.textContent
+                );
+
+                copyButton.textContent =
+                    "Copied!";
+
+                setTimeout(
+                    () => {
+                        copyButton.textContent =
+                            "Copy";
+                    },
+                    1500
+                );
+            }
+        );
+
+        codeBlock.appendChild(
+            copyButton
+        );
+    });
+
+}
 
     inner.appendChild(
         name
