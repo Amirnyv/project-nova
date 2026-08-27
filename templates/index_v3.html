@@ -155,9 +155,9 @@ class="create-button">
 
         <div>
 
-            <strong>
-                Nova Pro
-            </strong>
+            <strong id="sidebar-plan-name">
+    Nova
+</strong>
 
             <small>
                 Premium workspace
@@ -2219,9 +2219,9 @@ Pro Workspace
                 BILLING
             </span>
 
-            <h2>
-                Nova Pro
-            </h2>
+            <h2 id="billing-card-title">
+    Billing
+</h2>
 
             <p>
                 Manage your subscription and monthly AI usage.
@@ -2242,39 +2242,52 @@ Pro Workspace
 
     <div class="billing-overview">
 
-        <div class="billing-plan-block">
+    <div class="billing-plan-block">
 
-            <div class="billing-plan-icon">
-                ♛
-            </div>
+        <div class="billing-plan-icon">
+            ♛
+        </div>
 
-            <div>
+        <div>
 
-                <span class="billing-label">
-                    CURRENT PLAN
-                </span>
+            <span class="billing-label">
+                CURRENT PLAN
+            </span>
 
-                <strong id="settings-plan">
-                    Loading...
-                </strong>
+            <strong id="settings-plan">
+                Loading...
+            </strong>
 
-                <p>
-                    $14.99 / month
-                </p>
-
-            </div>
+            <p id="settings-plan-price">
+                Loading...
+            </p>
 
         </div>
 
+    </div>
+
+
+    <div class="billing-plan-actions">
 
         <button
             id="upgrade-nova-pro"
             type="button"
+            data-plan="pro"
         >
-            Upgrade to Nova Pro
+            Nova Pro — $14.99
+        </button>
+
+        <button
+            id="upgrade-nova-max"
+            type="button"
+            data-plan="max"
+        >
+            Nova Max — $29.99
         </button>
 
     </div>
+
+</div>
 
 
     <div class="billing-usage-grid">
