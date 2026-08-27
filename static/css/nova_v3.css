@@ -4715,3 +4715,78 @@ button {
     }
 
 }
+
+.message-text {
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+.message-text p {
+    margin: 0 0 12px;
+}
+
+.message-text p:last-child {
+    margin-bottom: 0;
+}
+
+.message-text pre {
+    margin: 14px 0;
+    padding: 16px 18px;
+    border: 1px solid rgba(139, 92, 246, 0.25);
+    border-radius: 12px;
+    background: rgba(5, 8, 18, 0.85);
+    overflow-x: auto;
+}
+
+.message-text pre code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre;
+}
+
+.message-text :not(pre) > code {
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: rgba(139, 92, 246, 0.14);
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 0.92em;
+}
+
+.message-text ul,
+.message-text ol {
+    margin: 10px 0;
+    padding-left: 24px;
+}
+
+.message-text h1,
+.message-text h2,
+.message-text h3 {
+    margin: 18px 0 10px;
+}
+
+.message-text pre {
+    position: relative;
+}
+
+.code-copy-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 6px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 7px;
+    background: rgba(20, 24, 38, 0.95);
+    color: #ffffff;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.code-copy-button:hover {
+    background: rgba(40, 44, 65, 0.95);
+}
+
+.message-text pre code {
+    display: block;
+    padding-top: 28px;
+}

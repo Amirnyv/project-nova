@@ -1951,13 +1951,82 @@ function createChatMessage(
 
 
     const paragraph =
-        document.createElement(
-            "p"
-        );
+    document.createElement(
+        "div"
+    );
+
+paragraph.className =
+    "message-text";
+
+
+if (role === "user") {
 
     paragraph.textContent =
         content;
 
+} else {
+
+    const renderedMarkdown =
+        marked.parse(
+            content
+        );
+
+    paragraph.innerHTML =
+        DOMPurify.sanitize(
+            renderedMarkdown
+        );
+
+        paragraph
+    .querySelectorAll("pre")
+    .forEach((codeBlock) => {
+
+        const copyButton =
+            document.createElement(
+                "button"
+            );
+
+        copyButton.className =
+            "code-copy-button";
+
+        copyButton.textContent =
+            "Copy";
+
+        copyButton.addEventListener(
+            "click",
+            async () => {
+
+                const code =
+                    codeBlock.querySelector(
+                        "code"
+                    );
+
+                if (!code) {
+                    return;
+                }
+
+                await navigator.clipboard.writeText(
+                    code.textContent
+                );
+
+                copyButton.textContent =
+                    "Copied!";
+
+                setTimeout(
+                    () => {
+                        copyButton.textContent =
+                            "Copy";
+                    },
+                    1500
+                );
+            }
+        );
+
+        codeBlock.appendChild(
+            copyButton
+        );
+    });
+
+}
 
     inner.appendChild(
         name
@@ -2303,7 +2372,7 @@ async function sendMainMessage() {
     }
 
 
-    try {
+       try {
 
         const response =
             await fetch(
@@ -2330,50 +2399,225 @@ async function sendMainMessage() {
             );
 
 
-        const data =
-            await response.json();
+        if (!response.ok) {
+
+            const data =
+                await response.json();
+
+            thinkingMessage?.remove();
+
+            createChatMessage(
+                "assistant",
+                data.message
+                ||
+                "Nova is temporarily unavailable. Please try again.",
+                chatBox
+            );
+
+            if (data.conversation_id) {
+
+                window.currentConversationId =
+                    data.conversation_id;
+
+            }
+
+            await loadConversations();
+
+            return;
+
+        }
+
+        const contentType =
+            response.headers.get(
+                "content-type"
+            )
+            || "";
+
+
+        if (
+            contentType.includes(
+                "application/json"
+            )
+        ) {
+
+            const data =
+                await response.json();
+
+
+            thinkingMessage?.remove();
+
+
+            if (
+                data.conversation_id
+            ) {
+
+                window.currentConversationId =
+                    data.conversation_id;
+
+            }
+
+
+            createChatMessage(
+                "assistant",
+                data.reply
+                ||
+                data.message
+                ||
+                "Nova could not respond.",
+                chatBox
+            );
+
+
+            await loadConversations();
+
+            return;
+
+        }
+
+        const reader =
+            response.body.getReader();
+
+        const decoder =
+            new TextDecoder();
+
+        let buffer = "";
+        let fullReply = "";
+        let firstChunkReceived =
+            false;
+
+
+        const liveText =
+            thinkingMessage
+                ?.querySelector(
+                    ".message-text"
+                );
+
+
+        while (true) {
+
+            const {
+                value,
+                done
+            } = await reader.read();
+
+
+            if (done) {
+                break;
+            }
+
+
+            buffer += decoder.decode(
+                value,
+                {
+                    stream: true
+                }
+            );
+
+
+            const lines =
+                buffer.split("\n");
+
+
+            buffer =
+                lines.pop()
+                || "";
+
+
+            for (const line of lines) {
+
+                if (!line.trim()) {
+                    continue;
+                }
+
+
+                const data =
+                    JSON.parse(
+                        line
+                    );
+
+
+                if (
+                    data.type
+                    === "delta"
+                ) {
+
+                    if (
+                        !firstChunkReceived
+                    ) {
+
+                        firstChunkReceived =
+                            true;
+
+                        if (liveText) {
+
+                            liveText.textContent =
+                                "";
+
+                        }
+
+                    }
+
+
+                    fullReply +=
+                        data.delta
+                        || "";
+
+
+                    if (liveText) {
+
+                        liveText.textContent =
+                            fullReply;
+
+                    }
+
+
+                    chatBox.scrollTop =
+                        chatBox.scrollHeight;
+
+                }
+
+
+                else if (
+                    data.type
+                    === "done"
+                ) {
+
+                    if (
+                        data.conversation_id
+                    ) {
+
+                        window.currentConversationId =
+                            data.conversation_id;
+
+                    }
+
+                }
+
+
+                else if (
+                    data.type
+                    === "error"
+                ) {
+
+                    throw new Error(
+                        data.message
+                        ||
+                        "Nova streaming failed."
+                    );
+
+                }
+
+            }
+
+        }
 
 
         thinkingMessage?.remove();
 
 
-        if (!response.ok) {
-
-    createChatMessage(
-        "assistant",
-        data.message
-        ||
-        "Nova is temporarily unavailable. Please try again.",
-        chatBox
-    );
-
-    if (data.conversation_id) {
-
-        window.currentConversationId =
-            data.conversation_id;
-
-    }
-
-    await loadConversations();
-
-    return;
-
-}
-
-
-        if (
-            data.conversation_id
-        ) {
-
-            window.currentConversationId =
-                data.conversation_id;
-
-        }
-
-
         createChatMessage(
             "assistant",
-            data.reply
+            fullReply
             ||
             "Nova could not respond.",
             chatBox
@@ -2385,7 +2629,6 @@ async function sendMainMessage() {
     }
 
     catch (error) {
-
         thinkingMessage?.remove();
 
 
@@ -2689,7 +2932,7 @@ async function sendWorkspaceMessage() {
     }
 
 
-    try {
+        try {
 
         const response =
             await fetch(
@@ -2722,14 +2965,12 @@ async function sendWorkspaceMessage() {
             );
 
 
-        const data =
-            await response.json();
-
-
-        thinkingMessage?.remove();
-
-
         if (!response.ok) {
+
+            const data =
+                await response.json();
+
+            thinkingMessage?.remove();
 
             createChatMessage(
                 "assistant",
@@ -2738,6 +2979,38 @@ async function sendWorkspaceMessage() {
                 "Nova is temporarily unavailable. Please try again.",
                 workspaceChat
             );
+
+            if (
+                data.conversation_id
+            ) {
+
+                window.workspaceConversationId =
+                    data.conversation_id;
+
+            }
+
+            return;
+
+        }
+
+        const contentType =
+            response.headers.get(
+                "content-type"
+            )
+            || "";
+
+
+        if (
+            contentType.includes(
+                "application/json"
+            )
+        ) {
+
+            const data =
+                await response.json();
+
+
+            thinkingMessage?.remove();
 
 
             if (
@@ -2750,24 +3023,164 @@ async function sendWorkspaceMessage() {
             }
 
 
+            createChatMessage(
+                "assistant",
+                data.reply
+                ||
+                data.message
+                ||
+                "Nova could not respond.",
+                workspaceChat
+            );
+
             return;
 
         }
 
+        const reader =
+            response.body.getReader();
 
-        if (
-            data.conversation_id
-        ) {
+        const decoder =
+            new TextDecoder();
 
-            window.workspaceConversationId =
-                data.conversation_id;
+        let buffer = "";
+        let fullReply = "";
+        let firstChunkReceived =
+            false;
+
+
+        const liveText =
+            thinkingMessage
+                ?.querySelector(
+                    ".message-text"
+                );
+
+
+        while (true) {
+
+            const {
+                value,
+                done
+            } = await reader.read();
+
+
+            if (done) {
+                break;
+            }
+
+
+            buffer += decoder.decode(
+                value,
+                {
+                    stream: true
+                }
+            );
+
+
+            const lines =
+                buffer.split("\n");
+
+
+            buffer =
+                lines.pop()
+                || "";
+
+
+            for (const line of lines) {
+
+                if (!line.trim()) {
+                    continue;
+                }
+
+
+                const data =
+                    JSON.parse(
+                        line
+                    );
+
+
+                if (
+                    data.type
+                    === "delta"
+                ) {
+
+                    if (
+                        !firstChunkReceived
+                    ) {
+
+                        firstChunkReceived =
+                            true;
+
+                        if (liveText) {
+
+                            liveText.textContent =
+                                "";
+
+                        }
+
+                    }
+
+
+                    fullReply +=
+                        data.delta
+                        || "";
+
+
+                    if (liveText) {
+
+                        liveText.textContent =
+                            fullReply;
+
+                    }
+
+
+                    workspaceChat.scrollTop =
+                        workspaceChat.scrollHeight;
+
+                }
+
+
+                else if (
+                    data.type
+                    === "done"
+                ) {
+
+                    if (
+                        data.conversation_id
+                    ) {
+
+                        window.workspaceConversationId =
+                            data.conversation_id;
+
+                    }
+
+                }
+
+
+                else if (
+                    data.type
+                    === "error"
+                ) {
+
+                    throw new Error(
+                        data.message
+                        ||
+                        "Nova streaming failed."
+                    );
+
+                }
+
+            }
 
         }
 
 
+        thinkingMessage?.remove();
+
+
         createChatMessage(
             "assistant",
-            data.reply
+            fullReply
             ||
             "Nova could not respond.",
             workspaceChat
