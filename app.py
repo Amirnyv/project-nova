@@ -745,29 +745,6 @@ WHERE provider_subscription_id = ?
         connection.commit()
         connection.close()
 
-        stripe_subscription_id = (
-            data_object.get("subscription")
-        )
-
-        if stripe_subscription_id:
-
-            connection = get_db()
-
-            connection.execute(
-                """
-                UPDATE subscriptions
-                SET
-                    status = 'past_due',
-                    updated_at = CURRENT_TIMESTAMP
-                WHERE provider_subscription_id = ?
-                """,
-                (
-                    stripe_subscription_id,
-                )
-            )
-
-            connection.commit()
-            connection.close()
 
     elif event_type == "invoice.payment_failed":
 
