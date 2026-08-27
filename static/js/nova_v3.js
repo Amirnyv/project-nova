@@ -2886,7 +2886,7 @@ async function sendWorkspaceMessage() {
     }
 
 
-    try {
+        try {
 
         const response =
             await fetch(
@@ -2919,14 +2919,12 @@ async function sendWorkspaceMessage() {
             );
 
 
-        const data =
-            await response.json();
-
-
-        thinkingMessage?.remove();
-
-
         if (!response.ok) {
+
+            const data =
+                await response.json();
+
+            thinkingMessage?.remove();
 
             createChatMessage(
                 "assistant",
@@ -2935,7 +2933,6 @@ async function sendWorkspaceMessage() {
                 "Nova is temporarily unavailable. Please try again.",
                 workspaceChat
             );
-
 
             if (
                 data.conversation_id
@@ -2946,25 +2943,155 @@ async function sendWorkspaceMessage() {
 
             }
 
-
             return;
 
         }
 
 
-        if (
-            data.conversation_id
-        ) {
+        const reader =
+            response.body.getReader();
 
-            window.workspaceConversationId =
-                data.conversation_id;
+        const decoder =
+            new TextDecoder();
+
+        let buffer = "";
+        let fullReply = "";
+        let firstChunkReceived =
+            false;
+
+
+        const liveText =
+            thinkingMessage
+                ?.querySelector(
+                    ".message-text"
+                );
+
+
+        while (true) {
+
+            const {
+                value,
+                done
+            } = await reader.read();
+
+
+            if (done) {
+                break;
+            }
+
+
+            buffer += decoder.decode(
+                value,
+                {
+                    stream: true
+                }
+            );
+
+
+            const lines =
+                buffer.split("\n");
+
+
+            buffer =
+                lines.pop()
+                || "";
+
+
+            for (const line of lines) {
+
+                if (!line.trim()) {
+                    continue;
+                }
+
+
+                const data =
+                    JSON.parse(
+                        line
+                    );
+
+
+                if (
+                    data.type
+                    === "delta"
+                ) {
+
+                    if (
+                        !firstChunkReceived
+                    ) {
+
+                        firstChunkReceived =
+                            true;
+
+                        if (liveText) {
+
+                            liveText.textContent =
+                                "";
+
+                        }
+
+                    }
+
+
+                    fullReply +=
+                        data.delta
+                        || "";
+
+
+                    if (liveText) {
+
+                        liveText.textContent =
+                            fullReply;
+
+                    }
+
+
+                    workspaceChat.scrollTop =
+                        workspaceChat.scrollHeight;
+
+                }
+
+
+                else if (
+                    data.type
+                    === "done"
+                ) {
+
+                    if (
+                        data.conversation_id
+                    ) {
+
+                        window.workspaceConversationId =
+                            data.conversation_id;
+
+                    }
+
+                }
+
+
+                else if (
+                    data.type
+                    === "error"
+                ) {
+
+                    throw new Error(
+                        data.message
+                        ||
+                        "Nova streaming failed."
+                    );
+
+                }
+
+            }
 
         }
 
 
+        thinkingMessage?.remove();
+
+
         createChatMessage(
             "assistant",
-            data.reply
+            fullReply
             ||
             "Nova could not respond.",
             workspaceChat
