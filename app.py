@@ -3,6 +3,7 @@ import sqlite3
 import uuid
 import stripe
 from datetime import datetime, timezone
+import json
 
 from flask import (
     Flask,
@@ -12,7 +13,9 @@ from flask import (
     redirect,
     url_for,
     flash,
-    send_from_directory
+    send_from_directory,
+    Response,
+    stream_with_context
 )
 
 from flask_login import (
@@ -2206,97 +2209,170 @@ def chat():
                 }
             })
 
-    # NORMAL OPENAI CHAT
+    
         # NORMAL OPENAI CHAT
+    nova_model = "gpt-5-mini"
 
-    try:
-        nova_model = "gpt-5-mini"
+    def generate_nova_response():
 
-        response = client.responses.create(
-    model=nova_model,
-    input=messages,
-    text={
-        "verbosity": "low"
-    }
-)
+        full_reply_parts = []
+        final_response = None
 
-        reply = (
-            response.output_text
-            or ""
-        ).strip()
+        try:
 
-        if not reply:
+            stream = client.responses.create(
+                model=nova_model,
+                input=messages,
+                text={
+                    "verbosity": "low"
+                },
+                stream=True
+            )
+
+            for event in stream:
+
+                if (
+                    event.type
+                    == "response.output_text.delta"
+                ):
+
+                    delta = (
+                        event.delta
+                        or ""
+                    )
+
+                    if delta:
+
+                        full_reply_parts.append(
+                            delta
+                        )
+
+                        yield (
+                            json.dumps({
+                                "type": "delta",
+                                "delta": delta
+                            })
+                            + "\n"
+                        )
+
+                elif (
+                    event.type
+                    == "response.completed"
+                ):
+
+                    final_response = (
+                        event.response
+                    )
+
             reply = (
-                "I couldn't generate a response. "
-                "Please try again."
-            )
-
-        usage = response.usage
-
-        input_tokens = (
-            getattr(
-                usage,
-                "input_tokens",
-                0
-            )
-            if usage
-            else 0
-        )
-
-        output_tokens = (
-            getattr(
-                usage,
-                "output_tokens",
-                0
-            )
-            if usage
-            else 0
-        )
-
-        save_conversation_message(
-            conversation_id,
-            user_id,
-            "assistant",
-            reply,
-            input_tokens=0,
-            output_tokens=output_tokens
-        )
-
-        record_ai_usage(
-            user_id,
-            conversation_id,
-            nova_model,
-            input_tokens,
-            output_tokens
-        )
-
-        return jsonify({
-            "reply": reply,
-            "conversation_id": conversation_id,
-            "usage": {
-                "input_tokens": input_tokens,
-                "output_tokens": output_tokens,
-                "total_tokens": (
-                    input_tokens
-                    + output_tokens
+                "".join(
+                    full_reply_parts
                 )
-            }
-        })
+                .strip()
+            )
 
-    except Exception as error:
-        print(
-            "Nova AI error:",
-            repr(error)
+            if not reply:
+
+                reply = (
+                    "I couldn't generate a response. "
+                    "Please try again."
+                )
+
+            usage = (
+                getattr(
+                    final_response,
+                    "usage",
+                    None
+                )
+                if final_response
+                else None
+            )
+
+            input_tokens = (
+                getattr(
+                    usage,
+                    "input_tokens",
+                    0
+                )
+                if usage
+                else 0
+            )
+
+            output_tokens = (
+                getattr(
+                    usage,
+                    "output_tokens",
+                    0
+                )
+                if usage
+                else 0
+            )
+
+            save_conversation_message(
+                conversation_id,
+                user_id,
+                "assistant",
+                reply,
+                input_tokens=0,
+                output_tokens=output_tokens
+            )
+
+            record_ai_usage(
+                user_id,
+                conversation_id,
+                nova_model,
+                input_tokens,
+                output_tokens
+            )
+
+            yield (
+                json.dumps({
+                    "type": "done",
+                    "conversation_id":
+                        conversation_id,
+                    "usage": {
+                        "input_tokens":
+                            input_tokens,
+                        "output_tokens":
+                            output_tokens,
+                        "total_tokens":
+                            input_tokens
+                            + output_tokens
+                    }
+                })
+                + "\n"
+            )
+
+        except Exception as error:
+
+            print(
+                "Nova AI streaming error:",
+                repr(error)
+            )
+
+            yield (
+                json.dumps({
+                    "type": "error",
+                    "message": (
+                        "Nova is temporarily unavailable. "
+                        "Please try again shortly."
+                    ),
+                    "conversation_id":
+                        conversation_id
+                })
+                + "\n"
+            )
+
+    return Response(
+        stream_with_context(
+            generate_nova_response()
+        ),
+        content_type=(
+            "application/x-ndjson; "
+            "charset=utf-8"
         )
-
-        return jsonify({
-            "error": "ai_unavailable",
-            "message": (
-                "Nova is temporarily unavailable. "
-                "Please try again shortly."
-            ),
-            "conversation_id": conversation_id
-        }), 503
+    )
+    
 
 
 # -------------------------------------------------
