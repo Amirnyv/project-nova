@@ -3719,6 +3719,26 @@ const upgradeNovaProButton =
         "upgrade-nova-pro"
     );
 
+const upgradeNovaMaxButton =
+    document.getElementById(
+        "upgrade-nova-max"
+    );
+
+const settingsPlanPrice =
+    document.getElementById(
+        "settings-plan-price"
+    );
+
+    const billingCardTitle =
+    document.getElementById(
+        "billing-card-title"
+    );
+
+const sidebarPlanName =
+    document.getElementById(
+        "sidebar-plan-name"
+    );
+
 async function loadAiUsage() {
 
     try {
@@ -3761,13 +3781,64 @@ async function loadAiUsage() {
 };
 
 
-        if (settingsPlan) {
+        const planLabelMap = {
+    paid: "Nova Pro",
+    pro: "Nova Pro",
+    max: "Nova Max",
+    developer: "Developer",
+    none: "No Plan"
+};
 
-            settingsPlan.textContent =
-                plan.charAt(0).toUpperCase()
-                + plan.slice(1);
+if (billingCardTitle) {
 
-        }
+    billingCardTitle.textContent =
+        plan === "none"
+            ? "Nova Plans"
+            : (
+                planLabelMap[plan]
+                || "Billing"
+            );
+
+}
+
+
+if (sidebarPlanName) {
+
+    sidebarPlanName.textContent =
+        plan === "none"
+            ? "Nova"
+            : (
+                planLabelMap[plan]
+                || "Nova"
+            );
+
+}
+
+const planPriceMap = {
+    paid: "$14.99 / month",
+    pro: "$14.99 / month",
+    max: "$29.99 / month",
+    developer: "Developer access",
+    none: "No active subscription"
+};
+
+
+if (settingsPlan) {
+
+    settingsPlan.textContent =
+        planLabelMap[plan]
+        || plan;
+
+}
+
+
+if (settingsPlanPrice) {
+
+    settingsPlanPrice.textContent =
+        planPriceMap[plan]
+        || "";
+
+}
 
 
         if (
@@ -3785,12 +3856,18 @@ if (settingsRenewalDate) {
 
     if (settingsBillingPeriod) {
 
-    if (plan === "paid") {
+    if (
+    plan === "paid"
+    ||
+    plan === "pro"
+    ||
+    plan === "max"
+) {
 
-        settingsBillingPeriod.textContent =
-            "Monthly";
+    settingsBillingPeriod.textContent =
+        "Monthly";
 
-    }
+}
 
     else if (plan === "developer") {
 
@@ -3839,58 +3916,97 @@ if (settingsRenewalDate) {
 
 }
 
-        if (upgradeNovaProButton) {
+               const hasPaidPlan =
+            plan === "paid"
+            ||
+            plan === "pro"
+            ||
+            plan === "max";
 
-    const isPaid =
-        plan === "paid";
+        const isActive =
+            status === "active";
 
-    const isActive =
-        status === "active";
-
-    const isPastDue =
-        status === "past_due";
+        const isPastDue =
+            status === "past_due";
 
 
-    if (isPaid && isActive) {
+        if (
+            hasPaidPlan
+            &&
+            (
+                isActive
+                ||
+                isPastDue
+            )
+        ) {
 
-        upgradeNovaProButton.disabled =
-            false;
+            const manageLabel =
+                isPastDue
+                    ? "Fix Billing"
+                    : "Manage Subscription";
 
-        upgradeNovaProButton.textContent =
-            "Manage Subscription";
 
-        upgradeNovaProButton.dataset.mode =
-            "manage";
+            if (upgradeNovaProButton) {
 
-    }
+                upgradeNovaProButton.disabled =
+                    false;
 
-    else if (isPaid && isPastDue) {
+                upgradeNovaProButton.textContent =
+                    manageLabel;
 
-        upgradeNovaProButton.disabled =
-            false;
+                upgradeNovaProButton.dataset.mode =
+                    "manage";
 
-        upgradeNovaProButton.textContent =
-            "Fix Billing";
+            }
 
-        upgradeNovaProButton.dataset.mode =
-            "manage";
 
-    }
+            if (upgradeNovaMaxButton) {
 
-    else {
+                upgradeNovaMaxButton.disabled =
+                    true;
 
-        upgradeNovaProButton.disabled =
-            false;
+                upgradeNovaMaxButton.textContent =
+                    plan === "max"
+                        ? "Nova Max — Current Plan"
+                        : "Nova Max — Manage to Upgrade";
 
-        upgradeNovaProButton.textContent =
-            "Upgrade to Nova Pro";
+                upgradeNovaMaxButton.dataset.mode =
+                    "manage";
 
-        upgradeNovaProButton.dataset.mode =
-            "upgrade";
+            }
 
-    }
+        }
 
-}
+        else {
+
+            if (upgradeNovaProButton) {
+
+                upgradeNovaProButton.disabled =
+                    false;
+
+                upgradeNovaProButton.textContent =
+                    "Nova Pro — $14.99";
+
+                upgradeNovaProButton.dataset.mode =
+                    "upgrade";
+
+            }
+
+
+            if (upgradeNovaMaxButton) {
+
+                upgradeNovaMaxButton.disabled =
+                    false;
+
+                upgradeNovaMaxButton.textContent =
+                    "Nova Max — $29.99";
+
+                upgradeNovaMaxButton.dataset.mode =
+                    "upgrade";
+
+            }
+
+        }
 
 
         if (settingsAiUsage) {
@@ -3961,85 +4077,139 @@ if (settingsRenewalDate) {
 loadAiUsage();
 
 
+async function handleSubscriptionButton(
+    button,
+    plan
+) {
+
+    if (!button) {
+        return;
+    }
+
+
+    const originalText =
+        button.textContent;
+
+    const isManage =
+        button.dataset.mode
+        === "manage";
+
+
+    button.disabled =
+        true;
+
+    button.textContent =
+        isManage
+            ? "Opening Subscription..."
+            : "Opening Checkout...";
+
+
+    try {
+
+        const endpoint =
+            isManage
+                ? "/create-portal-session"
+                : "/create-checkout-session";
+
+
+        const requestOptions = {
+            method: "POST"
+        };
+
+
+        if (!isManage) {
+
+            requestOptions.headers = {
+                "Content-Type":
+                    "application/json"
+            };
+
+            requestOptions.body =
+                JSON.stringify({
+                    plan: plan
+                });
+
+        }
+
+
+        const response =
+            await fetch(
+                endpoint,
+                requestOptions
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            alert(
+                data.error
+                ||
+                "Could not start checkout."
+            );
+
+            return;
+
+        }
+
+
+        if (data.url) {
+
+            window.location.href =
+                data.url;
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+        alert(
+            "Could not start checkout."
+        );
+
+    }
+
+    finally {
+
+        button.disabled =
+            false;
+
+        button.textContent =
+            originalText;
+
+    }
+
+}
+
+
 upgradeNovaProButton
     ?.addEventListener(
         "click",
-        async () => {
-
-            upgradeNovaProButton.disabled =
-                true;
-
-            upgradeNovaProButton.textContent =
-    upgradeNovaProButton.dataset.mode === "manage"
-        ? "Opening Subscription..."
-        : "Opening Checkout...";
+        () => {
+            handleSubscriptionButton(
+                upgradeNovaProButton,
+                "pro"
+            );
+        }
+    );
 
 
-            try {
-
-    const endpoint =
-        upgradeNovaProButton.dataset.mode === "manage"
-            ? "/create-portal-session"
-            : "/create-checkout-session";
-
-
-    const response =
-        await fetch(
-            endpoint,
-            {
-                method: "POST"
-            }
-        );
-
-
-                const data =
-                    await response.json();
-
-
-                if (!response.ok) {
-
-                    alert(
-                        data.error
-                        ||
-                        "Could not start checkout."
-                    );
-
-                    return;
-
-                }
-
-
-                if (data.url) {
-
-                    window.location.href =
-                        data.url;
-
-                }
-
-            }
-
-            catch (error) {
-
-                console.error(
-                    error
-                );
-
-                alert(
-                    "Could not start checkout."
-                );
-
-            }
-
-            finally {
-
-                upgradeNovaProButton.disabled =
-                    false;
-
-                upgradeNovaProButton.textContent =
-                    "Upgrade to Nova Pro";
-
-            }
-
+upgradeNovaMaxButton
+    ?.addEventListener(
+        "click",
+        () => {
+            handleSubscriptionButton(
+                upgradeNovaMaxButton,
+                "max"
+            );
         }
     );
 

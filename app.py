@@ -98,8 +98,13 @@ stripe.api_key = os.getenv(
     "STRIPE_SECRET_KEY"
 )
 
-STRIPE_PRICE_ID = os.getenv(
-    "STRIPE_PRICE_ID"
+STRIPE_PRO_PRICE_ID = (
+    os.getenv("STRIPE_PRO_PRICE_ID")
+    or os.getenv("STRIPE_PRICE_ID")
+)
+
+STRIPE_MAX_PRICE_ID = os.getenv(
+    "STRIPE_MAX_PRICE_ID"
 )
 
 
@@ -321,24 +326,68 @@ def contact():
 @login_required
 def create_checkout_session():
 
-    if not STRIPE_PRICE_ID:
+    data = request.get_json(
+        silent=True
+    ) or {}
+
+    selected_plan = (
+        data.get("plan")
+        or "pro"
+    ).strip().lower()
+
+
+    price_ids = {
+        "pro": STRIPE_PRO_PRICE_ID,
+        "max": STRIPE_MAX_PRICE_ID
+    }
+
+
+    if selected_plan not in price_ids:
+
         return jsonify({
-            "error": "Stripe price is not configured."
+            "error": "Invalid subscription plan."
+        }), 400
+
+
+    selected_price_id = (
+        price_ids[selected_plan]
+    )
+
+
+    if not selected_price_id:
+
+        return jsonify({
+            "error": (
+                f"Stripe price for "
+                f"{selected_plan.title()} "
+                "is not configured."
+            )
         }), 500
 
+
     try:
+
+        metadata = {
+            "user_id": str(
+                current_user.id
+            ),
+            "plan": selected_plan
+        }
+
 
         session = stripe.checkout.Session.create(
             mode="subscription",
 
             line_items=[
                 {
-                    "price": STRIPE_PRICE_ID,
+                    "price":
+                        selected_price_id,
                     "quantity": 1
                 }
             ],
 
-            customer_email=current_user.email,
+            customer_email=
+                current_user.email,
 
             success_url=(
                 request.host_url.rstrip("/")
@@ -350,16 +399,18 @@ def create_checkout_session():
                 + "/app?checkout=canceled"
             ),
 
-            metadata={
-                "user_id": str(
-                    current_user.id
-                )
+            metadata=metadata,
+
+            subscription_data={
+                "metadata": metadata
             }
         )
+
 
         return jsonify({
             "url": session.url
         })
+
 
     except Exception as error:
 
@@ -369,7 +420,8 @@ def create_checkout_session():
         )
 
         return jsonify({
-            "error": "Could not start checkout."
+            "error":
+                "Could not start checkout."
         }), 500
 
 @app.route("/create-portal-session", methods=["POST"])
@@ -508,9 +560,21 @@ def stripe_webhook():
     )
 )
 
+                purchased_plan = (
+                    data_object
+                    .get("metadata", {})
+                    .get("plan", "pro")
+                )
+
+                if purchased_plan not in (
+                    "pro",
+                    "max"
+                ):
+                    purchased_plan = "pro"
+
                 save_subscription(
                     user_id=user_id,
-                    plan="paid",
+                    plan=purchased_plan,
                     status=subscription_data.get(
                         "status",
                         "active"
@@ -597,26 +661,56 @@ current_period_end=(
             else 0
         )
 
+        stripe_plan = None
+
+        subscription_items = (
+            data_object
+            .get("items", {})
+            .get("data", [])
+        )
+
+        if subscription_items:
+
+            stripe_price_id = (
+                subscription_items[0]
+                .get("price", {})
+                .get("id")
+            )
+
+            if (
+                stripe_price_id
+                == STRIPE_PRO_PRICE_ID
+            ):
+                stripe_plan = "pro"
+
+            elif (
+                stripe_price_id
+                == STRIPE_MAX_PRICE_ID
+            ):
+                stripe_plan = "max"
+
         connection = get_db()
 
         connection.execute(
             """
             UPDATE subscriptions
-            SET
-                status = ?,
-                current_period_start = ?,
-                current_period_end = ?,
-                cancel_at_period_end = ?,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE provider_subscription_id = ?
+SET
+    plan = COALESCE(?, plan),
+    status = ?,
+    current_period_start = ?,
+    current_period_end = ?,
+    cancel_at_period_end = ?,
+    updated_at = CURRENT_TIMESTAMP
+WHERE provider_subscription_id = ?
             """,
             (
-                stripe_status,
-                period_start,
-                period_end,
-                cancel_at_period_end,
-                stripe_subscription_id
-            )
+    stripe_plan,
+    stripe_status,
+    period_start,
+    period_end,
+    cancel_at_period_end,
+    stripe_subscription_id
+)
         )
 
         connection.commit()
@@ -799,7 +893,9 @@ def v3():
 
 PLAN_TOKEN_LIMITS = {
     "developer": None,
-    "paid": 250000
+    "paid": 600000,
+    "pro": 600000,
+    "max": 1500000
 }
 
 def get_active_subscription(user_id):
@@ -1265,9 +1361,20 @@ def check_ai_usage_limit(user_id):
 
     plan = subscription["plan"]
 
-    token_limit = PLAN_TOKEN_LIMITS.get(
+
+    if plan not in PLAN_TOKEN_LIMITS:
+
+        return {
+            "allowed": False,
+            "reason": "subscription_required",
+            "plan": plan
+        }
+
+
+    token_limit = PLAN_TOKEN_LIMITS[
         plan
-    )
+    ]
+
 
     if token_limit is None:
 
