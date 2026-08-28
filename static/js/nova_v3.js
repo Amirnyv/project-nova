@@ -2578,20 +2578,33 @@ async function sendMainMessage() {
 
 
                 else if (
-                    data.type
-                    === "done"
-                ) {
+    data.type
+    === "done"
+) {
 
-                    if (
-                        data.conversation_id
-                    ) {
+    if (
+        data.conversation_id
+    ) {
 
-                        window.currentConversationId =
-                            data.conversation_id;
+        window.currentConversationId =
+            data.conversation_id;
 
-                    }
+    }
 
-                }
+
+    if (
+        typeof data.reply
+        === "string"
+        &&
+        data.reply.trim()
+    ) {
+
+        fullReply =
+            data.reply;
+
+    }
+
+}
 
 
                 else if (
@@ -3141,20 +3154,33 @@ async function sendWorkspaceMessage() {
 
 
                 else if (
-                    data.type
-                    === "done"
-                ) {
+    data.type
+    === "done"
+) {
 
-                    if (
-                        data.conversation_id
-                    ) {
+    if (
+        data.conversation_id
+    ) {
 
-                        window.workspaceConversationId =
-                            data.conversation_id;
+        window.workspaceConversationId =
+            data.conversation_id;
 
-                    }
+    }
 
-                }
+
+    if (
+        typeof data.reply
+        === "string"
+        &&
+        data.reply.trim()
+    ) {
+
+        fullReply =
+            data.reply;
+
+    }
+
+}
 
 
                 else if (
