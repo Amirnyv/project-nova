@@ -2305,13 +2305,25 @@ def chat():
         try:
 
             stream = client.responses.create(
-                model=nova_model,
-                input=messages,
-                text={
-                    "verbosity": "low"
-                },
-                stream=True
-            )
+    model=nova_model,
+    input=messages,
+
+    tools=[
+        {
+            "type": "web_search",
+            "search_context_size": "low"
+        }
+    ],
+
+    tool_choice="auto",
+    max_tool_calls=1,
+
+    text={
+        "verbosity": "low"
+    },
+
+    stream=True
+)
 
             for event in stream:
 
@@ -2360,6 +2372,130 @@ def chat():
                 reply = (
                     "I couldn't generate a response. "
                     "Please try again."
+                )
+
+            sources = []
+
+            if final_response:
+
+                response_data = (
+                    final_response.to_dict()
+                )
+
+                for output_item in (
+                    response_data.get(
+                        "output",
+                        []
+                    )
+                ):
+
+                    if (
+                        output_item.get("type")
+                        != "message"
+                    ):
+                        continue
+
+                    for content_part in (
+                        output_item.get(
+                            "content",
+                            []
+                        )
+                    ):
+
+                        if (
+                            content_part.get("type")
+                            != "output_text"
+                        ):
+                            continue
+
+                        for annotation in (
+                            content_part.get(
+                                "annotations",
+                                []
+                            )
+                        ):
+
+                            if (
+                                annotation.get("type")
+                                != "url_citation"
+                            ):
+                                continue
+
+                            citation = (
+                                annotation.get(
+                                    "url_citation"
+                                )
+                                or annotation
+                            )
+
+                            url = citation.get(
+                                "url"
+                            )
+
+                            title = (
+                                citation.get(
+                                    "title"
+                                )
+                                or "Source"
+                            )
+
+                            if (
+                                url
+                                and not any(
+                                    source["url"] == url
+                                    for source in sources
+                                )
+                            ):
+
+                                sources.append({
+                                    "title": title,
+                                    "url": url
+                                })
+
+
+            sources = sources[:5]
+
+
+            if sources:
+
+                source_lines = [
+                    "",
+                    "",
+                    "### Sources"
+                ]
+
+
+                for index, source in enumerate(
+                    sources,
+                    start=1
+                ):
+
+                    safe_title = (
+                        source["title"]
+                        .replace(
+                            "\\",
+                            "\\\\"
+                        )
+                        .replace(
+                            "[",
+                            "\\["
+                        )
+                        .replace(
+                            "]",
+                            "\\]"
+                        )
+                    )
+
+
+                    source_lines.append(
+                        f"{index}. "
+                        f"{safe_title}: "
+                        f"<{source['url']}>"
+                    )
+
+
+                reply += "\n".join(
+                    source_lines
                 )
 
             usage = (
@@ -2414,6 +2550,7 @@ def chat():
                     "type": "done",
                     "conversation_id":
                         conversation_id,
+                        "reply": reply,
                     "usage": {
                         "input_tokens":
                             input_tokens,
