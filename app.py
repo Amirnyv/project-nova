@@ -2,6 +2,8 @@ import os
 import sqlite3
 import uuid
 import stripe
+import resend
+from html import escape
 from datetime import datetime, timezone
 import json
 
@@ -107,6 +109,94 @@ STRIPE_MAX_PRICE_ID = os.getenv(
     "STRIPE_MAX_PRICE_ID"
 )
 
+# -------------------------------------------------
+# EMAIL
+# -------------------------------------------------
+
+resend.api_key = os.getenv(
+    "RESEND_API_KEY"
+)
+
+RESEND_FROM_EMAIL = (
+    "Nova <hello@mail.workfieldhq.com>"
+)
+
+
+def send_welcome_email(
+    email,
+    username
+):
+    if not resend.api_key:
+        print(
+            "Welcome email skipped: "
+            "RESEND_API_KEY is missing."
+        )
+        return
+
+    safe_username = escape(
+        username
+    )
+
+    try:
+        resend.Emails.send({
+            "from":
+                RESEND_FROM_EMAIL,
+
+            "to": [
+                email
+            ],
+
+            "subject":
+                "Welcome to Nova",
+
+            "html": f"""
+                <div style="
+                    font-family: Arial, sans-serif;
+                    max-width: 600px;
+                    margin: auto;
+                    padding: 30px;
+                ">
+                    <h2>
+                        Welcome to Nova, {safe_username}!
+                    </h2>
+
+                    <p>
+                        Your Nova account is ready.
+                    </p>
+
+                    <p>
+                        You can now use Nova to chat,
+                        research, work on projects,
+                        and more.
+                    </p>
+
+                    <p>
+                        <a href="https://workfieldhq.com"
+                           style="
+                               display: inline-block;
+                               padding: 12px 20px;
+                               background: #111827;
+                               color: white;
+                               text-decoration: none;
+                               border-radius: 8px;
+                           ">
+                            Open Nova
+                        </a>
+                    </p>
+
+                    <p>
+                        Thanks for joining Nova.
+                    </p>
+                </div>
+            """
+        })
+
+    except Exception as error:
+        print(
+            "Welcome email error:",
+            repr(error)
+        )
+
 
 # -------------------------------------------------
 # SIGN UP
@@ -202,7 +292,12 @@ def signup():
             )
             return render_template("signup.html")
 
-        connection.close()
+            connection.close()
+
+        send_welcome_email(
+            email,
+            username
+        )
 
         user = User(
             user_id,
