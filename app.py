@@ -793,6 +793,120 @@ def contact():
         "contact.html"
     )
 
+# -------------------------------------------------
+# ADMIN DASHBOARD
+# -------------------------------------------------
+
+@app.route("/admin")
+@login_required
+def admin_dashboard():
+
+    admin_email = os.getenv(
+        "NOVA_ADMIN_EMAIL",
+        ""
+    ).strip().lower()
+
+    current_email = (
+        current_user.email
+        or ""
+    ).strip().lower()
+
+    if (
+        not admin_email
+        or current_email != admin_email
+    ):
+        return "Page not found.", 404
+
+
+    connection = get_db()
+
+
+    total_users = connection.execute(
+        """
+        SELECT COUNT(*) AS value
+        FROM users
+        """
+    ).fetchone()["value"]
+
+
+    new_users_today = connection.execute(
+        """
+        SELECT COUNT(*) AS value
+        FROM users
+        WHERE DATE(created_at) = CURRENT_DATE
+        """
+    ).fetchone()["value"]
+
+
+    paid_users = connection.execute(
+        """
+        SELECT COUNT(DISTINCT user_id) AS value
+        FROM subscriptions
+        WHERE status = 'active'
+        AND plan IN (
+            'paid',
+            'pro',
+            'max'
+        )
+        """
+    ).fetchone()["value"]
+
+
+    pro_users = connection.execute(
+        """
+        SELECT COUNT(DISTINCT user_id) AS value
+        FROM subscriptions
+        WHERE status = 'active'
+        AND plan IN (
+            'paid',
+            'pro'
+        )
+        """
+    ).fetchone()["value"]
+
+
+    max_users = connection.execute(
+        """
+        SELECT COUNT(DISTINCT user_id) AS value
+        FROM subscriptions
+        WHERE status = 'active'
+        AND plan = 'max'
+        """
+    ).fetchone()["value"]
+
+
+    total_tokens = connection.execute(
+        """
+        SELECT
+            COALESCE(
+                SUM(total_tokens),
+                0
+            ) AS value
+        FROM ai_usage
+        """
+    ).fetchone()["value"]
+
+
+    connection.close()
+
+
+    unpaid_users = max(
+        total_users - paid_users,
+        0
+    )
+
+
+    return render_template(
+        "admin.html",
+        total_users=total_users,
+        new_users_today=new_users_today,
+        paid_users=paid_users,
+        unpaid_users=unpaid_users,
+        pro_users=pro_users,
+        max_users=max_users,
+        total_tokens=total_tokens
+    )
+
 @app.route("/create-checkout-session", methods=["POST"])
 @login_required
 def create_checkout_session():
