@@ -2,6 +2,16 @@ import os
 import sqlite3
 import uuid
 import stripe
+import resend
+from html import escape
+import hashlib
+import hmac
+
+from itsdangerous import (
+    URLSafeTimedSerializer,
+    SignatureExpired,
+    BadSignature
+)
 from datetime import datetime, timezone
 import json
 
@@ -107,6 +117,277 @@ STRIPE_MAX_PRICE_ID = os.getenv(
     "STRIPE_MAX_PRICE_ID"
 )
 
+# -------------------------------------------------
+# EMAIL
+# -------------------------------------------------
+
+resend.api_key = os.getenv(
+    "RESEND_API_KEY"
+)
+
+RESEND_FROM_EMAIL = (
+    "Nova <hello@mail.workfieldhq.com>"
+)
+password_reset_serializer = (
+    URLSafeTimedSerializer(
+        app.secret_key
+    )
+)
+
+PASSWORD_RESET_SALT = (
+    "nova-password-reset"
+)
+
+PASSWORD_RESET_MAX_AGE = 3600
+
+
+def send_welcome_email(
+    email,
+    username
+):
+    if not resend.api_key:
+        print(
+            "Welcome email skipped: "
+            "RESEND_API_KEY is missing."
+        )
+        return
+
+    safe_username = escape(
+        username
+    )
+
+    try:
+        resend.Emails.send({
+            "from":
+                RESEND_FROM_EMAIL,
+
+            "to": [
+                email
+            ],
+
+            "subject":
+                "Welcome to Nova",
+
+            "html": f"""
+                <div style="
+                    font-family: Arial, sans-serif;
+                    max-width: 600px;
+                    margin: auto;
+                    padding: 30px;
+                ">
+                    <h2>
+                        Welcome to Nova, {safe_username}!
+                    </h2>
+
+                    <p>
+                        Your Nova account is ready.
+                    </p>
+
+                    <p>
+                        You can now use Nova to chat,
+                        research, work on projects,
+                        and more.
+                    </p>
+
+                    <p>
+                        <a href="https://workfieldhq.com"
+                           style="
+                               display: inline-block;
+                               padding: 12px 20px;
+                               background: #111827;
+                               color: white;
+                               text-decoration: none;
+                               border-radius: 8px;
+                           ">
+                            Open Nova
+                        </a>
+                    </p>
+
+                    <p>
+                        Thanks for joining Nova.
+                    </p>
+                </div>
+            """
+        })
+
+    except Exception as error:
+        print(
+            "Welcome email error:",
+            repr(error)
+        )
+
+def get_password_fingerprint(
+    password_hash
+):
+    return hashlib.sha256(
+        password_hash.encode("utf-8")
+    ).hexdigest()
+
+
+def generate_password_reset_token(
+    user_id,
+    password_hash
+):
+    return password_reset_serializer.dumps(
+        {
+            "user_id": user_id,
+            "password_fingerprint":
+                get_password_fingerprint(
+                    password_hash
+                )
+        },
+        salt=PASSWORD_RESET_SALT
+    )
+
+
+def verify_password_reset_token(
+    token
+):
+    try:
+        data = (
+            password_reset_serializer.loads(
+                token,
+                salt=PASSWORD_RESET_SALT,
+                max_age=PASSWORD_RESET_MAX_AGE
+            )
+        )
+
+    except SignatureExpired:
+        return None, "expired"
+
+    except BadSignature:
+        return None, "invalid"
+
+
+    user_id = data.get(
+        "user_id"
+    )
+
+    expected_fingerprint = data.get(
+        "password_fingerprint"
+    )
+
+
+    if (
+        not user_id
+        or not expected_fingerprint
+    ):
+        return None, "invalid"
+
+
+    connection = get_db()
+
+    user_row = connection.execute(
+        """
+        SELECT
+            id,
+            email,
+            password_hash
+        FROM users
+        WHERE id = ?
+        """,
+        (user_id,)
+    ).fetchone()
+
+    connection.close()
+
+
+    if not user_row:
+        return None, "invalid"
+
+
+    current_fingerprint = (
+        get_password_fingerprint(
+            user_row["password_hash"]
+        )
+    )
+
+
+    if not hmac.compare_digest(
+        expected_fingerprint,
+        current_fingerprint
+    ):
+        return None, "invalid"
+
+
+    return user_row, None
+
+
+def send_password_reset_email(
+    email,
+    reset_url
+):
+    if not resend.api_key:
+        print(
+            "Password reset email skipped: "
+            "RESEND_API_KEY is missing."
+        )
+        return False
+
+
+    try:
+        resend.Emails.send({
+            "from":
+                RESEND_FROM_EMAIL,
+
+            "to": [
+                email
+            ],
+
+            "subject":
+                "Reset your Nova password",
+
+            "html": f"""
+                <div style="
+                    font-family: Arial, sans-serif;
+                    max-width: 600px;
+                    margin: auto;
+                    padding: 30px;
+                ">
+                    <h2>
+                        Reset your Nova password
+                    </h2>
+
+                    <p>
+                        We received a request to reset
+                        your Nova password.
+                    </p>
+
+                    <p>
+                        <a href="{escape(reset_url)}"
+                           style="
+                               display: inline-block;
+                               padding: 12px 20px;
+                               background: #111827;
+                               color: white;
+                               text-decoration: none;
+                               border-radius: 8px;
+                           ">
+                            Reset Password
+                        </a>
+                    </p>
+
+                    <p>
+                        This link expires in 1 hour.
+                    </p>
+
+                    <p>
+                        If you did not request this,
+                        you can safely ignore this email.
+                    </p>
+                </div>
+            """
+        })
+
+        return True
+
+    except Exception as error:
+        print(
+            "Password reset email error:",
+            repr(error)
+        )
+
+        return False
 
 # -------------------------------------------------
 # SIGN UP
@@ -202,7 +483,12 @@ def signup():
             )
             return render_template("signup.html")
 
-        connection.close()
+            connection.close()
+
+        send_welcome_email(
+            email,
+            username
+        )
 
         user = User(
             user_id,
@@ -276,6 +562,191 @@ def login():
 
     return render_template("login.html")
 
+# -------------------------------------------------
+# FORGOT PASSWORD
+# -------------------------------------------------
+
+@app.route(
+    "/forgot-password",
+    methods=["GET", "POST"]
+)
+def forgot_password():
+
+    if current_user.is_authenticated:
+        return redirect(
+            url_for("home")
+        )
+
+    if request.method == "POST":
+
+        email = request.form.get(
+            "email",
+            ""
+        ).strip().lower()
+
+        if email:
+
+            connection = get_db()
+
+            user_row = connection.execute(
+                """
+                SELECT
+                    id,
+                    email,
+                    password_hash
+                FROM users
+                WHERE email = ?
+                """,
+                (email,)
+            ).fetchone()
+
+            connection.close()
+
+            if user_row:
+
+                token = (
+                    generate_password_reset_token(
+                        user_row["id"],
+                        user_row["password_hash"]
+                    )
+                )
+
+                reset_url = url_for(
+                    "reset_password",
+                    token=token,
+                    _external=True
+                )
+
+                send_password_reset_email(
+                    user_row["email"],
+                    reset_url
+                )
+
+        flash(
+            "If an account exists with that email, "
+            "a password reset link has been sent."
+        )
+
+        return redirect(
+            url_for("forgot_password")
+        )
+
+    return render_template(
+        "forgot_password.html"
+    )
+
+# -------------------------------------------------
+# RESET PASSWORD
+# -------------------------------------------------
+
+@app.route(
+    "/reset-password/<token>",
+    methods=["GET", "POST"]
+)
+def reset_password(token):
+
+    user_row, token_error = (
+        verify_password_reset_token(
+            token
+        )
+    )
+
+    if token_error == "expired":
+
+        flash(
+            "That password reset link has expired. "
+            "Please request a new one."
+        )
+
+        return redirect(
+            url_for("forgot_password")
+        )
+
+    if token_error or not user_row:
+
+        flash(
+            "That password reset link is invalid. "
+            "Please request a new one."
+        )
+
+        return redirect(
+            url_for("forgot_password")
+        )
+
+
+    if request.method == "POST":
+
+        password = request.form.get(
+            "password",
+            ""
+        )
+
+        confirm_password = request.form.get(
+            "confirm_password",
+            ""
+        )
+
+
+        if len(password) < 8:
+
+            flash(
+                "Password must be at least 8 characters."
+            )
+
+            return render_template(
+                "reset_password.html"
+            )
+
+
+        if password != confirm_password:
+
+            flash(
+                "Passwords do not match."
+            )
+
+            return render_template(
+                "reset_password.html"
+            )
+
+
+        new_password_hash = (
+            generate_password_hash(
+                password
+            )
+        )
+
+
+        connection = get_db()
+
+        connection.execute(
+            """
+            UPDATE users
+            SET password_hash = ?
+            WHERE id = ?
+            """,
+            (
+                new_password_hash,
+                user_row["id"]
+            )
+        )
+
+        connection.commit()
+        connection.close()
+
+
+        flash(
+            "Your password has been reset. "
+            "You can now log in."
+        )
+
+        return redirect(
+            url_for("login")
+        )
+
+
+    return render_template(
+        "reset_password.html"
+    )
 
 # -------------------------------------------------
 # LOGOUT
