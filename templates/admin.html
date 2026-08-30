@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Nova Admin</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #0b1120;
+            color: #f8fafc;
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+        }
+
+        .admin-page {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 24px 18px 50px;
+        }
+
+        .admin-header {
+            margin-bottom: 24px;
+        }
+
+        .admin-header h1 {
+            margin: 0 0 6px;
+            font-size: 28px;
+        }
+
+        .admin-header p {
+            margin: 0;
+            color: #94a3b8;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(2, 1fr);
+            gap: 14px;
+        }
+
+        .admin-card {
+            background: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .admin-label {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .admin-value {
+            font-size: 30px;
+            font-weight: 700;
+        }
+
+        .admin-back {
+            display: inline-block;
+            margin-top: 28px;
+            color: #93c5fd;
+            text-decoration: none;
+        }
+
+        @media (max-width: 600px) {
+
+            .admin-page {
+                padding-top: 20px;
+            }
+
+            .admin-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-card {
+                padding: 18px;
+            }
+
+            .admin-value {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+
+
+<body>
+
+    <main class="admin-page">
+
+        <div class="admin-header">
+            <h1>Nova Admin</h1>
+            <p>
+                Live account and usage overview
+            </p>
+        </div>
+
+
+        <div class="admin-grid">
+
+            <div class="admin-card">
+                <div class="admin-label">
+                    Total Accounts
+                </div>
+
+                <div class="admin-value">
+                    {{ total_users }}
+                </div>
+            </div>
+
+
+            <div class="admin-card">
+                <div class="admin-label">
+                    New Accounts Today
+                </div>
+
+                <div class="admin-value">
+                    {{ new_users_today }}
+                </div>
+            </div>
+
+
+            <div class="admin-card">
+                <div class="admin-label">
+                    Paid Users
+                </div>
+
+                <div class="admin-value">
+                    {{ paid_users }}
+                </div>
+            </div>
+
+
+            <div class="admin-card">
+                <div class="admin-label">
+                    Unpaid Users
+                </div>
+
+                <div class="admin-value">
+                    {{ unpaid_users }}
+                </div>
+            </div>
+
+
+            <div class="admin-card">
+                <div class="admin-label">
+                    Nova Pro
+                </div>
+
+                <div class="admin-value">
+                    {{ pro_users }}
+                </div>
+            </div>
+
+
+            <div class="admin-card">
+                <div class="admin-label">
+                    Nova Max
+                </div>
+
+                <div class="admin-value">
+                    {{ max_users }}
+                </div>
+            </div>
+
+
+            <div class="admin-card">
+                <div class="admin-label">
+                    AI Tokens Used
+                </div>
+
+                <div class="admin-value">
+                    {{ "{:,}".format(total_tokens) }}
+                </div>
+            </div>
+
+        </div>
+
+
+        <a
+            class="admin-back"
+            href="{{ url_for('home') }}"
+        >
+            ← Back to Nova
+        </a>
+
+    </main>
+
+</body>
+
+</html>
