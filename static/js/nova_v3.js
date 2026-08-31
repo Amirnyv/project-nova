@@ -18,6 +18,172 @@ const pages =
         ".page"
     );
 
+    const mobileMenuButton =
+    document.getElementById(
+        "mobile-menu-button"
+    );
+
+const mobileSidebarBackdrop =
+    document.getElementById(
+        "mobile-sidebar-backdrop"
+    );
+
+const sidebar =
+    document.querySelector(
+        ".sidebar"
+    );
+
+
+function openMobileSidebar() {
+
+    if (!sidebar) {
+        return;
+    }
+
+    sidebar.classList.add(
+        "mobile-open"
+    );
+
+    mobileSidebarBackdrop
+        ?.classList.add(
+            "active"
+        );
+
+    document.body.classList.add(
+        "mobile-menu-open"
+    );
+
+    mobileMenuButton
+        ?.setAttribute(
+            "aria-expanded",
+            "true"
+        );
+}
+
+
+function closeMobileSidebar() {
+
+    sidebar
+        ?.classList.remove(
+            "mobile-open"
+        );
+
+    mobileSidebarBackdrop
+        ?.classList.remove(
+            "active"
+        );
+
+    document.body.classList.remove(
+        "mobile-menu-open"
+    );
+
+    mobileMenuButton
+        ?.setAttribute(
+            "aria-expanded",
+            "false"
+        );
+}
+
+
+mobileMenuButton
+    ?.addEventListener(
+        "click",
+        openMobileSidebar
+    );
+
+
+mobileSidebarBackdrop
+    ?.addEventListener(
+        "click",
+        closeMobileSidebar
+    );
+
+const mobileChatHistoryButton =
+    document.getElementById(
+        "mobile-chat-history-button"
+    );
+
+const mobileChatHistoryBackdrop =
+    document.getElementById(
+        "mobile-chat-history-backdrop"
+    );
+
+const mobileChatHistory =
+    document.querySelector(
+        ".nova-chat-history"
+    );
+
+
+function openMobileChatHistory() {
+
+    mobileChatHistory
+        ?.classList.add(
+            "mobile-open"
+        );
+
+    mobileChatHistoryBackdrop
+        ?.classList.add(
+            "active"
+        );
+
+    document.body.classList.add(
+        "mobile-menu-open"
+    );
+
+}
+
+
+function closeMobileChatHistory() {
+
+    mobileChatHistory
+        ?.classList.remove(
+            "mobile-open"
+        );
+
+    mobileChatHistoryBackdrop
+        ?.classList.remove(
+            "active"
+        );
+
+    document.body.classList.remove(
+        "mobile-menu-open"
+    );
+
+}
+
+
+mobileChatHistoryButton
+    ?.addEventListener(
+        "click",
+        openMobileChatHistory
+    );
+
+
+mobileChatHistoryBackdrop
+    ?.addEventListener(
+        "click",
+        closeMobileChatHistory
+    );
+
+
+document
+    .getElementById(
+        "conversation-list"
+    )
+    ?.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target.closest(
+                    ".conversation-item"
+                )
+            ) {
+                closeMobileChatHistory();
+            }
+
+        }
+    );
 
 function openPage(pageName) {
 
@@ -90,11 +256,13 @@ sidebarButtons.forEach(button => {
 
             if (pageName) {
 
-                openPage(
-                    pageName
-                );
+    openPage(
+        pageName
+    );
 
-            }
+    closeMobileSidebar();
+
+}
 
         }
     );
@@ -4394,4 +4562,544 @@ const savedTheme =
 
 applyTheme(
     savedTheme
+);
+
+// ========================================
+// NOVA DRIVE - MAP + GPS
+// ========================================
+
+let driveUserCoordinates = null;
+let driveMap = null;
+const driveMapElement =
+    document.getElementById(
+        "drive-map"
+    );
+
+
+if (
+    driveMapElement &&
+    window.NOVA_MAPBOX_TOKEN
+) {
+
+    mapboxgl.accessToken =
+        window.NOVA_MAPBOX_TOKEN;
+
+
+     driveMap =
+        new mapboxgl.Map({
+            container: "drive-map",
+            style: "mapbox://styles/mapbox/navigation-night-v1",
+            center: [-73.9855, 40.7580],
+            zoom: 12
+        });
+
+
+    driveMap.addControl(
+        new mapboxgl.NavigationControl(),
+        "top-right"
+    );
+
+
+    const geolocateControl =
+        new mapboxgl.GeolocateControl({
+            positionOptions: {
+                enableHighAccuracy: true
+            },
+
+            trackUserLocation: true,
+
+            showUserHeading: true,
+
+            showAccuracyCircle: true
+        });
+
+
+    driveMap.addControl(
+        geolocateControl,
+        "top-right"
+    );
+    geolocateControl.on(
+    "geolocate",
+    (event) => {
+
+        driveUserCoordinates = [
+            event.coords.longitude,
+            event.coords.latitude
+        ];
+
+        console.log(
+            "Nova Drive current location:",
+            driveUserCoordinates
+        );
+
+    }
+);
+
+
+    driveMap.on(
+        "load",
+        () => {
+
+            const placeholder =
+                document.querySelector(
+                    ".drive-map-placeholder"
+                );
+
+            if (placeholder) {
+                placeholder.remove();
+            }
+
+
+            setTimeout(
+                () => {
+                    geolocateControl.trigger();
+                },
+                500
+            );
+
+if (navigator.geolocation) {
+
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+
+            driveUserCoordinates = [
+                position.coords.longitude,
+                position.coords.latitude
+            ];
+
+            console.log(
+                "Nova Drive GPS ready:",
+                driveUserCoordinates
+            );
+
+        },
+
+        (error) => {
+
+            console.error(
+                "Nova Drive GPS error:",
+                error
+            );
+
+        },
+
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 5000
+        }
+    );
+
+}
+
+        }
+    );
+
+}
+
+// ========================================
+// NOVA DRIVE - DESTINATION SEARCH
+// ========================================
+
+async function searchDriveDestination(query) {
+
+    const token =
+        window.NOVA_MAPBOX_TOKEN;
+
+    if (!query || !token) {
+        return null;
+    }
+
+    const url =
+        "https://api.mapbox.com/search/geocode/v6/forward" +
+        "?q=" + encodeURIComponent(query) +
+        "&access_token=" + encodeURIComponent(token) +
+        "&limit=1";
+
+    try {
+
+        const response =
+            await fetch(url);
+
+        if (!response.ok) {
+            throw new Error(
+                "Destination search failed"
+            );
+        }
+
+        const data =
+            await response.json();
+
+        if (
+            !data.features ||
+            data.features.length === 0
+        ) {
+            return null;
+        }
+
+        const feature =
+            data.features[0];
+
+        return {
+            name:
+                feature.properties?.full_address ||
+                feature.properties?.name ||
+                query,
+
+            coordinates:
+                feature.geometry.coordinates
+        };
+
+    } catch (error) {
+
+        console.error(
+            "Nova Drive destination error:",
+            error
+        );
+
+        return null;
+    }
+
+}
+
+// ========================================
+// NOVA DRIVE - GO BUTTON
+// ========================================
+
+const driveDestinationInput =
+    document.getElementById(
+        "drive-destination"
+    );
+
+const driveRouteButton =
+    document.getElementById(
+        "drive-route-button"
+    );
+
+
+if (
+    driveDestinationInput &&
+    driveRouteButton
+) {
+
+    driveRouteButton.addEventListener(
+        "click",
+        async () => {
+
+            const query =
+                driveDestinationInput.value.trim();
+
+            if (!query) {
+                return;
+            }
+
+
+            driveRouteButton.disabled = true;
+            driveRouteButton.textContent =
+                "Searching...";
+
+
+            const destination =
+                await searchDriveDestination(
+                    query
+                );
+
+
+            driveRouteButton.disabled = false;
+            driveRouteButton.textContent =
+                "Go";
+
+
+            if (!destination) {
+
+                alert(
+                    "Nova Drive couldn't find that destination."
+                );
+
+                return;
+            }
+
+
+            console.log(
+    "Nova Drive destination:",
+    destination
+);
+
+
+if (!driveUserCoordinates) {
+
+    alert(
+        "Nova Drive is still getting your location. Try again in a moment."
+    );
+
+    return;
+}
+
+
+const route =
+    await getDriveRoute(
+        driveUserCoordinates,
+        destination.coordinates
+    );
+
+
+if (!route) {
+
+    alert(
+        "Nova Drive couldn't calculate a driving route."
+    );
+
+    return;
+}
+
+
+console.log(
+    "Nova Drive route:",
+    route
+);
+drawDriveRoute(route);
+
+
+        }
+    );
+
+}
+
+// ========================================
+// NOVA DRIVE - DRAW ROUTE
+// ========================================
+
+function drawDriveRoute(route) {
+
+    if (
+        !driveMap ||
+        !route ||
+        !route.geometry
+    ) {
+        return;
+    }
+
+
+    const routeData = {
+        type: "Feature",
+        properties: {},
+        geometry: route.geometry
+    };
+
+
+    if (driveMap.getSource("nova-drive-route")) {
+
+        driveMap
+            .getSource("nova-drive-route")
+            .setData(routeData);
+
+    } else {
+
+        driveMap.addSource(
+            "nova-drive-route",
+            {
+                type: "geojson",
+                data: routeData
+            }
+        );
+
+
+        driveMap.addLayer({
+            id: "nova-drive-route-line",
+            type: "line",
+            source: "nova-drive-route",
+
+            layout: {
+                "line-join": "round",
+                "line-cap": "round"
+            },
+
+            paint: {
+                "line-width": 7,
+                "line-opacity": 0.9
+            }
+        });
+
+    }
+
+const coordinates =
+    route.geometry.coordinates;
+
+
+const bounds =
+    coordinates.reduce(
+        (bounds, coordinate) => {
+
+            return bounds.extend(
+                coordinate
+            );
+
+        },
+
+        new mapboxgl.LngLatBounds(
+            coordinates[0],
+            coordinates[0]
+        )
+    );
+
+
+driveMap.fitBounds(
+    bounds,
+    {
+        padding: 60,
+        duration: 1200
+    }
+);
+
+}
+
+// ========================================
+// NOVA DRIVE - DRIVING ROUTE
+// ========================================
+
+async function getDriveRoute(
+    startCoordinates,
+    endCoordinates
+) {
+
+    const token =
+        window.NOVA_MAPBOX_TOKEN;
+
+    if (
+        !startCoordinates ||
+        !endCoordinates ||
+        !token
+    ) {
+        return null;
+    }
+
+
+    const start =
+        startCoordinates.join(",");
+
+    const end =
+        endCoordinates.join(",");
+
+
+    const url =
+        "https://api.mapbox.com/directions/v5/mapbox/driving-traffic/" +
+        start +
+        ";" +
+        end +
+        "?alternatives=false" +
+        "&geometries=geojson" +
+        "&overview=full" +
+        "&steps=true" +
+        "&access_token=" +
+        encodeURIComponent(token);
+
+
+    try {
+
+        const response =
+            await fetch(url);
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Route request failed"
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            !data.routes ||
+            data.routes.length === 0
+        ) {
+
+            return null;
+
+        }
+
+
+        return data.routes[0];
+
+
+    } catch (error) {
+
+        console.error(
+            "Nova Drive route error:",
+            error
+        );
+
+        return null;
+
+    }
+
+}
+
+// ========================================
+// NOVA DRIVE - MODE PICKER
+// ========================================
+
+let novaDriveMode = null;
+
+const driveModeSelector =
+    document.getElementById(
+        "drive-mode-selector"
+    );
+
+const driveModeCurrent =
+    document.getElementById(
+        "drive-mode-current"
+    );
+
+const driveModeButtons =
+    document.querySelectorAll(
+        ".drive-mode-button"
+    );
+
+driveModeButtons.forEach(
+    (button) => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                novaDriveMode =
+                    button.dataset.driveMode;
+
+                driveModeSelector.hidden = true;
+                driveModeCurrent.hidden = false;
+
+                if (novaDriveMode === "truck") {
+
+                    driveModeCurrent.textContent =
+                        "🚛 Truck ▾";
+
+                } else {
+
+                    driveModeCurrent.textContent =
+                        "🚗 Car ▾";
+                }
+
+                console.log(
+                    "Nova Drive mode:",
+                    novaDriveMode
+                );
+            }
+        );
+
+    }
+);
+
+driveModeCurrent.addEventListener(
+    "click",
+    () => {
+
+        driveModeSelector.hidden =
+            !driveModeSelector.hidden;
+
+    }
 );

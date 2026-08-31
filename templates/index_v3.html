@@ -18,8 +18,11 @@ rel="stylesheet">
 
 <link
 rel="stylesheet"
-href="{{ url_for('static', filename='css/nova_v3.css') }}">
-
+href="{{ url_for('static', filename='css/nova_v3.css') }}?v=5">
+<link
+    href="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.css"
+    rel="stylesheet"
+>
 </head>
 
 <body>
@@ -101,6 +104,13 @@ class="create-button">
         <span>Files</span>
     </button>
 
+<button
+    class="sidebar-button"
+    data-page="drive"
+>
+    <span class="sidebar-icon">🚗</span>
+    <span>Nova Drive</span>
+</button>
 
     <p class="sidebar-title">
         AI TOOLS
@@ -206,7 +216,35 @@ Pro Workspace
 
 </aside>
 
+<div
+    class="mobile-sidebar-backdrop"
+    id="mobile-sidebar-backdrop"
+></div>
+
 <main class="main-content">
+
+    <header class="mobile-app-header">
+
+        <button
+            class="mobile-menu-button"
+            id="mobile-menu-button"
+            type="button"
+            aria-label="Open navigation"
+            aria-expanded="false"
+        >
+            ☰
+        </button>
+
+        <div class="mobile-app-brand">
+            <span>✦</span>
+            <strong>NOVA</strong>
+        </div>
+
+        <div class="mobile-app-avatar">
+            {{ user.username[0]|upper }}
+        </div>
+
+    </header>
 
 <!-- ================================= -->
 <!-- DASHBOARD -->
@@ -713,6 +751,158 @@ Pro Workspace
 </section>
 
 <!-- ================================= -->
+<!-- NOVA DRIVE -->
+<!-- ================================= -->
+
+<section
+    id="drive-page"
+    class="page"
+>
+
+    <div class="drive-header">
+
+        <div>
+
+            <div class="drive-kicker">
+                <span></span>
+                NOVA DRIVE
+            </div>
+
+            <h1>
+                Drive smarter.
+            </h1>
+
+            <p>
+                Navigation, traffic, road alerts, and driving assistance.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="drive-layout drive-fullscreen-shell">
+
+        <div class="drive-search-card">
+
+            <div class="drive-search-row">
+
+                <input
+                    id="drive-destination"
+                    type="text"
+                    placeholder="Where are you going?"
+                >
+
+                <button
+                    type="button"
+                    id="drive-route-button"
+                    class="primary-button"
+                >
+                    Go
+                </button>
+
+            </div>
+
+           <div class="drive-mode-wrapper">
+
+    <div
+        class="drive-mode-selector"
+        id="drive-mode-selector"
+    >
+
+        <button
+            type="button"
+            class="drive-mode-button"
+            data-drive-mode="car"
+        >
+            🚗 Car
+        </button>
+
+        <button
+            type="button"
+            class="drive-mode-button"
+            data-drive-mode="truck"
+        >
+            🚛 Truck
+        </button>
+
+    </div>
+
+
+    <button
+        type="button"
+        id="drive-mode-current"
+        class="drive-mode-current"
+        hidden
+    >
+        🚗 Car ▾
+    </button>
+
+</div> 
+
+        </div>
+
+<div
+    id="drive-route-info"
+    class="drive-route-info"
+    hidden
+>
+
+    <div class="drive-route-stat">
+
+        <span class="drive-route-label">
+            ETA
+        </span>
+
+        <strong id="drive-route-duration">
+            --
+        </strong>
+
+    </div>
+
+
+    <div class="drive-route-stat">
+
+        <span class="drive-route-label">
+            Distance
+        </span>
+
+        <strong id="drive-route-distance">
+            --
+        </strong>
+
+    </div>
+
+</div>
+
+        <div
+            class="drive-map"
+            id="drive-map"
+        >
+
+            <div class="drive-map-placeholder">
+
+                <div class="drive-map-icon">
+                    📍
+                </div>
+
+                <h2>
+                    Nova Drive
+                </h2>
+
+                <p>
+                    Map loading area
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ================================= -->
 <!-- NOVA CHAT V2 -->
 <!-- ================================= -->
 
@@ -740,13 +930,25 @@ Pro Workspace
 
         </div>
 
-        <button
-            class="secondary-button nova-new-chat-button"
-            id="new-chat-button"
-        >
-            <span>＋</span>
-            New Chat
-        </button>
+        <div class="nova-chat-header-actions">
+
+    <button
+        type="button"
+        class="secondary-button mobile-chat-history-button"
+        id="mobile-chat-history-button"
+    >
+        ☰ Chats
+    </button>
+
+    <button
+        class="secondary-button nova-new-chat-button"
+        id="new-chat-button"
+    >
+        <span>＋</span>
+        New Chat
+    </button>
+
+</div>
 
     </div>
 
@@ -792,6 +994,10 @@ Pro Workspace
 
         </aside>
 
+        <div
+    class="mobile-chat-history-backdrop"
+    id="mobile-chat-history-backdrop"
+></div>
 
         <!-- MAIN CHAT -->
 
@@ -2730,6 +2936,13 @@ Pro Workspace
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.js"></script>
+
+<script>
+    window.NOVA_MAPBOX_TOKEN =
+        {{ mapbox_access_token | tojson }};
+</script>
 
 <script
 src="{{ url_for('static', filename='js/nova_v3.js') }}?v=2"></script>

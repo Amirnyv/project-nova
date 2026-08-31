@@ -1433,7 +1433,8 @@ stripe_timestamp_to_datetime(
 def home():
     return render_template(
         "index_v3.html",
-        user=current_user
+        user=current_user,
+        mapbox_access_token=os.getenv("MAPBOX_ACCESS_TOKEN")
     )
 
 
