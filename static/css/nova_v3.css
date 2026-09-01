@@ -6330,3 +6330,217 @@ button {
     }
 
 }
+
+/* ========================================
+   NOVA DRIVE - TRUCK ACTIONS
+======================================== */
+
+@media (max-width: 768px) {
+
+    .drive-truck-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        width: 100%;
+        margin-top: 10px;
+
+        overflow-x: auto;
+        overflow-y: hidden;
+
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .drive-truck-actions::-webkit-scrollbar {
+        display: none;
+    }
+
+    .drive-truck-actions[hidden] {
+        display: none !important;
+    }
+
+    .drive-truck-action {
+        flex: 0 0 auto;
+
+        height: 38px;
+        padding: 0 13px;
+
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        border-radius: 999px;
+
+        background: rgba(15, 17, 28, 0.92);
+
+        color: #ffffff;
+
+        font-size: 13px;
+        font-weight: 700;
+
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+
+        box-shadow:
+            0 8px 22px rgba(0, 0, 0, 0.25);
+
+        white-space: nowrap;
+        cursor: pointer;
+    }
+
+    .drive-truck-action:active {
+        transform: scale(0.96);
+    }
+}
+
+/* ========================================
+   NOVA DRIVE - TRUCK ACTION GRID
+======================================== */
+
+@media (max-width: 768px) {
+
+    #drive-page .drive-truck-actions {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 7px !important;
+
+        width: 100% !important;
+        margin-top: 9px !important;
+
+        overflow: visible !important;
+    }
+
+    #drive-page .drive-truck-actions[hidden] {
+        display: none !important;
+    }
+
+    #drive-page .drive-truck-action {
+        width: 100% !important;
+        min-width: 0 !important;
+
+        height: 40px !important;
+        padding: 0 8px !important;
+
+        font-size: 13px !important;
+
+        text-align: center !important;
+    }
+}
+
+/* ========================================
+   NOVA DRIVE - CAR ACTION GRID
+======================================== */
+
+@media (max-width: 768px) {
+
+    #drive-page .drive-car-actions {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 7px !important;
+
+        width: 100% !important;
+        margin-top: 9px !important;
+    }
+
+    #drive-page .drive-car-actions[hidden] {
+        display: none !important;
+    }
+
+    #drive-page .drive-car-action {
+        width: 100% !important;
+        min-width: 0 !important;
+
+        height: 40px !important;
+        padding: 0 8px !important;
+
+        border: 1px solid rgba(255, 255, 255, 0.10) !important;
+        border-radius: 999px !important;
+
+        background: rgba(15, 17, 28, 0.92) !important;
+        color: #ffffff !important;
+
+        font-size: 13px !important;
+        font-weight: 700 !important;
+
+        text-align: center !important;
+
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+
+        box-shadow:
+            0 8px 22px rgba(0, 0, 0, 0.25);
+
+        cursor: pointer;
+    }
+
+    #drive-page .drive-car-action:active {
+        transform: scale(0.96);
+    }
+}
+
+/* ========================================
+   NOVA DRIVE - SPEED LIMIT SIGN
+======================================== */
+
+#drive-page .drive-speed-limit {
+    position: absolute;
+    left: 14px;
+    bottom: 18px;
+
+    width: 58px;
+    height: 72px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(255, 255, 255, 0.96);
+    color: #0b0b0b;
+
+    border: 2px solid #111111;
+    border-radius: 12px;
+
+    z-index: 30;
+
+    font-family: Arial, sans-serif;
+    text-align: center;
+
+    box-shadow:
+        0 6px 18px rgba(0, 0, 0, 0.28);
+}
+
+#drive-page .drive-speed-limit[hidden] {
+    display: none !important;
+}
+
+#drive-page .drive-speed-limit-label {
+    font-size: 9px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 0.4px;
+    opacity: 0.75;
+}
+
+#drive-page .drive-speed-limit-value {
+    margin-top: 4px;
+
+    font-size: 30px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+@media (max-width: 768px) {
+
+    #drive-page .drive-speed-limit {
+        left: 12px;
+        bottom: 16px;
+
+        width: 54px;
+        height: 68px;
+
+        border-radius: 11px;
+    }
+
+    #drive-page .drive-speed-limit-value {
+        font-size: 28px;
+    }
+}

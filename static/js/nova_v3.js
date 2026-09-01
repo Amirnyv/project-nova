@@ -4565,11 +4565,115 @@ applyTheme(
 );
 
 // ========================================
+// NOVA DRIVE - CURRENT SPEED LIMIT
+// ========================================
+
+function getCurrentDriveSpeedLimit(
+    userCoordinates,
+    route
+) {
+
+    if (
+        !userCoordinates ||
+        !route ||
+        !route.geometry ||
+        !route.geometry.coordinates ||
+        !route.legs ||
+        !route.legs[0] ||
+        !route.legs[0].annotation ||
+        !route.legs[0].annotation.maxspeed
+    ) {
+        return null;
+    }
+
+    const routeCoordinates =
+        route.geometry.coordinates;
+
+    const maxspeeds =
+        route.legs[0].annotation.maxspeed;
+
+    let nearestIndex = 0;
+    let nearestDistance = Infinity;
+
+    routeCoordinates.forEach(
+        (coordinate, index) => {
+
+            const lngDifference =
+                coordinate[0] -
+                userCoordinates[0];
+
+            const latDifference =
+                coordinate[1] -
+                userCoordinates[1];
+
+            const distance =
+                (
+                    lngDifference *
+                    lngDifference
+                ) +
+                (
+                    latDifference *
+                    latDifference
+                );
+
+            if (distance < nearestDistance) {
+
+                nearestDistance =
+                    distance;
+
+                nearestIndex =
+                    index;
+            }
+        }
+    );
+
+    const speedData =
+        maxspeeds[
+            Math.min(
+                nearestIndex,
+                maxspeeds.length - 1
+            )
+        ];
+
+    if (
+        !speedData ||
+        speedData.unknown
+    ) {
+        return null;
+    }
+
+    let speed =
+        speedData.speed;
+
+    let unit =
+        speedData.unit;
+
+    if (
+        unit === "km/h" &&
+        speed
+    ) {
+
+        speed =
+            Math.round(
+                speed * 0.621371
+            );
+
+        unit = "mph";
+    }
+
+    return {
+        speed: speed,
+        unit: unit
+    };
+}
+
+// ========================================
 // NOVA DRIVE - MAP + GPS
 // ========================================
 
 let driveUserCoordinates = null;
 let driveMap = null;
+let driveActiveRoute = null;
 const driveMapElement =
     document.getElementById(
         "drive-map"
@@ -4598,6 +4702,52 @@ if (
         new mapboxgl.NavigationControl(),
         "top-right"
     );
+
+    driveMap.on(
+    "load",
+    () => {
+
+        driveMap.addSource(
+            "nova-traffic",
+            {
+                type: "vector",
+                url: "mapbox://mapbox.mapbox-traffic-v1"
+            }
+        );
+
+        driveMap.addLayer(
+            {
+                id: "nova-traffic-layer",
+                type: "line",
+                source: "nova-traffic",
+                "source-layer": "traffic",
+
+                paint: {
+                    "line-width": [
+                        "interpolate",
+                        ["linear"],
+                        ["zoom"],
+                        10, 2,
+                        16, 6
+                    ],
+
+                    "line-color": [
+                        "match",
+                        ["get", "congestion"],
+                        "low", "#22c55e",
+                        "moderate", "#facc15",
+                        "heavy", "#f97316",
+                        "severe", "#ef4444",
+                        "#22c55e"
+                    ],
+
+                    "line-opacity": 0.85
+                }
+            }
+        );
+
+    }
+);
 
 
     const geolocateControl =
@@ -4632,7 +4782,54 @@ if (
             driveUserCoordinates
         );
 
+        if (driveActiveRoute) {
+
+            const currentSpeedLimit =
+                getCurrentDriveSpeedLimit(
+                    driveUserCoordinates,
+                    driveActiveRoute
+                );
+
+            console.log(
+    "Nova Drive current speed limit:",
+    currentSpeedLimit
+);
+
+const speedLimitSign =
+    document.getElementById(
+        "drive-speed-limit"
+    );
+
+const speedLimitValue =
+    document.getElementById(
+        "drive-speed-limit-value"
+    );
+
+if (
+    speedLimitSign &&
+    speedLimitValue
+) {
+
+    if (
+        currentSpeedLimit &&
+        currentSpeedLimit.speed
+    ) {
+
+        speedLimitValue.textContent =
+            currentSpeedLimit.speed;
+
+        speedLimitSign.hidden = false;
+
+    } else {
+
+        speedLimitSign.hidden = true;
     }
+}
+
+        }
+
+    }
+
 );
 
 
@@ -4857,12 +5054,140 @@ console.log(
     "Nova Drive route:",
     route
 );
+driveActiveRoute = route;
 drawDriveRoute(route);
+showDriveIncidents(route);
 
+if (
+    route.legs &&
+    route.legs[0] &&
+    route.legs[0].annotation
+) {
+    console.log(
+        "Nova Drive speed limits:",
+        route.legs[0].annotation.maxspeed
+    );
+}
+        }
+    );
+
+}
+
+// ========================================
+// NOVA DRIVE - ROUTE INCIDENTS
+// ========================================
+
+let driveIncidentMarkers = [];
+
+function showDriveIncidents(route) {
+
+    if (
+        !driveMap ||
+        !route ||
+        !route.legs ||
+        !route.geometry ||
+        !route.geometry.coordinates
+    ) {
+        return;
+    }
+
+    // Remove old incident markers
+    driveIncidentMarkers.forEach(
+        (marker) => marker.remove()
+    );
+
+    driveIncidentMarkers = [];
+
+    const incidents = [];
+
+    route.legs.forEach(
+        (leg) => {
+
+            if (
+                leg.incidents &&
+                leg.incidents.length > 0
+            ) {
+                incidents.push(
+                    ...leg.incidents
+                );
+            }
 
         }
     );
 
+    console.log(
+        "Nova Drive incidents:",
+        incidents
+    );
+
+    incidents.forEach(
+        (incident) => {
+
+            const index =
+                incident.geometry_index_start;
+
+            const coordinates =
+                route.geometry.coordinates[index];
+
+            if (!coordinates) {
+                return;
+            }
+
+            let icon = "⚠️";
+
+            if (incident.type === "accident") {
+                icon = "💥";
+            }
+
+            if (incident.type === "construction") {
+                icon = "🚧";
+            }
+
+            if (incident.type === "road_closure") {
+                icon = "⛔";
+            }
+
+            if (incident.type === "disabled_vehicle") {
+                icon = "🚙";
+            }
+
+            const markerElement =
+                document.createElement("div");
+
+            markerElement.textContent =
+                icon;
+
+            markerElement.style.fontSize =
+                "26px";
+
+            markerElement.style.cursor =
+                "pointer";
+
+            const title =
+                incident.description ||
+                incident.type ||
+                "Road incident";
+
+            const popup =
+                new mapboxgl.Popup({
+                    offset: 20
+                })
+                .setText(title);
+
+            const marker =
+                new mapboxgl.Marker({
+                    element: markerElement
+                })
+                .setLngLat(coordinates)
+                .setPopup(popup)
+                .addTo(driveMap);
+
+            driveIncidentMarkers.push(
+                marker
+            );
+
+        }
+    );
 }
 
 // ========================================
@@ -4987,10 +5312,11 @@ async function getDriveRoute(
         ";" +
         end +
         "?alternatives=false" +
-        "&geometries=geojson" +
-        "&overview=full" +
-        "&steps=true" +
-        "&access_token=" +
+"&geometries=geojson" +
+"&overview=full" +
+"&steps=true" +
+"&annotations=maxspeed" +
+"&access_token=" +
         encodeURIComponent(token);
 
 
@@ -5084,6 +5410,28 @@ driveModeButtons.forEach(
                         "🚗 Car ▾";
                 }
 
+const driveTruckActions =
+    document.getElementById(
+        "drive-truck-actions"
+    );
+
+const driveCarActions =
+    document.getElementById(
+        "drive-car-actions"
+    );
+
+if (driveTruckActions) {
+
+    driveTruckActions.hidden =
+        novaDriveMode !== "truck";
+}
+
+if (driveCarActions) {
+
+    driveCarActions.hidden =
+        novaDriveMode !== "car";
+}
+
                 console.log(
                     "Nova Drive mode:",
                     novaDriveMode
@@ -5100,6 +5448,434 @@ driveModeCurrent.addEventListener(
 
         driveModeSelector.hidden =
             !driveModeSelector.hidden;
+
+    }
+);
+
+// ========================================
+// NOVA DRIVE - TRUCK DIESEL SEARCH
+// ========================================
+
+const driveTruckActionButtons =
+    document.querySelectorAll(
+        ".drive-truck-action"
+    );
+
+async function searchNearbyDrivePlaces(
+    category
+) {
+
+    if (
+        !driveUserCoordinates ||
+        !window.NOVA_MAPBOX_TOKEN
+    ) {
+        alert(
+            "Nova Drive is still getting your location."
+        );
+        return [];
+    }
+
+    const proximity =
+        driveUserCoordinates.join(",");
+
+    const url =
+        "https://api.mapbox.com/search/searchbox/v1/category/" +
+        encodeURIComponent(category) +
+        "?proximity=" +
+        encodeURIComponent(proximity) +
+        "&limit=10" +
+        "&access_token=" +
+        encodeURIComponent(
+            window.NOVA_MAPBOX_TOKEN
+        );
+
+    try {
+
+        const response =
+            await fetch(url);
+
+        if (!response.ok) {
+
+    const errorText =
+        await response.text();
+
+    alert(
+        "Mapbox error " +
+        response.status +
+        ": " +
+        errorText
+    );
+
+    throw new Error(
+        "Nearby place search failed"
+    );
+}
+
+        const data =
+            await response.json();
+
+        return data.features || [];
+
+    } catch (error) {
+
+        console.error(
+            "Nova Drive nearby search error:",
+            error
+        );
+
+        return [];
+    }
+}
+
+// ========================================
+// NOVA DRIVE - SEARCH VISIBLE MAP AREA
+// ========================================
+
+async function searchVisibleDrivePlaces(
+    category
+) {
+
+    if (
+        !driveMap ||
+        !window.NOVA_MAPBOX_TOKEN
+    ) {
+        return [];
+    }
+
+    const bounds =
+        driveMap.getBounds();
+
+    const west =
+        bounds.getWest();
+
+    const south =
+        bounds.getSouth();
+
+    const east =
+        bounds.getEast();
+
+    const north =
+        bounds.getNorth();
+
+    const bbox =
+        west +
+        "," +
+        south +
+        "," +
+        east +
+        "," +
+        north;
+
+    const url =
+        "https://api.mapbox.com/search/searchbox/v1/category/" +
+        encodeURIComponent(category) +
+        "?bbox=" +
+        encodeURIComponent(bbox) +
+        "&limit=25" +
+        "&access_token=" +
+        encodeURIComponent(
+            window.NOVA_MAPBOX_TOKEN
+        );
+
+    try {
+
+        const response =
+            await fetch(url);
+
+        if (!response.ok) {
+
+    const errorText =
+        await response.text();
+
+    alert(
+        "Mapbox error " +
+        response.status +
+        ": " +
+        errorText
+    );
+
+    throw new Error(
+        "Visible map search failed"
+    );
+}
+
+        const data =
+            await response.json();
+
+        return data.features || [];
+
+    } catch (error) {
+
+        console.error(
+            "Nova Drive visible area search error:",
+            error
+        );
+
+        return [];
+    }
+}
+
+driveTruckActionButtons.forEach(
+    (button) => {
+
+        button.addEventListener(
+            "click",
+            async () => {
+
+                const action =
+                    button.dataset.truckAction;
+
+                if (action !== "diesel") {
+                    return;
+                }
+
+                const results =
+    await searchVisibleDrivePlaces(
+        "gas_station"
+    );
+
+               console.log(
+    "Nova Drive diesel results:",
+    results
+);
+
+if (results.length === 0) {
+
+    alert(
+        "Nova Drive couldn't find nearby fuel locations."
+    );
+
+    return;
+}
+
+showDrivePlaceMarkers(
+    results,
+    "⛽"
+); 
+            }
+        );
+
+    }
+);
+
+// ========================================
+// NOVA DRIVE - PLACE MARKERS
+// ========================================
+
+let drivePlaceMarkers = [];
+
+function showDrivePlaceMarkers(
+    places,
+    icon
+) {
+
+    if (!driveMap) {
+        return;
+    }
+
+    drivePlaceMarkers.forEach(
+        (marker) => marker.remove()
+    );
+
+    drivePlaceMarkers = [];
+
+    places.forEach(
+        (place) => {
+
+            if (
+                !place.geometry ||
+                !place.geometry.coordinates
+            ) {
+                return;
+            }
+
+            const properties =
+                place.properties || {};
+
+            const name =
+                properties.name ||
+                "Fuel Location";
+
+            const address =
+                properties.full_address ||
+                properties.address ||
+                properties.place_formatted ||
+                "";
+
+            const markerElement =
+                document.createElement(
+                    "div"
+                );
+
+            markerElement.textContent =
+                icon;
+
+            markerElement.style.width =
+                "38px";
+
+            markerElement.style.height =
+                "38px";
+
+            markerElement.style.display =
+                "flex";
+
+            markerElement.style.alignItems =
+                "center";
+
+            markerElement.style.justifyContent =
+                "center";
+
+            markerElement.style.borderRadius =
+                "50%";
+
+            markerElement.style.background =
+                "rgba(15, 17, 28, 0.96)";
+
+            markerElement.style.border =
+                "2px solid rgba(139, 103, 255, 0.9)";
+
+            markerElement.style.fontSize =
+                "20px";
+
+            markerElement.style.cursor =
+                "pointer";
+
+            markerElement.style.boxShadow =
+                "0 6px 18px rgba(0,0,0,0.35)";
+
+            const popup =
+                new mapboxgl.Popup({
+                    offset: 24
+                })
+                .setHTML(
+                    "<strong>" +
+                    name +
+                    "</strong>" +
+                    (
+                        address
+                            ? "<br>" + address
+                            : ""
+                    )
+                );
+
+            const marker =
+                new mapboxgl.Marker({
+                    element:
+                        markerElement
+                })
+                .setLngLat(
+                    place.geometry.coordinates
+                )
+                .setPopup(
+                    popup
+                )
+                .addTo(
+                    driveMap
+                );
+
+            drivePlaceMarkers.push(
+                marker
+            );
+        }
+    );
+
+    const bounds =
+        new mapboxgl.LngLatBounds();
+
+    bounds.extend(
+        driveUserCoordinates
+    );
+
+    places.forEach(
+        (place) => {
+
+            if (
+                place.geometry &&
+                place.geometry.coordinates
+            ) {
+                bounds.extend(
+                    place.geometry.coordinates
+                );
+            }
+        }
+    );
+
+    driveMap.fitBounds(
+        bounds,
+        {
+            padding: 70,
+            duration: 900,
+            maxZoom: 14
+        }
+    );
+}
+
+// ========================================
+// NOVA DRIVE - CAR FUEL
+// ========================================
+
+const driveCarActionButtons =
+    document.querySelectorAll(
+        ".drive-car-action"
+    );
+
+driveCarActionButtons.forEach(
+    (button) => {
+
+        button.addEventListener(
+            "click",
+            async () => {
+
+                const action =
+    button.dataset.carAction;
+
+if (
+    action !== "fuel" &&
+    action !== "shopping" &&
+    action !== "charging" &&
+    action !== "food"
+) {
+    return;
+}
+
+                let category = "";
+
+if (action === "fuel") {
+    category = "gas_station";
+}
+
+if (action === "shopping") {
+    category = "shopping";
+}
+
+if (action === "charging") {
+    category = "charging_station";
+}
+
+if (action === "food") {
+    category = "restaurant";
+}
+
+const results =
+    await searchVisibleDrivePlaces(
+        category
+    );
+
+                if (results.length === 0) {
+
+                    alert(
+                        "Nova Drive couldn't find nearby fuel locations."
+                    );
+
+                    return;
+                }
+
+                showDrivePlaceMarkers(
+                    results,
+                    "⛽"
+                );
+            }
+        );
 
     }
 );

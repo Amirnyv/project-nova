@@ -18,7 +18,7 @@ rel="stylesheet">
 
 <link
 rel="stylesheet"
-href="{{ url_for('static', filename='css/nova_v3.css') }}?v=5">
+href="{{ url_for('static', filename='css/nova_v3.css') }}?v=10">
 <link
     href="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.css"
     rel="stylesheet"
@@ -840,7 +840,57 @@ Pro Workspace
 
 </div> 
 
+<div
+    id="drive-truck-actions"
+    class="drive-truck-actions"
+    hidden
+>
+
+    <button type="button" class="drive-truck-action" data-truck-action="diesel">
+        ⛽ Diesel
+    </button>
+
+    <button type="button" class="drive-truck-action" data-truck-action="parking">
+        🅿️ Parking
+    </button>
+
+    <button type="button" class="drive-truck-action" data-truck-action="showers">
+        🚿 Showers
+    </button>
+
+    <button type="button" class="drive-truck-action" data-truck-action="truck-stops">
+        🚛 Truck Stops
+    </button>
+
+</div>
+
+<div
+    id="drive-car-actions"
+    class="drive-car-actions"
+    hidden
+>
+
+    <button type="button" class="drive-car-action" data-car-action="fuel">
+        ⛽ Fuel
+    </button>
+
+    <button type="button" class="drive-car-action" data-car-action="shopping">
+        🛍️ Shopping 
+    </button>
+
+    <button type="button" class="drive-car-action" data-car-action="charging">
+        ⚡ Charging
+    </button>
+
+    <button type="button" class="drive-car-action" data-car-action="food">
+        🍔 Food
+    </button>
+
+</div>
+
         </div>
+
+
 
 <div
     id="drive-route-info"
@@ -873,6 +923,23 @@ Pro Workspace
 
     </div>
 
+</div>
+
+<div
+    id="drive-speed-limit"
+    class="drive-speed-limit"
+    hidden
+>
+    <span class="drive-speed-limit-label">
+        SPEED<br>LIMIT
+    </span>
+
+    <span
+        id="drive-speed-limit-value"
+        class="drive-speed-limit-value"
+    >
+        --
+    </span>
 </div>
 
         <div
@@ -2945,7 +3012,7 @@ Pro Workspace
 </script>
 
 <script
-src="{{ url_for('static', filename='js/nova_v3.js') }}?v=2"></script>
+src="{{ url_for('static', filename='js/nova_v3.js') }}?v=22"></script>
 
 </body>
 
