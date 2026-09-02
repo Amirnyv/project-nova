@@ -4703,9 +4703,11 @@ if (
         "top-right"
     );
 
-    driveMap.on(
+       driveMap.on(
     "load",
     () => {
+
+loadDriveCameras();
 
         driveMap.addSource(
             "nova-traffic",
@@ -5077,7 +5079,107 @@ if (
 // NOVA DRIVE - ROUTE INCIDENTS
 // ========================================
 
+
 let driveIncidentMarkers = [];
+
+
+let driveCameraMarkers = [];
+
+async function loadDriveCameras() {
+    try {
+        const response =
+            await fetch(
+                "/api/drive/cameras"
+            );
+
+        if (!response.ok) {
+            throw new Error(
+                "Camera request failed"
+            );
+        }
+
+        const data =
+            await response.json();
+
+        showDriveCameraMarkers(
+            data.cameras || []
+        );
+    } catch (error) {
+        console.error(
+            "Nova Drive camera error:",
+            error
+        );
+    }
+}
+
+function showDriveCameraMarkers(
+    cameras
+) {
+    if (!driveMap) {
+        return;
+    }
+
+    driveCameraMarkers.forEach(
+        (marker) => marker.remove()
+    );
+
+    driveCameraMarkers = [];
+
+    cameras.forEach(
+        (camera) => {
+
+            const markerElement =
+                document.createElement(
+                    "div"
+                );
+
+            markerElement.textContent =
+                camera.type ===
+                "red_light_camera"
+                    ? "🚦"
+                    : "📸";
+
+            markerElement.style.fontSize =
+                "28px";
+
+            markerElement.style.cursor =
+                "pointer";
+
+            const popup =
+                new mapboxgl.Popup({
+                    offset: 20
+                })
+                .setHTML(
+                    "<strong>" +
+                    camera.name +
+                    "</strong><br>" +
+                    camera.street +
+                    "<br>" +
+                    camera.borough
+                );
+
+            const marker =
+                new mapboxgl.Marker({
+                    element:
+                        markerElement
+                })
+                .setLngLat([
+                    camera.longitude,
+                    camera.latitude
+                ])
+                .setPopup(
+                    popup
+                )
+                .addTo(
+                    driveMap
+                );
+
+            driveCameraMarkers.push(
+                marker
+            );
+        }
+    );
+}
 
 function showDriveIncidents(route) {
 

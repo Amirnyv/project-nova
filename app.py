@@ -1428,6 +1428,40 @@ stripe_timestamp_to_datetime(
 
     return "", 200
 
+
+
+@app.route("/api/drive/cameras")
+@login_required
+def drive_cameras():
+    cameras = [
+        {
+            "id": 1,
+            "type": "speed_camera",
+            "name": "Test Speed Camera",
+            "latitude": 40.7580,
+            "longitude": -73.9855,
+            "street": "Times Square",
+            "borough": "Manhattan",
+            "source": "test",
+            "verified": False
+        },
+        {
+            "id": 2,
+            "type": "red_light_camera",
+            "name": "Test Red Light Camera",
+            "latitude": 40.7484,
+            "longitude": -73.9857,
+            "street": "34th Street",
+            "borough": "Manhattan",
+            "source": "test",
+            "verified": False
+        }
+    ]
+
+    return jsonify({
+        "cameras": cameras
+    })
+
 @app.route("/app")
 @login_required
 def home():
