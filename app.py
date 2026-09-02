@@ -1433,34 +1433,23 @@ stripe_timestamp_to_datetime(
 @app.route("/api/drive/cameras")
 @login_required
 def drive_cameras():
-    cameras = [
-        {
-            "id": 1,
-            "type": "speed_camera",
-            "name": "Test Speed Camera",
-            "latitude": 40.7580,
-            "longitude": -73.9855,
-            "street": "Times Square",
-            "borough": "Manhattan",
-            "source": "test",
-            "verified": False
-        },
-        {
-            "id": 2,
-            "type": "red_light_camera",
-            "name": "Test Red Light Camera",
-            "latitude": 40.7484,
-            "longitude": -73.9857,
-            "street": "34th Street",
-            "borough": "Manhattan",
-            "source": "test",
-            "verified": False
-        }
-    ]
+    camera_file = os.path.join(
+        app.root_path,
+        "static",
+        "data",
+        "nyc_cameras.json"
+    )
 
-    return jsonify({
-        "cameras": cameras
-    })
+    try:
+        with open(camera_file, "r", encoding="utf-8") as file:
+            camera_data = json.load(file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        camera_data = {
+            "updated_at": None,
+            "cameras": []
+        }
+
+    return jsonify(camera_data)
 
 @app.route("/app")
 @login_required
