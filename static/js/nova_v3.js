@@ -5059,6 +5059,17 @@ console.log(
 driveActiveRoute = route;
 drawDriveRoute(route);
 showDriveIncidents(route);
+const navigationUI =
+    document.getElementById("drive-navigation-ui");
+
+if (navigationUI) navigationUI.hidden = false;
+
+const driveSearchCard =
+    document.querySelector(".drive-search-card");
+
+if (driveSearchCard) {
+    driveSearchCard.hidden = true;
+}
 
 if (
     route.legs &&
