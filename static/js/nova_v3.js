@@ -4754,16 +4754,20 @@ loadDriveCameras();
 
     const geolocateControl =
         new mapboxgl.GeolocateControl({
-            positionOptions: {
-                enableHighAccuracy: true
-            },
+    positionOptions: {
+        enableHighAccuracy: true
+    },
 
-            trackUserLocation: true,
+    trackUserLocation: true,
 
-            showUserHeading: true,
+    showUserHeading: true,
 
-            showAccuracyCircle: true
-        });
+    showAccuracyCircle: true,
+
+    fitBoundsOptions: {
+        maxZoom: 17
+    }
+});
 
 
     driveMap.addControl(
@@ -4778,6 +4782,16 @@ loadDriveCameras();
             event.coords.longitude,
             event.coords.latitude
         ];
+
+        if (driveActiveRoute) {
+    driveMap.easeTo({
+        center: driveUserCoordinates,
+        zoom: 17,
+        pitch: 60,
+        bearing: 0,
+        duration: 600
+    });
+}
 
         console.log(
             "Nova Drive current location:",
@@ -4797,34 +4811,127 @@ loadDriveCameras();
     currentSpeedLimit
 );
 
-const speedLimitSign =
+const navSpeedLimitValue =
+    document.getElementById(
+        "drive-nav-speed-limit"
+    );
+
+const oldSpeedLimitSign =
     document.getElementById(
         "drive-speed-limit"
     );
 
-const speedLimitValue =
-    document.getElementById(
-        "drive-speed-limit-value"
-    );
+if (oldSpeedLimitSign) {
+    oldSpeedLimitSign.hidden = true;
+}
 
 if (
-    speedLimitSign &&
-    speedLimitValue
+    navSpeedLimitValue &&
+    currentSpeedLimit &&
+    currentSpeedLimit.speed
 ) {
+    navSpeedLimitValue.textContent =
+        currentSpeedLimit.speed;
+}
 
-    if (
-        currentSpeedLimit &&
-        currentSpeedLimit.speed
-    ) {
+const steps =
+    driveActiveRoute.legs &&
+    driveActiveRoute.legs[0] &&
+    driveActiveRoute.legs[0].steps
+        ? driveActiveRoute.legs[0].steps
+        : [];
 
-        speedLimitValue.textContent =
-            currentSpeedLimit.speed;
+if (steps.length > 0) {
 
-        speedLimitSign.hidden = false;
+    let nearestStep = steps[0];
+    let nearestStepDistance = Infinity;
 
+    steps.forEach((step) => {
+
+        if (
+            !step.maneuver ||
+            !step.maneuver.location
+        ) {
+            return;
+        }
+
+        const stepLng =
+            step.maneuver.location[0];
+
+        const stepLat =
+            step.maneuver.location[1];
+
+        const lngDifference =
+            stepLng - driveUserCoordinates[0];
+
+        const latDifference =
+            stepLat - driveUserCoordinates[1];
+
+        const distance =
+            (
+                lngDifference *
+                lngDifference
+            ) +
+            (
+                latDifference *
+                latDifference
+            );
+
+        if (distance < nearestStepDistance) {
+            nearestStepDistance = distance;
+            nearestStep = step;
+        }
+    });
+
+
+    const turnDistance =
+        document.getElementById(
+            "drive-nav-turn-distance"
+        );
+
+    const turnInstruction =
+        document.getElementById(
+            "drive-nav-turn-instruction"
+        );
+
+    const turnRoad =
+        document.getElementById(
+            "drive-nav-turn-road"
+        );
+
+
+    const stepMiles =
+        nearestStep.distance / 1609.344;
+
+    let distanceText;
+
+    if (stepMiles < 0.1) {
+        distanceText =
+            Math.round(
+                nearestStep.distance * 3.28084
+            ) + " ft";
     } else {
+        distanceText =
+            stepMiles.toFixed(1) + " mi";
+    }
 
-        speedLimitSign.hidden = true;
+
+    if (turnDistance) {
+        turnDistance.textContent =
+            distanceText;
+    }
+
+    if (turnInstruction) {
+        turnInstruction.textContent =
+            nearestStep.maneuver &&
+            nearestStep.maneuver.instruction
+                ? nearestStep.maneuver.instruction
+                : "Continue";
+    }
+
+    if (turnRoad) {
+        turnRoad.textContent =
+            nearestStep.name || "";
     }
 }
 
@@ -5069,6 +5176,118 @@ const driveSearchCard =
 
 if (driveSearchCard) {
     driveSearchCard.hidden = true;
+}
+
+const oldSpeedLimitSign =
+    document.getElementById("drive-speed-limit");
+
+if (oldSpeedLimitSign) {
+    oldSpeedLimitSign.hidden = true;
+}
+
+const driveNavArrival =
+    document.getElementById("drive-nav-arrival");
+
+const driveNavMinutes =
+    document.getElementById("drive-nav-minutes");
+
+const driveNavMiles =
+    document.getElementById("drive-nav-miles");
+
+const durationMinutes =
+    Math.max(
+        1,
+        Math.round(route.duration / 60)
+    );
+
+const distanceMiles =
+    (route.distance / 1609.344).toFixed(1);
+
+const arrivalTime =
+    new Date(
+        Date.now() + route.duration * 1000
+    ).toLocaleTimeString(
+        [],
+        {
+            hour: "numeric",
+            minute: "2-digit"
+        }
+    );
+
+if (driveNavArrival) {
+    driveNavArrival.textContent =
+        arrivalTime;
+}
+
+if (driveNavMinutes) {
+    driveNavMinutes.textContent =
+        durationMinutes;
+}
+
+if (driveNavMiles) {
+    driveNavMiles.textContent =
+        distanceMiles;
+}
+
+const firstStep =
+    route.legs &&
+    route.legs[0] &&
+    route.legs[0].steps &&
+    route.legs[0].steps[0];
+
+if (firstStep) {
+
+    const turnDistance =
+        document.getElementById(
+            "drive-nav-turn-distance"
+        );
+
+    const turnInstruction =
+        document.getElementById(
+            "drive-nav-turn-instruction"
+        );
+
+    const turnRoad =
+        document.getElementById(
+            "drive-nav-turn-road"
+        );
+
+
+    const stepMiles =
+        firstStep.distance / 1609.344;
+
+    let distanceText;
+
+    if (stepMiles < 0.1) {
+        distanceText =
+            Math.round(
+                firstStep.distance * 3.28084
+            ) + " ft";
+    } else {
+        distanceText =
+            stepMiles.toFixed(1) + " mi";
+    }
+
+
+    if (turnDistance) {
+        turnDistance.textContent =
+            distanceText;
+    }
+
+
+    if (turnInstruction) {
+        turnInstruction.textContent =
+            firstStep.maneuver &&
+            firstStep.maneuver.instruction
+                ? firstStep.maneuver.instruction
+                : "Continue";
+    }
+
+
+    if (turnRoad) {
+        turnRoad.textContent =
+            firstStep.name || "";
+    }
 }
 
 if (
@@ -5342,6 +5561,24 @@ function drawDriveRoute(route) {
         );
 
 
+driveMap.addLayer({
+    id: "nova-drive-route-glow",
+    type: "line",
+    source: "nova-drive-route",
+
+    layout: {
+        "line-join": "round",
+        "line-cap": "round"
+    },
+
+    paint: {
+        "line-width": 16,
+        "line-color": "#1597ff",
+        "line-opacity": 0.22,
+        "line-blur": 8
+    }
+});
+
         driveMap.addLayer({
             id: "nova-drive-route-line",
             type: "line",
@@ -5353,9 +5590,10 @@ function drawDriveRoute(route) {
             },
 
             paint: {
-                "line-width": 7,
-                "line-opacity": 0.9
-            }
+    "line-width": 8,
+    "line-color": "#1597ff",
+    "line-opacity": 1
+}
         });
 
     }
@@ -5381,13 +5619,23 @@ const bounds =
     );
 
 
-driveMap.fitBounds(
-    bounds,
-    {
-        padding: 60,
+if (driveUserCoordinates) {
+    driveMap.easeTo({
+        center: driveUserCoordinates,
+        zoom: 17,
+        pitch: 60,
+        bearing: 0,
         duration: 1200
-    }
-);
+    });
+} else {
+    driveMap.fitBounds(
+        bounds,
+        {
+            padding: 60,
+            duration: 1200
+        }
+    );
+}
 
 }
 
