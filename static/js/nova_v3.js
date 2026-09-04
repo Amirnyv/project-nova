@@ -4674,6 +4674,7 @@ function getCurrentDriveSpeedLimit(
 let driveUserCoordinates = null;
 let driveMap = null;
 let driveActiveRoute = null;
+let driveUserMarker = null;
 const driveMapElement =
     document.getElementById(
         "drive-map"
@@ -4783,12 +4784,76 @@ loadDriveCameras();
             event.coords.latitude
         ];
 
+        const driveNavCurrentSpeed =
+    document.getElementById(
+        "drive-nav-current-speed"
+    );
+
+if (
+    driveNavCurrentSpeed &&
+    Number.isFinite(event.coords.speed)
+) {
+    const speedMph =
+        Math.max(
+            0,
+            Math.round(
+                event.coords.speed * 2.236936
+            )
+        );
+
+    driveNavCurrentSpeed.textContent =
+        speedMph;
+}
+
+        const heading =
+    Number.isFinite(event.coords.heading)
+        ? event.coords.heading
+        : 0;
+
+if (!driveUserMarker) {
+
+    const markerElement =
+        document.createElement("div");
+
+    markerElement.className =
+        "nova-drive-user-marker";
+
+    markerElement.innerHTML = `
+    <div class="nova-drive-user-arrow"></div>
+`;
+
+    driveUserMarker =
+        new mapboxgl.Marker({
+            element: markerElement,
+            rotationAlignment: "map",
+            pitchAlignment: "map"
+        })
+            .setLngLat(driveUserCoordinates)
+            .addTo(driveMap);
+
+} else {
+
+    driveUserMarker.setLngLat(
+        driveUserCoordinates
+    );
+}
+
+driveUserMarker.setRotation(
+    heading
+);
+
         if (driveActiveRoute) {
+
+    const currentHeading =
+        Number.isFinite(event.coords.heading)
+            ? event.coords.heading
+            : driveMap.getBearing();
+
     driveMap.easeTo({
         center: driveUserCoordinates,
         zoom: 17,
         pitch: 60,
-        bearing: 0,
+        bearing: currentHeading,
         duration: 600
     });
 }
