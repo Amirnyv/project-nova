@@ -117,61 +117,200 @@ def geocode_camera_location(record):
     if search_location.startswith(("NB ", "SB ", "EB ", "WB ")):
         search_location = search_location[3:]
 
-    search_location = search_location.replace(" @ ", " and ")
+    query_candidates = []
 
-    query = ", ".join([
-        search_location,
-        record["borough"],
-        "New York, NY"
-    ])
+    if " @ " in search_location:
+        road, cross_street = search_location.split(" @ ", 1)
 
-    params = urllib.parse.urlencode({
-        "q": query,
-        "access_token": MAPBOX_TOKEN,
-        "bbox": "-74.2591,40.4774,-73.7003,40.9176",
-        "limit": 1
-    })
+        query_candidates.append(
+            f"{cross_street} & {road}, {record['borough']}, New York, NY"
+        )
 
-    url = (
-        "https://api.mapbox.com/search/geocode/v6/forward?"
-        + params
-    )
+        query_candidates.append(
+            f"{road} & {cross_street}, {record['borough']}, New York, NY"
+        )
 
-    with urllib.request.urlopen(url) as response:
-        data = json.load(response)
+    else:
+        query_candidates.append(
+            f"{search_location}, {record['borough']}, New York, NY"
+        )
 
-    features = data.get("features", [])
+    for query in query_candidates:
+        params = urllib.parse.urlencode({
+            "q": query,
+            "access_token": MAPBOX_TOKEN,
+            "bbox": "-74.2591,40.4774,-73.7003,40.9176",
+            "limit": 5
+        })
 
-    if not features:
-        return None
+        url = (
+            "https://api.mapbox.com/search/geocode/v6/forward?"
+            + params
+        )
 
-    longitude, latitude = features[0]["geometry"]["coordinates"]
+        with urllib.request.urlopen(url) as response:
+            data = json.load(response)
 
-    return {
-        "location": record["location"],
-        "borough": record["borough"],
-        "violation_count": record["violation_count"],
-        "latitude": latitude,
-        "longitude": longitude
-    }
+        features = data.get("features", [])
+
+        for feature in features:
+            properties = feature.get("properties", {})
+            context = properties.get("context", {})
+
+            locality = (
+                context.get("locality", {}).get("name")
+                if isinstance(context.get("locality"), dict)
+                else None
+            )
+
+            district = (
+                context.get("district", {}).get("name")
+                if isinstance(context.get("district"), dict)
+                else None
+            )
+
+            expected_borough = record["borough"]
+
+            borough_matches = (
+                locality == expected_borough
+                or district == f"{expected_borough} County"
+            )
+
+            if not borough_matches:
+                continue
+
+            matched_text = (
+                f"{properties.get('name', '')} "
+                f"{properties.get('full_address', '')}"
+            ).upper()
+
+            matched_text = (
+                matched_text
+                .replace(".", "")
+                .replace("AVENUE", "AVE")
+                .replace("BOULEVARD", "BLVD")
+                .replace("STREET", "ST")
+                .replace("ROAD", "RD")
+            )
+
+            if " @ " in search_location:
+                normalized_road = (
+    road.upper()
+    .replace(".", "")
+    .replace("THRUW AY", "THRUWAY")
+)
+
+                normalized_road = (
+                    road.upper()
+                    .replace(".", "")
+                    .replace("THRUW AY", "THRUWAY")
+                )
+
+                normalized_cross_street = (
+                    cross_street.upper()
+                    .replace(".", "")
+                )
+
+                road_words = [
+                    word for word in normalized_road.split()
+                    if word not in {
+                        "AVE",
+                        "BLVD",
+                        "ST",
+                        "RD",
+                        "PKWY",
+                        "EXPWY",
+                        "THRUWAY",
+                        "LN",
+                        "DR",
+                        "PL"
+                    }
+                ]
+
+                cross_words = [
+                    word for word in normalized_cross_street.split()
+                    if word not in {
+                        "AVE",
+                        "BLVD",
+                        "ST",
+                        "RD",
+                        "PKWY",
+                        "EXPWY",
+                        "THRUWAY",
+                        "LN",
+                        "DR",
+                        "PL"
+                    }
+                ]
+
+                road_matches = all(
+                    word in matched_text
+                    for word in road_words
+                )
+
+                cross_matches = all(
+                    word in matched_text
+                    for word in cross_words
+                )
+
+                if not (road_matches and cross_matches):
+                    continue
+
+            longitude, latitude = feature["geometry"]["coordinates"]
+
+            return {
+                "location": record["location"],
+                "borough": record["borough"],
+                "violation_count": record["violation_count"],
+                "latitude": latitude,
+                "longitude": longitude,
+                "matched_name": properties.get("name"),
+                "matched_address": properties.get("full_address"),
+            }
+
+    return None
 
 if __name__ == "__main__":
-    locations = fetch_speed_camera_locations(limit=5)
+    locations = fetch_speed_camera_locations(limit=100)
 
-    cleaned = [
-        clean_camera_location(record)
-        for record in locations
-    ]
+    cameras = []
+    rejected = []
 
-    geocoded = [
-        result
-        for record in cleaned
-        if (result := geocode_camera_location(record)) is not None
-    ]
+    for record in locations:
+        cleaned = clean_camera_location(record)
+        result = geocode_camera_location(cleaned)
 
-    print(
-        json.dumps(
-            geocoded,
-            indent=2
-        )
+        if result is None:
+            rejected.append(cleaned)
+            continue
+
+        cameras.append({
+            "type": "speed_camera",
+            "latitude": result["latitude"],
+            "longitude": result["longitude"],
+            "street": result["location"],
+            "borough": result["borough"],
+            "source": "nyc_open_data",
+            "violation_count": result["violation_count"],
+            "confidence": "high",
+            "verified": False
+        })
+
+    output_data = {
+        "updated_at": None,
+        "cameras": cameras
+    }
+
+    output_path = (
+        Path(__file__).resolve().parents[1]
+        / "static"
+        / "data"
+        / "nyc_cameras.json"
     )
+
+    with open(output_path, "w", encoding="utf-8") as file:
+        json.dump(output_data, file, indent=2)
+
+    print(f"Saved {len(cameras)} cameras.")
+    print(f"Rejected {len(rejected)} locations.")
+    print(f"File: {output_path}")
