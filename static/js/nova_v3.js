@@ -4675,6 +4675,8 @@ let driveUserCoordinates = null;
 let driveMap = null;
 let driveActiveRoute = null;
 let driveUserMarker = null;
+let driveCurrentStepIndex = 0;
+let driveRouteProgressIndex = 0;
 const driveMapElement =
     document.getElementById(
         "drive-map"
@@ -4906,33 +4908,33 @@ const steps =
         ? driveActiveRoute.legs[0].steps
         : [];
 
-if (steps.length > 0) {
+if (
+    steps.length > 0 &&
+    driveCurrentStepIndex < steps.length
+) {
 
-    let nearestStep = steps[0];
-    let nearestStepDistance = Infinity;
+    let currentStep =
+        steps[driveCurrentStepIndex];
 
-    steps.forEach((step) => {
+    if (
+        currentStep &&
+        currentStep.maneuver &&
+        currentStep.maneuver.location
+    ) {
 
-        if (
-            !step.maneuver ||
-            !step.maneuver.location
-        ) {
-            return;
-        }
+        const maneuverLng =
+            currentStep.maneuver.location[0];
 
-        const stepLng =
-            step.maneuver.location[0];
-
-        const stepLat =
-            step.maneuver.location[1];
+        const maneuverLat =
+            currentStep.maneuver.location[1];
 
         const lngDifference =
-            stepLng - driveUserCoordinates[0];
+            maneuverLng - driveUserCoordinates[0];
 
         const latDifference =
-            stepLat - driveUserCoordinates[1];
+            maneuverLat - driveUserCoordinates[1];
 
-        const distance =
+        const distanceSquared =
             (
                 lngDifference *
                 lngDifference
@@ -4942,12 +4944,27 @@ if (steps.length > 0) {
                 latDifference
             );
 
-        if (distance < nearestStepDistance) {
-            nearestStepDistance = distance;
-            nearestStep = step;
-        }
-    });
+        const advanceThreshold =
+            0.00012 * 0.00012;
 
+        if (
+            distanceSquared <
+            advanceThreshold
+        ) {
+
+            if (
+                driveCurrentStepIndex <
+                steps.length - 1
+            ) {
+                driveCurrentStepIndex += 1;
+
+                currentStep =
+                    steps[
+                        driveCurrentStepIndex
+                    ];
+            }
+        }
+    }
 
     const turnDistance =
         document.getElementById(
@@ -4964,22 +4981,76 @@ if (steps.length > 0) {
             "drive-nav-turn-road"
         );
 
+    let liveDistanceMeters =
+    currentStep.distance;
 
-    const stepMiles =
-        nearestStep.distance / 1609.344;
+if (
+    currentStep.maneuver &&
+    currentStep.maneuver.location
+) {
 
-    let distanceText;
+    const maneuverLng =
+        currentStep.maneuver.location[0];
+
+    const maneuverLat =
+        currentStep.maneuver.location[1];
+
+    const lat1 =
+        driveUserCoordinates[1] *
+        Math.PI / 180;
+
+    const lat2 =
+        maneuverLat *
+        Math.PI / 180;
+
+    const deltaLat =
+        (
+            maneuverLat -
+            driveUserCoordinates[1]
+        ) *
+        Math.PI / 180;
+
+    const deltaLng =
+        (
+            maneuverLng -
+            driveUserCoordinates[0]
+        ) *
+        Math.PI / 180;
+
+    const a =
+        Math.sin(deltaLat / 2) *
+        Math.sin(deltaLat / 2) +
+        Math.cos(lat1) *
+        Math.cos(lat2) *
+        Math.sin(deltaLng / 2) *
+        Math.sin(deltaLng / 2);
+
+    const c =
+        2 *
+        Math.atan2(
+            Math.sqrt(a),
+            Math.sqrt(1 - a)
+        );
+
+    liveDistanceMeters =
+        6371000 * c;
+}
+
+const stepMiles =
+    liveDistanceMeters / 1609.344;
+
+let distanceText;
 
     if (stepMiles < 0.1) {
         distanceText =
             Math.round(
-                nearestStep.distance * 3.28084
-            ) + " ft";
+    liveDistanceMeters *
+    3.28084
+) + " ft";
     } else {
         distanceText =
             stepMiles.toFixed(1) + " mi";
     }
-
 
     if (turnDistance) {
         turnDistance.textContent =
@@ -4988,15 +5059,198 @@ if (steps.length > 0) {
 
     if (turnInstruction) {
         turnInstruction.textContent =
-            nearestStep.maneuver &&
-            nearestStep.maneuver.instruction
-                ? nearestStep.maneuver.instruction
+            currentStep.maneuver &&
+            currentStep.maneuver.instruction
+                ? currentStep.maneuver.instruction
                 : "Continue";
     }
 
     if (turnRoad) {
         turnRoad.textContent =
-            nearestStep.name || "";
+            currentStep.name || "";
+    }
+}
+
+const routeCoordinates =
+    driveActiveRoute.geometry &&
+    driveActiveRoute.geometry.coordinates
+        ? driveActiveRoute.geometry.coordinates
+        : [];
+
+if (routeCoordinates.length > 1) {
+
+    let nearestRouteIndex =
+        driveRouteProgressIndex;
+
+    let nearestRouteDistance =
+        Infinity;
+
+    for (
+        let index = driveRouteProgressIndex;
+        index < routeCoordinates.length;
+        index++
+    ) {
+
+        const routePoint =
+            routeCoordinates[index];
+
+        const lngDifference =
+            routePoint[0] -
+            driveUserCoordinates[0];
+
+        const latDifference =
+            routePoint[1] -
+            driveUserCoordinates[1];
+
+        const distanceSquared =
+            (
+                lngDifference *
+                lngDifference
+            ) +
+            (
+                latDifference *
+                latDifference
+            );
+
+        if (
+            distanceSquared <
+            nearestRouteDistance
+        ) {
+            nearestRouteDistance =
+                distanceSquared;
+
+            nearestRouteIndex =
+                index;
+        }
+    }
+
+    driveRouteProgressIndex =
+        nearestRouteIndex;
+
+    let remainingDistanceMeters = 0;
+
+    for (
+        let index = nearestRouteIndex;
+        index < routeCoordinates.length - 1;
+        index++
+    ) {
+
+        const startPoint =
+            routeCoordinates[index];
+
+        const endPoint =
+            routeCoordinates[index + 1];
+
+        const lat1 =
+            startPoint[1] *
+            Math.PI / 180;
+
+        const lat2 =
+            endPoint[1] *
+            Math.PI / 180;
+
+        const deltaLat =
+            (
+                endPoint[1] -
+                startPoint[1]
+            ) *
+            Math.PI / 180;
+
+        const deltaLng =
+            (
+                endPoint[0] -
+                startPoint[0]
+            ) *
+            Math.PI / 180;
+
+        const a =
+            Math.sin(deltaLat / 2) *
+            Math.sin(deltaLat / 2) +
+            Math.cos(lat1) *
+            Math.cos(lat2) *
+            Math.sin(deltaLng / 2) *
+            Math.sin(deltaLng / 2);
+
+        const c =
+            2 *
+            Math.atan2(
+                Math.sqrt(a),
+                Math.sqrt(1 - a)
+            );
+
+        remainingDistanceMeters +=
+            6371000 * c;
+    }
+
+    const remainingMiles =
+        remainingDistanceMeters /
+        1609.344;
+
+    const routeTotalMiles =
+        driveActiveRoute.distance /
+        1609.344;
+
+    const routeTotalMinutes =
+        driveActiveRoute.duration /
+        60;
+
+    const remainingMinutes =
+        routeTotalMiles > 0
+            ? Math.max(
+                1,
+                Math.round(
+                    routeTotalMinutes *
+                    (
+                        remainingMiles /
+                        routeTotalMiles
+                    )
+                )
+            )
+            : 0;
+
+    const driveNavMiles =
+        document.getElementById(
+            "drive-nav-miles"
+        );
+
+    const driveNavMinutes =
+        document.getElementById(
+            "drive-nav-minutes"
+        );
+
+    const driveNavArrival =
+        document.getElementById(
+            "drive-nav-arrival"
+        );
+
+    if (driveNavMiles) {
+        driveNavMiles.textContent =
+            remainingMiles.toFixed(1);
+    }
+
+    if (driveNavMinutes) {
+        driveNavMinutes.textContent =
+            remainingMinutes;
+    }
+
+    if (driveNavArrival) {
+
+        const updatedArrivalTime =
+            new Date(
+                Date.now() +
+                remainingMinutes *
+                60 *
+                1000
+            ).toLocaleTimeString(
+                [],
+                {
+                    hour: "numeric",
+                    minute: "2-digit"
+                }
+            );
+
+        driveNavArrival.textContent =
+            updatedArrivalTime;
     }
 }
 
@@ -5229,6 +5483,10 @@ console.log(
     route
 );
 driveActiveRoute = route;
+
+driveCurrentStepIndex = 0;
+driveRouteProgressIndex = 0;
+
 drawDriveRoute(route);
 showDriveIncidents(route);
 const navigationUI =
