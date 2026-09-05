@@ -6570,18 +6570,26 @@ button {
     min-width: 280px;
     padding: 18px;
 
-    background: rgba(5, 12, 20, 0.94);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 20px;
-
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.45);
-    backdrop-filter: blur(18px);
+    background: rgba(12, 18, 28, 0.94);
+border: 1px solid rgba(255, 255, 255, 0.08);
+box-shadow: 0 10px 30px rgba(0, 0, 0, 0.38);
+backdrop-filter: blur(14px);
+-webkit-backdrop-filter: blur(14px);
 }
 
 .drive-nav-turn-arrow {
+
     font-size: 52px;
+
     line-height: 1;
-    color: #1da1ff;
+
+    color: #1597ff;
+
+    font-weight: 800;
+
+    text-shadow:
+        0 0 14px rgba(21, 151, 255, 0.45);
+
 }
 
 .drive-nav-turn-details {
@@ -6621,12 +6629,15 @@ button {
 
     padding: 12px 16px;
 
-    background: rgba(5, 12, 20, 0.94);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(12, 18, 28, 0.94);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 18px;
 
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(18px);
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.38);
+
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
 }
 
 .drive-nav-speed-sign {
@@ -6642,9 +6653,10 @@ button {
     color: #080808;
 
     border: 3px solid #111111;
-    border-radius: 9px;
+    border-radius: 10px;
 
     box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.28),
         0 0 0 2px #ffffff,
         0 0 0 3px rgba(0, 0, 0, 0.7);
 }
@@ -6666,18 +6678,32 @@ button {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    justify-content: center;
+
+    min-width: 58px;
 }
 
 .drive-nav-current-speed strong {
-    color: #ffffff;
     font-size: 34px;
-    line-height: 1;
+    font-weight: 800;
+    line-height: 0.95;
+
+    color: #ffffff;
+
+    text-shadow:
+        0 0 14px rgba(255, 255, 255, 0.16);
 }
 
 .drive-nav-current-speed span {
-    margin-top: 5px;
-    color: #d0d6dc;
-    font-size: 16px;
+    margin-top: 4px;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+
+    color: rgba(255, 255, 255, 0.58);
 }
 
 .drive-nav-live {
@@ -6703,6 +6729,52 @@ button {
     box-shadow: 0 0 10px rgba(25, 201, 107, 0.8);
 }
 
+.drive-camera-alert {
+    position: absolute;
+    left: 18px;
+    bottom: 112px;
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    padding: 12px 15px;
+
+    background: rgba(12, 18, 28, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.38);
+
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+
+    pointer-events: none;
+}
+
+.drive-camera-alert-icon {
+    font-size: 28px;
+    line-height: 1;
+}
+
+.drive-camera-alert-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.drive-camera-alert-text strong {
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.drive-camera-alert-text span {
+    margin-top: 2px;
+    color: #9fa8b3;
+    font-size: 14px;
+    font-weight: 600;
+}
 
 /* BOTTOM TRIP BAR */
 
@@ -6808,6 +6880,11 @@ button {
     .drive-nav-trip-bar strong {
         font-size: 22px;
     }
+
+    .drive-camera-alert {
+    left: 12px;
+    bottom: 105px;
+}
 }
 
 /* =========================================

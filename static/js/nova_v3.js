@@ -4786,6 +4786,132 @@ loadDriveCameras();
             event.coords.latitude
         ];
 
+        if (
+    driveActiveRoute &&
+    driveCameraData.length > 0
+) {
+    console.log(
+    "Camera alert block running",
+    driveCameraData.length
+);
+    const cameraAlert =
+        document.getElementById(
+            "drive-camera-alert"
+        );
+
+    const cameraAlertTitle =
+        document.getElementById(
+            "drive-camera-alert-title"
+        );
+
+    const cameraAlertDistance =
+        document.getElementById(
+            "drive-camera-alert-distance"
+        );
+
+    let nearestCamera = null;
+    let nearestCameraDistance =
+        Infinity;
+
+    driveCameraData.forEach(
+        (camera) => {
+
+            const lat1 =
+                driveUserCoordinates[1] *
+                Math.PI / 180;
+
+            const lat2 =
+                camera.latitude *
+                Math.PI / 180;
+
+            const deltaLat =
+                (
+                    camera.latitude -
+                    driveUserCoordinates[1]
+                ) *
+                Math.PI / 180;
+
+            const deltaLng =
+                (
+                    camera.longitude -
+                    driveUserCoordinates[0]
+                ) *
+                Math.PI / 180;
+
+            const a =
+                Math.sin(deltaLat / 2) *
+                Math.sin(deltaLat / 2) +
+                Math.cos(lat1) *
+                Math.cos(lat2) *
+                Math.sin(deltaLng / 2) *
+                Math.sin(deltaLng / 2);
+
+            const c =
+                2 *
+                Math.atan2(
+                    Math.sqrt(a),
+                    Math.sqrt(1 - a)
+                );
+
+            const distanceMeters =
+                6371000 * c;
+
+            if (
+                distanceMeters <
+                nearestCameraDistance
+            ) {
+                nearestCameraDistance =
+                    distanceMeters;
+
+                nearestCamera =
+                    camera;
+            }
+        }
+    );
+
+
+    console.log(
+    "Nearest camera:",
+    nearestCamera,
+    "Distance meters:",
+    nearestCameraDistance
+);
+    if (
+        nearestCamera &&
+        nearestCameraDistance <= 8047
+    ) {
+        cameraAlert.hidden = false;
+
+        if (cameraAlertTitle) {
+            cameraAlertTitle.textContent =
+                nearestCamera.type ===
+                "red_light_camera"
+                    ? "Red Light Camera"
+                    : "Speed Camera";
+        }
+
+        if (cameraAlertDistance) {
+            const distanceFeet =
+                Math.round(
+                    nearestCameraDistance *
+                    3.28084
+                );
+
+            cameraAlertDistance.textContent =
+                distanceFeet < 1000
+                    ? distanceFeet +
+                      " ft ahead"
+                    : (
+                        nearestCameraDistance /
+                        1609.344
+                      ).toFixed(1) +
+                      " mi ahead";
+        }
+    } else if (cameraAlert) {
+        cameraAlert.hidden = true;
+    }
+}
+
         const driveNavCurrentSpeed =
     document.getElementById(
         "drive-nav-current-speed"
@@ -4795,13 +4921,17 @@ if (
     driveNavCurrentSpeed &&
     Number.isFinite(event.coords.speed)
 ) {
-    const speedMph =
+    let speedMph =
         Math.max(
             0,
             Math.round(
                 event.coords.speed * 2.236936
             )
         );
+
+    if (speedMph < 2) {
+        speedMph = 0;
+    }
 
     driveNavCurrentSpeed.textContent =
         speedMph;
@@ -5598,6 +5728,70 @@ if (firstStep) {
     }
 
 
+const turnArrow =
+    document.querySelector(
+        ".drive-nav-turn-arrow"
+    );
+
+if (
+    turnArrow &&
+    firstStep.maneuver
+) {
+
+    const maneuverType =
+        firstStep.maneuver.type || "";
+
+    const maneuverModifier =
+        firstStep.maneuver.modifier || "";
+
+    let arrowSymbol = "↑";
+
+    if (
+        maneuverModifier === "left"
+    ) {
+        arrowSymbol = "←";
+    } else if (
+        maneuverModifier === "right"
+    ) {
+        arrowSymbol = "→";
+    } else if (
+        maneuverModifier === "slight left"
+    ) {
+        arrowSymbol = "↖";
+    } else if (
+        maneuverModifier === "slight right"
+    ) {
+        arrowSymbol = "↗";
+    } else if (
+        maneuverModifier === "sharp left"
+    ) {
+        arrowSymbol = "↙";
+    } else if (
+        maneuverModifier === "sharp right"
+    ) {
+        arrowSymbol = "↘";
+    } else if (
+        maneuverModifier === "uturn"
+    ) {
+        arrowSymbol = "↶";
+    } else if (
+        maneuverType === "merge"
+    ) {
+        arrowSymbol = "⇧";
+    } else if (
+        maneuverType === "roundabout"
+    ) {
+        arrowSymbol = "⟳";
+    } else if (
+        maneuverType === "rotary"
+    ) {
+        arrowSymbol = "⟳";
+    }
+
+    turnArrow.textContent =
+        arrowSymbol;
+}
+
     if (turnInstruction) {
         turnInstruction.textContent =
             firstStep.maneuver &&
@@ -5637,6 +5831,7 @@ let driveIncidentMarkers = [];
 
 
 let driveCameraMarkers = [];
+let driveCameraData = [];
 
 async function loadDriveCameras() {
     try {
@@ -5668,6 +5863,7 @@ async function loadDriveCameras() {
 function showDriveCameraMarkers(
     cameras
 ) {
+    driveCameraData = cameras;
     if (!driveMap) {
         return;
     }

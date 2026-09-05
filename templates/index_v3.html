@@ -18,7 +18,7 @@ rel="stylesheet">
 
 <link
 rel="stylesheet"
-href="{{ url_for('static', filename='css/nova_v3.css') }}?v=10">
+href="{{ url_for('static', filename='css/nova_v3.css') }}?v=11">
 <link
     href="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.css"
     rel="stylesheet"
@@ -1018,6 +1018,26 @@ Pro Workspace
 
     </div>
 
+<!-- CAMERA ALERT -->
+<div
+    id="drive-camera-alert"
+    class="drive-camera-alert"
+    hidden
+>
+    <div class="drive-camera-alert-icon">
+        📸
+    </div>
+
+    <div class="drive-camera-alert-text">
+        <strong id="drive-camera-alert-title">
+            Speed Camera
+        </strong>
+
+        <span id="drive-camera-alert-distance">
+            --
+        </span>
+    </div>
+</div>
 
     <!-- TRIP INFORMATION -->
     <div class="drive-nav-trip-bar">
@@ -3094,7 +3114,7 @@ Pro Workspace
 </script>
 
 <script
-src="{{ url_for('static', filename='js/nova_v3.js') }}?v=22"></script>
+src="{{ url_for('static', filename='js/nova_v3.js') }}?v=23"></script>
 
 </body>
 
