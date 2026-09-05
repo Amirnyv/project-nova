@@ -4790,10 +4790,6 @@ loadDriveCameras();
     driveActiveRoute &&
     driveCameraData.length > 0
 ) {
-    console.log(
-    "Camera alert block running",
-    driveCameraData.length
-);
     const cameraAlert =
         document.getElementById(
             "drive-camera-alert"
@@ -4809,91 +4805,230 @@ loadDriveCameras();
             "drive-camera-alert-distance"
         );
 
-    let nearestCamera = null;
-    let nearestCameraDistance =
+    const routeCoordinates =
+        driveActiveRoute.geometry &&
+        driveActiveRoute.geometry.coordinates
+            ? driveActiveRoute.geometry.coordinates
+            : [];
+
+    let nextCamera = null;
+    let nextCameraRouteDistance =
         Infinity;
 
-    driveCameraData.forEach(
-        (camera) => {
+    if (routeCoordinates.length > 1) {
 
-            const lat1 =
-                driveUserCoordinates[1] *
-                Math.PI / 180;
+        driveCameraData.forEach(
+            (camera) => {
 
-            const lat2 =
-                camera.latitude *
-                Math.PI / 180;
+                let nearestRouteIndex = -1;
+                let nearestRouteDistance =
+                    Infinity;
 
-            const deltaLat =
-                (
-                    camera.latitude -
-                    driveUserCoordinates[1]
-                ) *
-                Math.PI / 180;
+                /*
+                 * Only search the route from our
+                 * current progress forward.
+                 */
+                for (
+                    let index =
+                        driveRouteProgressIndex;
+                    index <
+                        routeCoordinates.length;
+                    index++
+                ) {
+                    const routePoint =
+                        routeCoordinates[index];
 
-            const deltaLng =
-                (
-                    camera.longitude -
-                    driveUserCoordinates[0]
-                ) *
-                Math.PI / 180;
+                    const lat1 =
+                        camera.latitude *
+                        Math.PI / 180;
 
-            const a =
-                Math.sin(deltaLat / 2) *
-                Math.sin(deltaLat / 2) +
-                Math.cos(lat1) *
-                Math.cos(lat2) *
-                Math.sin(deltaLng / 2) *
-                Math.sin(deltaLng / 2);
+                    const lat2 =
+                        routePoint[1] *
+                        Math.PI / 180;
 
-            const c =
-                2 *
-                Math.atan2(
-                    Math.sqrt(a),
-                    Math.sqrt(1 - a)
-                );
+                    const deltaLat =
+                        (
+                            routePoint[1] -
+                            camera.latitude
+                        ) *
+                        Math.PI / 180;
 
-            const distanceMeters =
-                6371000 * c;
+                    const deltaLng =
+                        (
+                            routePoint[0] -
+                            camera.longitude
+                        ) *
+                        Math.PI / 180;
 
-            if (
-                distanceMeters <
-                nearestCameraDistance
-            ) {
-                nearestCameraDistance =
-                    distanceMeters;
+                    const a =
+                        Math.sin(
+                            deltaLat / 2
+                        ) *
+                        Math.sin(
+                            deltaLat / 2
+                        ) +
+                        Math.cos(lat1) *
+                        Math.cos(lat2) *
+                        Math.sin(
+                            deltaLng / 2
+                        ) *
+                        Math.sin(
+                            deltaLng / 2
+                        );
 
-                nearestCamera =
-                    camera;
+                    const c =
+                        2 *
+                        Math.atan2(
+                            Math.sqrt(a),
+                            Math.sqrt(
+                                1 - a
+                            )
+                        );
+
+                    const distanceMeters =
+                        6371000 * c;
+
+                    if (
+                        distanceMeters <
+                        nearestRouteDistance
+                    ) {
+                        nearestRouteDistance =
+                            distanceMeters;
+
+                        nearestRouteIndex =
+                            index;
+                    }
+                }
+
+                /*
+                 * Camera must be within about
+                 * 300 feet of the active route.
+                 */
+                if (
+                    nearestRouteIndex === -1 ||
+                    nearestRouteDistance > 90
+                ) {
+                    return;
+                }
+
+                /*
+                 * Calculate distance ALONG the
+                 * route from our progress point
+                 * to the camera.
+                 */
+                let routeDistanceMeters = 0;
+
+                for (
+                    let index =
+                        driveRouteProgressIndex;
+                    index <
+                        nearestRouteIndex;
+                    index++
+                ) {
+                    const startPoint =
+                        routeCoordinates[index];
+
+                    const endPoint =
+                        routeCoordinates[
+                            index + 1
+                        ];
+
+                    const lat1 =
+                        startPoint[1] *
+                        Math.PI / 180;
+
+                    const lat2 =
+                        endPoint[1] *
+                        Math.PI / 180;
+
+                    const deltaLat =
+                        (
+                            endPoint[1] -
+                            startPoint[1]
+                        ) *
+                        Math.PI / 180;
+
+                    const deltaLng =
+                        (
+                            endPoint[0] -
+                            startPoint[0]
+                        ) *
+                        Math.PI / 180;
+
+                    const a =
+                        Math.sin(
+                            deltaLat / 2
+                        ) *
+                        Math.sin(
+                            deltaLat / 2
+                        ) +
+                        Math.cos(lat1) *
+                        Math.cos(lat2) *
+                        Math.sin(
+                            deltaLng / 2
+                        ) *
+                        Math.sin(
+                            deltaLng / 2
+                        );
+
+                    const c =
+                        2 *
+                        Math.atan2(
+                            Math.sqrt(a),
+                            Math.sqrt(
+                                1 - a
+                            )
+                        );
+
+                    routeDistanceMeters +=
+                        6371000 * c;
+                }
+
+                if (
+                    routeDistanceMeters <
+                    nextCameraRouteDistance
+                ) {
+                    nextCameraRouteDistance =
+                        routeDistanceMeters;
+
+                    nextCamera =
+                        camera;
+                }
             }
-        }
-    );
-
+        );
+    }
 
     console.log(
-    "Nearest camera:",
-    nearestCamera,
-    "Distance meters:",
-    nearestCameraDistance
-);
+        "Next route camera:",
+        nextCamera,
+        "Route distance meters:",
+        nextCameraRouteDistance
+    );
+
+    /*
+     * Temporary 3-mile warning range
+     * while we test the route filtering.
+     */
     if (
-        nearestCamera &&
-        nearestCameraDistance <= 8047
+        cameraAlert &&
+        nextCamera &&
+        nextCameraRouteDistance <= 1609
     ) {
         cameraAlert.hidden = false;
 
         if (cameraAlertTitle) {
             cameraAlertTitle.textContent =
-                nearestCamera.type ===
+                nextCamera.type ===
                 "red_light_camera"
                     ? "Red Light Camera"
                     : "Speed Camera";
         }
 
         if (cameraAlertDistance) {
+
             const distanceFeet =
                 Math.round(
-                    nearestCameraDistance *
+                    nextCameraRouteDistance *
                     3.28084
                 );
 
@@ -4902,12 +5037,14 @@ loadDriveCameras();
                     ? distanceFeet +
                       " ft ahead"
                     : (
-                        nearestCameraDistance /
+                        nextCameraRouteDistance /
                         1609.344
                       ).toFixed(1) +
                       " mi ahead";
         }
+
     } else if (cameraAlert) {
+
         cameraAlert.hidden = true;
     }
 }
