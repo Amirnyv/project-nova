@@ -6776,6 +6776,54 @@ backdrop-filter: blur(14px);
     font-weight: 600;
 }
 
+
+.drive-nav-controls {
+    position: absolute;
+    right: 18px;
+    bottom: 112px;
+
+    display: flex;
+    gap: 8px;
+
+    pointer-events: auto;
+}
+
+.drive-stop-navigation {
+    padding: 10px 16px;
+
+    background: rgba(220, 38, 38, 0.95);
+    color: #ffffff;
+
+    border: none;
+    border-radius: 14px;
+
+    font-size: 14px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.drive-recenter-navigation {
+    padding: 10px 16px;
+
+    background: rgba(12, 18, 28, 0.95);
+    color: #ffffff;
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+
+    font-size: 14px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
 /* BOTTOM TRIP BAR */
 
 .drive-nav-trip-bar {
@@ -6819,6 +6867,11 @@ backdrop-filter: blur(14px);
 /* PHONE */
 
 @media (max-width: 700px) {
+
+.drive-nav-controls {
+    right: 12px;
+    bottom: 105px;
+}
 
     .drive-nav-turn-card {
     top: 72px;

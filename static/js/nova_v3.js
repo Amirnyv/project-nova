@@ -4677,6 +4677,9 @@ let driveActiveRoute = null;
 let driveUserMarker = null;
 let driveCurrentStepIndex = 0;
 let driveRouteProgressIndex = 0;
+let driveOffRouteCount = 0;
+let driveDestinationCoordinates = null;
+let driveFollowMode = true;
 const driveMapElement =
     document.getElementById(
         "drive-map"
@@ -4777,9 +4780,35 @@ loadDriveCameras();
         geolocateControl,
         "top-right"
     );
+
+driveMap.on(
+    "dragstart",
+    () => {
+        driveFollowMode = false;
+
+        console.log(
+            "Nova Drive follow mode off"
+        );
+    }
+);
+
+driveMap.on(
+    "zoomstart",
+    () => {
+        driveFollowMode = false;
+    }
+);
+
+driveMap.on(
+    "rotatestart",
+    () => {
+        driveFollowMode = false;
+    }
+);
+
     geolocateControl.on(
     "geolocate",
-    (event) => {
+    async (event) => {
 
         driveUserCoordinates = [
             event.coords.longitude,
@@ -5010,43 +5039,43 @@ loadDriveCameras();
      * while we test the route filtering.
      */
     if (
-        cameraAlert &&
-        nextCamera &&
-        nextCameraRouteDistance <= 1609
-    ) {
-        cameraAlert.hidden = false;
+    cameraAlert &&
+    nextCamera &&
+    nextCameraRouteDistance > 25 &&
+    nextCameraRouteDistance <= 1609
+) {
+    cameraAlert.hidden = false;
 
-        if (cameraAlertTitle) {
-            cameraAlertTitle.textContent =
-                nextCamera.type ===
-                "red_light_camera"
-                    ? "Red Light Camera"
-                    : "Speed Camera";
-        }
-
-        if (cameraAlertDistance) {
-
-            const distanceFeet =
-                Math.round(
-                    nextCameraRouteDistance *
-                    3.28084
-                );
-
-            cameraAlertDistance.textContent =
-                distanceFeet < 1000
-                    ? distanceFeet +
-                      " ft ahead"
-                    : (
-                        nextCameraRouteDistance /
-                        1609.344
-                      ).toFixed(1) +
-                      " mi ahead";
-        }
-
-    } else if (cameraAlert) {
-
-        cameraAlert.hidden = true;
+    if (cameraAlertTitle) {
+        cameraAlertTitle.textContent =
+            nextCamera.type ===
+            "red_light_camera"
+                ? "Red Light Camera"
+                : "Speed Camera";
     }
+
+    if (cameraAlertDistance) {
+        const distanceFeet =
+            Math.round(
+                nextCameraRouteDistance *
+                3.28084
+            );
+
+        cameraAlertDistance.textContent =
+            distanceFeet < 1000
+                ? distanceFeet +
+                  " ft ahead"
+                : (
+                    nextCameraRouteDistance /
+                    1609.344
+                  ).toFixed(1) +
+                  " mi ahead";
+    }
+
+} else if (cameraAlert) {
+
+    cameraAlert.hidden = true;
+}
 }
 
         const driveNavCurrentSpeed =
@@ -5111,12 +5140,144 @@ driveUserMarker.setRotation(
     heading
 );
 
-        if (driveActiveRoute) {
+        if (
+    driveActiveRoute &&
+    driveFollowMode
+) {
 
     const currentHeading =
         Number.isFinite(event.coords.heading)
             ? event.coords.heading
             : driveMap.getBearing();
+
+    const routeCoordinates =
+        driveActiveRoute.geometry &&
+        driveActiveRoute.geometry.coordinates
+            ? driveActiveRoute.geometry.coordinates
+            : [];
+
+let nearestRouteDistance =
+    Infinity;
+
+if (routeCoordinates.length > 1) {
+
+    for (
+        let index = 0;
+        index < routeCoordinates.length;
+        index++
+    ) {
+        const routePoint =
+            routeCoordinates[index];
+
+        const lat1 =
+            driveUserCoordinates[1] *
+            Math.PI / 180;
+
+        const lat2 =
+            routePoint[1] *
+            Math.PI / 180;
+
+        const deltaLat =
+            (
+                routePoint[1] -
+                driveUserCoordinates[1]
+            ) *
+            Math.PI / 180;
+
+        const deltaLng =
+            (
+                routePoint[0] -
+                driveUserCoordinates[0]
+            ) *
+            Math.PI / 180;
+
+        const a =
+            Math.sin(deltaLat / 2) *
+            Math.sin(deltaLat / 2) +
+            Math.cos(lat1) *
+            Math.cos(lat2) *
+            Math.sin(deltaLng / 2) *
+            Math.sin(deltaLng / 2);
+
+        const c =
+            2 *
+            Math.atan2(
+                Math.sqrt(a),
+                Math.sqrt(1 - a)
+            );
+
+        const distanceMeters =
+            6371000 * c;
+
+        if (
+            distanceMeters <
+            nearestRouteDistance
+        ) {
+            nearestRouteDistance =
+                distanceMeters;
+        }
+    }
+}
+
+if (
+    nearestRouteDistance > 60
+) {
+    driveOffRouteCount += 1;
+} else {
+    driveOffRouteCount = 0;
+}
+
+console.log(
+    "Off-route check:",
+    nearestRouteDistance,
+    driveOffRouteCount
+);
+
+if (
+    driveOffRouteCount >= 3 &&
+    driveUserCoordinates &&
+    driveDestinationCoordinates
+) {
+    console.log(
+        "Nova Drive rerouting..."
+    );
+
+    driveOffRouteCount = 0;
+
+    try {
+        const newRoute =
+            await getDriveRoute(
+                driveUserCoordinates,
+                driveDestinationCoordinates
+            );
+
+        if (newRoute) {
+            driveActiveRoute =
+                newRoute;
+
+            driveCurrentStepIndex = 0;
+            driveRouteProgressIndex = 0;
+
+            drawDriveRoute(
+                newRoute
+            );
+
+            showDriveIncidents(
+                newRoute
+            );
+
+            console.log(
+                "Nova Drive reroute complete"
+            );
+        }
+
+    } catch (error) {
+        console.error(
+            "Nova Drive reroute error:",
+            error
+        );
+    }
+}
 
     driveMap.easeTo({
         center: driveUserCoordinates,
@@ -5727,6 +5888,8 @@ if (!driveUserCoordinates) {
     return;
 }
 
+driveDestinationCoordinates =
+    destination.coordinates;
 
 const route =
     await getDriveRoute(
@@ -6468,6 +6631,128 @@ driveModeCurrent.addEventListener(
 
     }
 );
+
+const driveRecenterNavigationButton =
+    document.getElementById(
+        "drive-recenter-navigation"
+    );
+
+if (driveRecenterNavigationButton) {
+
+    driveRecenterNavigationButton.addEventListener(
+        "click",
+        () => {
+
+            if (
+                !driveMap ||
+                !driveUserCoordinates
+            ) {
+                return;
+            }
+
+driveFollowMode = true;
+
+            const currentBearing =
+                driveMap.getBearing();
+
+            driveMap.easeTo({
+                center: driveUserCoordinates,
+                zoom: 17,
+                pitch: 60,
+                bearing: currentBearing,
+                duration: 600
+            });
+
+            console.log(
+                "Nova Drive recentered"
+            );
+        }
+    );
+}
+
+const driveStopNavigationButton =
+    document.getElementById(
+        "drive-stop-navigation"
+    );
+
+if (driveStopNavigationButton) {
+
+    driveStopNavigationButton.addEventListener(
+        "click",
+        () => {
+
+            driveActiveRoute = null;
+            driveCurrentStepIndex = 0;
+            driveRouteProgressIndex = 0;
+            driveOffRouteCount = 0;
+            driveDestinationCoordinates = null;
+
+            const navigationUI =
+                document.getElementById(
+                    "drive-navigation-ui"
+                );
+
+            const driveSearchCard =
+                document.querySelector(
+                    ".drive-search-card"
+                );
+
+            const cameraAlert =
+                document.getElementById(
+                    "drive-camera-alert"
+                );
+
+            if (navigationUI) {
+                navigationUI.hidden = true;
+            }
+
+            if (driveSearchCard) {
+                driveSearchCard.hidden = false;
+            }
+
+            if (cameraAlert) {
+                cameraAlert.hidden = true;
+            }
+
+            if (
+                driveMap &&
+                driveMap.getLayer(
+                    "nova-drive-route"
+                )
+            ) {
+                driveMap.removeLayer(
+                    "nova-drive-route"
+                );
+            }
+
+            if (
+                driveMap &&
+                driveMap.getLayer(
+                    "nova-drive-route-glow"
+                )
+            ) {
+                driveMap.removeLayer(
+                    "nova-drive-route-glow"
+                );
+            }
+
+            if (
+                driveMap &&
+                driveMap.getSource(
+                    "nova-drive-route"
+                )
+            ) {
+                driveMap.removeSource(
+                    "nova-drive-route"
+                );
+            }
+
+            console.log(
+                "Nova Drive navigation stopped"
+            );
+        }
+    );
+}
 
 // ========================================
 // NOVA DRIVE - TRUCK DIESEL SEARCH
