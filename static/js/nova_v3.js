@@ -4696,12 +4696,15 @@ if (
 
 
      driveMap =
-        new mapboxgl.Map({
-            container: "drive-map",
-            style: "mapbox://styles/mapbox/navigation-night-v1",
-            center: [-73.9855, 40.7580],
-            zoom: 12
-        });
+    new mapboxgl.Map({
+        container: "drive-map",
+        style: "mapbox://styles/mapbox/navigation-night-v1",
+        center: [-73.9855, 40.7580],
+        zoom: 12,
+        pitch: 60,
+        bearing: 0,
+        antialias: true
+    });
 
 
     driveMap.addControl(
@@ -4712,6 +4715,101 @@ if (
        driveMap.on(
     "load",
     () => {
+
+const labelLayerId =
+    driveMap
+        .getStyle()
+        .layers
+        .find(
+            (layer) =>
+                layer.type === "symbol" &&
+                layer.layout &&
+                layer.layout["text-field"]
+        )?.id;
+
+driveMap.addLayer(
+    {
+        id: "nova-3d-buildings",
+        source: "composite",
+        "source-layer": "building",
+        filter: [
+            "==",
+            "extrude",
+            "true"
+        ],
+        type: "fill-extrusion",
+        minzoom: 15,
+
+        paint: {
+    "fill-extrusion-color": [
+        "interpolate",
+        ["linear"],
+        ["get", "height"],
+        0, "#20262d",
+        50, "#2a3139",
+        150, "#343c46",
+        300, "#3d4652"
+    ],
+
+    "fill-extrusion-height": [
+        "get",
+        "height"
+    ],
+
+    "fill-extrusion-base": [
+        "get",
+        "min_height"
+    ],
+
+    "fill-extrusion-opacity": 0.9,
+
+    "fill-extrusion-vertical-gradient": true
+}
+    },
+    labelLayerId
+);
+
+driveMap.addSource(
+    "nova-terrain",
+    {
+        type: "raster-dem",
+        url: "mapbox://mapbox.mapbox-terrain-dem-v1",
+        tileSize: 512,
+        maxzoom: 14
+    }
+);
+
+driveMap.setTerrain({
+    source: "nova-terrain",
+    exaggeration: 1.25
+});
+
+console.log(
+    "Nova Drive style layers:",
+    driveMap
+        .getStyle()
+        .layers
+        .map((layer) => layer.id)
+);
+
+const novaRoadLayers = [
+    "road-minor-navigation",
+    "road-street-navigation",
+    "road-secondary-tertiary-navigation",
+    "road-primary-navigation",
+    "road-major-link-navigation",
+    "road-motorway-trunk-navigation"
+];
+
+novaRoadLayers.forEach((layerId) => {
+    if (driveMap.getLayer(layerId)) {
+        driveMap.setPaintProperty(
+            layerId,
+            "line-color",
+            "#2b3036"
+        );
+    }
+});
 
 loadDriveCameras();
 
@@ -5280,12 +5378,18 @@ if (
 }
 
     driveMap.easeTo({
-        center: driveUserCoordinates,
-        zoom: 17,
-        pitch: 60,
-        bearing: currentHeading,
-        duration: 600
-    });
+    center: driveUserCoordinates,
+    zoom: 17.4,
+    pitch: 68,
+    bearing: currentHeading,
+    padding: {
+        top: 180,
+        bottom: 40,
+        left: 0,
+        right: 0
+    },
+    duration: 600
+});
 }
 
         console.log(
