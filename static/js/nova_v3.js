@@ -5195,6 +5195,216 @@ driveMap.on(
 }
 }
 
+if (
+    driveActiveRoute &&
+    driveIncidentData.length > 0
+) {
+    const hazardAlert =
+        document.getElementById(
+            "drive-hazard-alert"
+        );
+
+    const hazardAlertIcon =
+        document.getElementById(
+            "drive-hazard-alert-icon"
+        );
+
+    const hazardAlertTitle =
+        document.getElementById(
+            "drive-hazard-alert-title"
+        );
+
+    const hazardAlertDistance =
+        document.getElementById(
+            "drive-hazard-alert-distance"
+        );
+
+    const routeCoordinates =
+        driveActiveRoute.geometry &&
+        driveActiveRoute.geometry.coordinates
+            ? driveActiveRoute.geometry.coordinates
+            : [];
+
+    let nextIncident = null;
+    let nextIncidentRouteDistance =
+        Infinity;
+
+    driveIncidentData.forEach(
+        (incident) => {
+
+            if (!incident.coordinates) {
+                return;
+            }
+
+            const incidentIndex =
+                incident.geometry_index_start;
+
+            if (
+                !Number.isInteger(
+                    incidentIndex
+                ) ||
+                incidentIndex <
+                    driveRouteProgressIndex
+            ) {
+                return;
+            }
+
+            let routeDistanceMeters = 0;
+
+            for (
+                let index =
+                    driveRouteProgressIndex;
+                index < incidentIndex;
+                index++
+            ) {
+                const startPoint =
+                    routeCoordinates[index];
+
+                const endPoint =
+                    routeCoordinates[
+                        index + 1
+                    ];
+
+                if (
+                    !startPoint ||
+                    !endPoint
+                ) {
+                    continue;
+                }
+
+                const lat1 =
+                    startPoint[1] *
+                    Math.PI / 180;
+
+                const lat2 =
+                    endPoint[1] *
+                    Math.PI / 180;
+
+                const deltaLat =
+                    (
+                        endPoint[1] -
+                        startPoint[1]
+                    ) *
+                    Math.PI / 180;
+
+                const deltaLng =
+                    (
+                        endPoint[0] -
+                        startPoint[0]
+                    ) *
+                    Math.PI / 180;
+
+                const a =
+                    Math.sin(
+                        deltaLat / 2
+                    ) *
+                    Math.sin(
+                        deltaLat / 2
+                    ) +
+                    Math.cos(lat1) *
+                    Math.cos(lat2) *
+                    Math.sin(
+                        deltaLng / 2
+                    ) *
+                    Math.sin(
+                        deltaLng / 2
+                    );
+
+                const c =
+                    2 *
+                    Math.atan2(
+                        Math.sqrt(a),
+                        Math.sqrt(
+                            1 - a
+                        )
+                    );
+
+                routeDistanceMeters +=
+                    6371000 * c;
+            }
+
+            if (
+                routeDistanceMeters <
+                nextIncidentRouteDistance
+            ) {
+                nextIncidentRouteDistance =
+                    routeDistanceMeters;
+
+                nextIncident =
+                    incident;
+            }
+        }
+    );
+
+    if (
+        hazardAlert &&
+        nextIncident &&
+        nextIncidentRouteDistance > 25 &&
+        nextIncidentRouteDistance <= 3218
+    ) {
+        hazardAlert.hidden = false;
+
+        let icon = "⚠️";
+        let title = "Hazard Ahead";
+
+        if (
+            nextIncident.type === "accident"
+        ) {
+            icon = "💥";
+            title = "Crash Ahead";
+        } else if (
+            nextIncident.type ===
+            "construction"
+        ) {
+            icon = "🚧";
+            title = "Construction Ahead";
+        } else if (
+            nextIncident.type ===
+            "road_closure"
+        ) {
+            icon = "⛔";
+            title = "Road Closure Ahead";
+        } else if (
+            nextIncident.type ===
+            "disabled_vehicle"
+        ) {
+            icon = "🚙";
+            title = "Disabled Vehicle Ahead";
+        }
+
+        if (hazardAlertIcon) {
+            hazardAlertIcon.textContent =
+                icon;
+        }
+
+        if (hazardAlertTitle) {
+            hazardAlertTitle.textContent =
+                title;
+        }
+
+        if (hazardAlertDistance) {
+            const distanceFeet =
+                Math.round(
+                    nextIncidentRouteDistance *
+                    3.28084
+                );
+
+            hazardAlertDistance.textContent =
+                distanceFeet < 1000
+                    ? distanceFeet +
+                      " ft ahead"
+                    : (
+                        nextIncidentRouteDistance /
+                        1609.344
+                      ).toFixed(1) +
+                      " mi ahead";
+        }
+
+    } else if (hazardAlert) {
+        hazardAlert.hidden = true;
+    }
+}
+
         const driveNavCurrentSpeed =
     document.getElementById(
         "drive-nav-current-speed"
@@ -6251,7 +6461,7 @@ if (
 
 
 let driveIncidentMarkers = [];
-
+let driveIncidentData = [];
 
 let driveCameraMarkers = [];
 let driveCameraData = [];
@@ -6393,6 +6603,16 @@ function showDriveIncidents(route) {
         "Nova Drive incidents:",
         incidents
     );
+
+driveIncidentData = incidents.map(
+    (incident) => ({
+        ...incident,
+        coordinates:
+            route.geometry.coordinates[
+                incident.geometry_index_start
+            ]
+    })
+);
 
     incidents.forEach(
         (incident) => {
@@ -6836,6 +7056,23 @@ if (driveStopNavigationButton) {
             if (cameraAlert) {
                 cameraAlert.hidden = true;
             }
+
+            const hazardAlert =
+    document.getElementById(
+        "drive-hazard-alert"
+    );
+
+if (hazardAlert) {
+    hazardAlert.hidden = true;
+}
+
+driveIncidentData = [];
+
+driveIncidentMarkers.forEach(
+    (marker) => marker.remove()
+);
+
+driveIncidentMarkers = [];
 
             if (
                 driveMap &&

@@ -6736,21 +6736,87 @@ backdrop-filter: blur(14px);
 
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 11px;
 
-    padding: 12px 15px;
+    padding: 11px 14px;
 
-    background: rgba(12, 18, 28, 0.96);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 16px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(12, 18, 28, 0.97),
+            rgba(17, 28, 42, 0.95)
+        );
+
+    border: 1px solid rgba(21, 151, 255, 0.30);
+    border-radius: 17px;
 
     box-shadow:
-        0 10px 30px rgba(0, 0, 0, 0.38);
+        0 10px 28px rgba(0, 0, 0, 0.40),
+        0 0 16px rgba(21, 151, 255, 0.10);
 
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
 
     pointer-events: none;
+}
+
+.drive-hazard-alert {
+    position: absolute;
+    left: 18px;
+    bottom: 168px;
+
+    display: flex;
+    align-items: center;
+    gap: 11px;
+
+    padding: 11px 14px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(12, 18, 28, 0.97),
+            rgba(38, 27, 14, 0.95)
+        );
+
+    border: 1px solid rgba(245, 158, 11, 0.32);
+    border-radius: 17px;
+
+    box-shadow:
+        0 10px 28px rgba(0, 0, 0, 0.40),
+        0 0 16px rgba(245, 158, 11, 0.10);
+
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+
+    pointer-events: none;
+}
+
+.drive-hazard-alert-icon {
+    font-size: 28px;
+    line-height: 1;
+}
+
+.drive-hazard-alert-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.drive-hazard-alert-text strong {
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.drive-hazard-alert-text span {
+    margin-top: 2px;
+    color: #9fa8b3;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.drive-camera-alert[hidden],
+.drive-hazard-alert[hidden] {
+    display: none !important;
 }
 
 .drive-camera-alert-icon {
@@ -6789,12 +6855,18 @@ backdrop-filter: blur(14px);
 }
 
 .drive-stop-navigation {
-    padding: 10px 16px;
+    padding: 10px 17px;
 
-    background: rgba(220, 38, 38, 0.95);
+    background:
+        linear-gradient(
+            135deg,
+            rgba(220, 38, 38, 0.98),
+            rgba(153, 27, 27, 0.96)
+        );
+
     color: #ffffff;
 
-    border: none;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 14px;
 
     font-size: 14px;
@@ -6803,16 +6875,23 @@ backdrop-filter: blur(14px);
     cursor: pointer;
 
     box-shadow:
-        0 8px 24px rgba(0, 0, 0, 0.35);
+        0 8px 24px rgba(0, 0, 0, 0.34),
+        0 0 14px rgba(220, 38, 38, 0.12);
 }
 
 .drive-recenter-navigation {
-    padding: 10px 16px;
+    padding: 10px 17px;
 
-    background: rgba(12, 18, 28, 0.95);
+    background:
+        linear-gradient(
+            135deg,
+            rgba(12, 18, 28, 0.97),
+            rgba(20, 31, 46, 0.96)
+        );
+
     color: #ffffff;
 
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(21, 151, 255, 0.24);
     border-radius: 14px;
 
     font-size: 14px;
@@ -6821,7 +6900,8 @@ backdrop-filter: blur(14px);
     cursor: pointer;
 
     box-shadow:
-        0 8px 24px rgba(0, 0, 0, 0.28);
+        0 8px 24px rgba(0, 0, 0, 0.30),
+        0 0 12px rgba(21, 151, 255, 0.08);
 }
 
 /* BOTTOM TRIP BAR */
@@ -6838,12 +6918,22 @@ backdrop-filter: blur(14px);
 
     padding: 16px 12px;
 
-    background: rgba(5, 12, 20, 0.96);
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(7, 14, 23, 0.97),
+            rgba(4, 10, 17, 0.97)
+        );
+
+    border: 1px solid rgba(255, 255, 255, 0.10);
     border-radius: 20px;
 
-    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.35);
+    box-shadow:
+        0 -8px 30px rgba(0, 0, 0, 0.35),
+        0 0 20px rgba(21, 151, 255, 0.05);
+
     backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
 }
 
 .drive-nav-trip-bar > div {
@@ -6867,6 +6957,12 @@ backdrop-filter: blur(14px);
 /* PHONE */
 
 @media (max-width: 700px) {
+
+
+.drive-hazard-alert {
+    left: 12px;
+    bottom: 160px;
+}
 
 .drive-nav-controls {
     right: 12px;
