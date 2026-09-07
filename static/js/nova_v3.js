@@ -4811,6 +4811,25 @@ novaRoadLayers.forEach((layerId) => {
     }
 });
 
+const novaRoadCaseLayers = [
+    "road-minor-case-navigation",
+    "road-street-case-navigation",
+    "road-secondary-tertiary-case-navigation",
+    "road-primary-case-navigation",
+    "road-major-link-case-navigation",
+    "road-motorway-trunk-case-navigation"
+];
+
+novaRoadCaseLayers.forEach((layerId) => {
+    if (driveMap.getLayer(layerId)) {
+        driveMap.setPaintProperty(
+            layerId,
+            "line-color",
+            "#15191e"
+        );
+    }
+});
+
 loadDriveCameras();
 
         driveMap.addSource(
