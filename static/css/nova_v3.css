@@ -5276,6 +5276,440 @@ button {
 }
 
 /* ========================================
+   NOVA DASHBOARD — DESIGN B MOBILE
+   ======================================== */
+
+@media (max-width: 760px) {
+
+    #dashboard-page .nova-dashboard-hero {
+        margin: 10px 0 12px;
+        padding: 18px 16px;
+
+        gap: 16px;
+
+        border-radius: 18px;
+    }
+
+    #dashboard-page .dashboard-eyebrow {
+        font-size: 10px;
+        letter-spacing: 1.2px;
+    }
+
+    #dashboard-page .nova-dashboard-welcome h1 {
+        margin: 9px 0 6px;
+
+        font-size: 27px;
+        line-height: 1.08;
+        letter-spacing: -0.9px;
+    }
+
+    #dashboard-page .nova-dashboard-welcome h1 span {
+        display: inline;
+        width: auto;
+
+        overflow-wrap: normal;
+        word-break: normal;
+    }
+
+    #dashboard-page .nova-dashboard-welcome p {
+        margin-top: 7px;
+
+        font-size: 13px;
+        line-height: 1.45;
+    }
+
+    #dashboard-page
+    .nova-dashboard-hero
+    .dashboard-actions {
+        grid-template-columns: 1fr 1fr;
+
+        gap: 9px;
+    }
+
+    #dashboard-page
+    .nova-dashboard-hero
+    .dashboard-actions button {
+        min-height: 44px;
+
+        border-radius: 13px;
+
+        font-size: 13px;
+        font-weight: 700;
+    }
+#dashboard-page .quick-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+#dashboard-page .quick-card {
+    min-height: 104px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    padding: 14px;
+
+    border-radius: 16px;
+}
+
+#dashboard-page .quick-card-icon {
+    width: 34px;
+    height: 34px;
+
+    margin-bottom: 9px;
+}
+
+#dashboard-page .quick-card-copy h3 {
+    font-size: 13px;
+    margin-bottom: 3px;
+}
+
+#dashboard-page .quick-card-copy p {
+    font-size: 11px;
+    line-height: 1.35;
+    white-space: normal;
+}
+
+#dashboard-page .quick-card-arrow {
+    display: none;
+}
+/* DESIGN B — RECENT PROJECTS */
+
+#dashboard-page .recent-projects-card {
+    min-height: 0;
+    padding: 16px;
+}
+
+#dashboard-page .recent-projects-card .card-header {
+    margin-bottom: 12px;
+    flex-wrap: nowrap;
+}
+
+#dashboard-page .recent-projects-card .card-kicker {
+    font-size: 9px;
+}
+
+#dashboard-page .recent-projects-card h2 {
+    font-size: 17px;
+}
+
+#dashboard-page .recent-projects-card .small-button {
+    padding: 8px 10px;
+    font-size: 12px;
+}
+
+#dashboard-page .recent-projects-card .loading-state {
+    min-height: 70px;
+}
+
+#dashboard-page #recent-projects {
+    gap: 7px;
+}
+/* DESIGN B — NOVA AI CARD */
+
+#dashboard-page .nova-ai-dashboard-card {
+    min-height: 0;
+    padding: 16px;
+}
+
+#dashboard-page .nova-ai-card-icon {
+    width: 42px;
+    height: 42px;
+    margin-bottom: 12px;
+}
+
+#dashboard-page .nova-ai-dashboard-card .card-kicker {
+    font-size: 9px;
+}
+
+#dashboard-page .nova-ai-dashboard-card h2 {
+    margin-top: 4px;
+    font-size: 18px;
+}
+
+#dashboard-page .nova-ai-dashboard-card p {
+    margin-top: 7px;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+#dashboard-page .ai-shortcuts {
+    margin-top: 14px;
+    gap: 8px;
+}
+
+#dashboard-page .ai-shortcuts button {
+    min-height: 42px;
+    padding: 9px 10px;
+    font-size: 12px;
+    border-radius: 11px;
+}
+/* DESIGN B — MARKET WATCH */
+
+#dashboard-page .market-watch-card {
+    min-height: 0;
+    padding: 16px;
+}
+
+#dashboard-page .market-watch-card .card-header {
+    margin-bottom: 12px;
+    flex-wrap: nowrap;
+}
+
+#dashboard-page .market-watch-card .card-kicker {
+    font-size: 9px;
+}
+
+#dashboard-page .market-watch-card h2 {
+    font-size: 17px;
+}
+
+#dashboard-page .market-watch {
+    gap: 0;
+}
+
+#dashboard-page .market-watch > div {
+    padding: 10px 0;
+}
+
+#dashboard-page .market-watch strong {
+    font-size: 13px;
+}
+
+#dashboard-page .market-watch small {
+    font-size: 10px;
+}
+
+#dashboard-page .market-watch > div > span {
+    font-size: 13px;
+}
+/* DESIGN B — NOVA DRIVE FEATURE CARD */
+
+#dashboard-page .nova-drive-dashboard-card {
+    position: relative;
+    min-height: 180px;
+    padding: 18px;
+    overflow: hidden;
+    border-radius: 20px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(18, 24, 46, 0.98),
+            rgba(27, 18, 53, 0.98)
+        );
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+#dashboard-page .nova-drive-dashboard-copy {
+    position: relative;
+    z-index: 2;
+    max-width: 58%;
+}
+
+#dashboard-page .nova-drive-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 4px 9px;
+    margin-bottom: 13px;
+    border-radius: 999px;
+    background: rgba(124, 92, 255, 0.18);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+}
+
+#dashboard-page .nova-drive-dashboard-card h2 {
+    margin: 0;
+    font-size: 24px;
+    line-height: 1.05;
+}
+
+#dashboard-page .nova-drive-dashboard-card p {
+    margin: 7px 0 0;
+    font-size: 13px;
+    opacity: 0.72;
+}
+
+#dashboard-page .nova-drive-dashboard-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    margin-top: 18px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 18px;
+}
+
+#dashboard-page .nova-drive-dashboard-visual {
+    position: absolute;
+    right: -10px;
+    bottom: -4px;
+    width: 48%;
+    height: 100%;
+}
+
+#dashboard-page .nova-drive-road {
+    position: absolute;
+    right: 8px;
+    bottom: -30px;
+    width: 95px;
+    height: 175px;
+    border-radius: 50px 50px 0 0;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(88, 94, 118, 0.9),
+            rgba(30, 34, 52, 0.98)
+        );
+    transform: rotate(24deg);
+    box-shadow: 0 0 35px rgba(111, 78, 255, 0.24);
+}
+
+#dashboard-page .nova-drive-road::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 12px;
+    width: 3px;
+    height: 120px;
+    transform: translateX(-50%);
+    background:
+        repeating-linear-gradient(
+            to bottom,
+            rgba(255,255,255,0.65) 0 10px,
+            transparent 10px 20px
+        );
+}
+
+#dashboard-page .nova-drive-pin {
+    position: absolute;
+    right: 42px;
+    top: 33px;
+    z-index: 2;
+    font-size: 18px;
+    text-shadow: 0 0 18px rgba(130, 95, 255, 0.9);
+}
+
+#dashboard-page .nova-drive-car {
+    position: absolute;
+    right: 32px;
+    bottom: 32px;
+    z-index: 3;
+    font-size: 31px;
+    transform: rotate(-12deg);
+}
+/* DESIGN B — HIDE EXTRA DASHBOARD SECTIONS */
+
+#dashboard-page .nova-ai-dashboard-card,
+#dashboard-page .market-watch-card,
+#dashboard-page .dashboard-activity-card {
+    display: none !important;
+}
+/* DESIGN B — MOBILE BOTTOM NAV */
+
+#dashboard-page {
+    padding-bottom: 92px;
+}
+
+#dashboard-page .nova-mobile-bottom-nav {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: 10px;
+    z-index: 1000;
+
+    height: 68px;
+    padding: 7px 10px;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr 64px 1fr 1fr;
+    align-items: center;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 22px;
+
+    background: rgba(10, 12, 24, 0.94);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+
+    box-shadow:
+        0 12px 35px rgba(0, 0, 0, 0.45),
+        0 0 30px rgba(112, 72, 255, 0.10);
+}
+
+#dashboard-page .mobile-bottom-nav-item {
+    border: 0;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.52);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+
+    font-size: 9px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+#dashboard-page .mobile-bottom-nav-icon {
+    font-size: 20px;
+    line-height: 1;
+}
+
+#dashboard-page .mobile-bottom-nav-item.active {
+    color: #ffffff;
+}
+
+#dashboard-page .mobile-bottom-nav-add {
+    width: 54px;
+    height: 54px;
+    justify-self: center;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 0;
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #7c5cff,
+            #5b3df5
+        );
+
+    color: #ffffff;
+    font-size: 30px;
+    font-weight: 400;
+    line-height: 1;
+
+    box-shadow:
+        0 8px 24px rgba(108, 76, 255, 0.45);
+
+    transform: translateY(-9px);
+    cursor: pointer;
+}
+
+#dashboard-page .mobile-bottom-nav-item:active,
+#dashboard-page .mobile-bottom-nav-add:active {
+    transform: scale(0.94);
+}
+
+#dashboard-page .mobile-bottom-nav-add:active {
+    transform: translateY(-9px) scale(0.94);
+}
+}
+
+
+/* ========================================
    NOVA CHAT MOBILE APP
    ======================================== */
 

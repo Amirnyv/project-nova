@@ -388,51 +388,51 @@ Pro Workspace
 
     <div class="dashboard-grid">
 
-        <!-- RECENT PROJECTS -->
+        <!-- NOVA DRIVE -->
 
-        <div
-            class="
-                dashboard-card
-                large-card
-                recent-projects-card
-            "
-        >
+<div
+    class="
+        dashboard-card
+        nova-drive-dashboard-card
+    "
+    data-page="drive"
+>
 
-            <div class="card-header">
+    <div class="nova-drive-dashboard-copy">
 
-                <div>
+        <span class="nova-drive-badge">
+            New
+        </span>
 
-                    <span class="card-kicker">
-                        WORKSPACE
-                    </span>
+        <h2>
+            Nova Drive
+        </h2>
 
-                    <h2>
-                        Recent Projects
-                    </h2>
+        <p>
+            Navigation with AI
+        </p>
 
-                </div>
+        <span class="nova-drive-dashboard-arrow">
+            →
+        </span>
 
-                <button
-                    class="small-button"
-                    data-page="projects"
-                >
-                    View all
-                    <span>→</span>
-                </button>
+    </div>
 
-            </div>
+    <div class="nova-drive-dashboard-visual">
 
+        <div class="nova-drive-road"></div>
 
-            <div id="recent-projects">
-
-                <div class="loading-state">
-                    Loading projects...
-                </div>
-
-            </div>
-
+        <div class="nova-drive-pin">
+            ●
         </div>
 
+        <div class="nova-drive-car">
+            🚗
+        </div>
+
+    </div>
+
+</div>
 
         <!-- NOVA AI -->
 
@@ -639,6 +639,57 @@ Pro Workspace
         </div>
 
     </div>
+
+    <!-- MOBILE BOTTOM NAVIGATION -->
+
+    <nav class="nova-mobile-bottom-nav">
+
+        <button
+            type="button"
+            class="mobile-bottom-nav-item active"
+            data-page="dashboard"
+        >
+            <span class="mobile-bottom-nav-icon">⌂</span>
+            <span>Home</span>
+        </button>
+
+        <button
+            type="button"
+            class="mobile-bottom-nav-item"
+            data-page="chat"
+        >
+            <span class="mobile-bottom-nav-icon">✦</span>
+            <span>Chat</span>
+        </button>
+
+        <button
+            type="button"
+            class="mobile-bottom-nav-add"
+            id="mobile-bottom-new-project"
+            aria-label="New project"
+        >
+            ＋
+        </button>
+
+        <button
+            type="button"
+            class="mobile-bottom-nav-item"
+            data-page="markets"
+        >
+            <span class="mobile-bottom-nav-icon">↗</span>
+            <span>Markets</span>
+        </button>
+
+        <button
+            type="button"
+            class="mobile-bottom-nav-item"
+            id="mobile-bottom-more"
+        >
+            <span class="mobile-bottom-nav-icon">•••</span>
+            <span>More</span>
+        </button>
+
+    </nav>
 
 </section>
 
@@ -1039,6 +1090,29 @@ Pro Workspace
     </div>
 </div>
 
+<!-- HAZARD ALERT -->
+<div
+    id="drive-hazard-alert"
+    class="drive-hazard-alert"
+    hidden
+>
+    <div
+        id="drive-hazard-alert-icon"
+        class="drive-hazard-alert-icon"
+    >
+        ⚠️
+    </div>
+
+    <div class="drive-hazard-alert-text">
+        <strong id="drive-hazard-alert-title">
+            Hazard Ahead
+        </strong>
+
+        <span id="drive-hazard-alert-distance">
+            --
+        </span>
+    </div>
+</div>
 
 <!-- NAVIGATION CONTROLS -->
 <div class="drive-nav-controls">

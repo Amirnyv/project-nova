@@ -23,6 +23,11 @@ const pages =
         "mobile-menu-button"
     );
 
+    const mobileBottomMoreButton =
+    document.getElementById(
+        "mobile-bottom-more"
+    );
+
 const mobileSidebarBackdrop =
     document.getElementById(
         "mobile-sidebar-backdrop"
@@ -89,6 +94,16 @@ mobileMenuButton
     ?.addEventListener(
         "click",
         openMobileSidebar
+    );
+
+    mobileBottomMoreButton
+
+    ?.addEventListener(
+
+        "click",
+
+        openMobileSidebar
+
     );
 
 
@@ -364,6 +379,14 @@ const heroNewProjectButton =
         "hero-new-project-button"
     );
 
+const mobileBottomNewProjectButton =
+
+    document.getElementById(
+
+        "mobile-bottom-new-project"
+
+    );
+
 const sidebarNewProjectButton =
     document.getElementById(
         "sidebar-new-project"
@@ -455,6 +478,10 @@ heroNewProjectButton?.addEventListener(
     openProjectModal
 );
 
+mobileBottomNewProjectButton?.addEventListener(
+    "click",
+    openProjectModal
+);
 
 sidebarNewProjectButton
     ?.addEventListener(
