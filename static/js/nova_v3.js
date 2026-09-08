@@ -201,6 +201,7 @@ document
     );
 
 function openPage(pageName) {
+    if (pageName === "agents") refreshAgentCounters();
 
     pages.forEach(page => {
 
@@ -2074,6 +2075,97 @@ window.currentConversationId =
     null;
 
 
+// Agent modes share the main Nova chat and its existing request lifecycle.
+const chatAgentMode = document.getElementById("chat-agent-mode");
+const conversationAgentModes = new Map();
+const customAgents = new Map();
+
+async function refreshAgentCounters() {
+    const count = document.getElementById("agent-count");
+    if (count) count.textContent = document.querySelectorAll("#agents-page .agent-card").length;
+    const sessions = document.getElementById("agent-session-count");
+    const note = document.getElementById("agent-session-note");
+    if (!sessions) return;
+    try {
+        const response = await fetch("/api/conversations");
+        if (!response.ok) throw new Error("Could not load sessions");
+        const data = await response.json();
+        if (!Array.isArray(data.conversations)) throw new Error("Invalid sessions");
+        sessions.textContent = data.conversations.length;
+        note.textContent = "All saved Nova conversations";
+    } catch {
+        sessions.textContent = "—";
+        note.textContent = "Session count unavailable";
+    }
+}
+
+document.getElementById("create-agent-button")?.addEventListener("click", () => {
+    document.getElementById("agent-builder")?.scrollIntoView({behavior: "smooth", block: "start"});
+    document.getElementById("custom-agent-name")?.focus({preventScroll: true});
+});
+
+document.getElementById("custom-agent-form")?.addEventListener("submit", event => {
+    event.preventDefault();
+    const status = document.getElementById("custom-agent-status");
+    if (sendButton?.disabled) {
+        status.textContent = "Wait for Nova's current reply before opening another agent.";
+        return;
+    }
+    const name = document.getElementById("custom-agent-name").value.trim();
+    const instructions = document.getElementById("custom-agent-instructions").value.trim();
+    if (!name || !instructions) {
+        status.textContent = "Enter a name and purpose for your agent.";
+        return;
+    }
+    const baseMode = document.getElementById("custom-agent-base").value;
+    const id = `custom-${customAgents.size + 1}`;
+    customAgents.set(id, {
+        name, instructions, baseMode,
+        web_search: document.getElementById("custom-agent-web").checked
+    });
+    const option = document.createElement("option");
+    option.value = id;
+    option.textContent = `${name} (${baseMode === "coding" ? "Coding · Max" : baseMode}) · Custom`;
+    chatAgentMode.appendChild(option);
+    const card = document.createElement("div");
+    card.className = "agent-card";
+    const icon = document.createElement("div");
+    icon.className = "agent-icon";
+    icon.textContent = "✦";
+    const details = document.createElement("div");
+    const title = document.createElement("h3");
+    title.textContent = name;
+    const description = document.createElement("p");
+    description.textContent = instructions;
+    details.append(title, description);
+    const button = document.createElement("button");
+    button.className = "secondary-button";
+    button.textContent = "Open Agent";
+    button.addEventListener("click", () => {
+        if (sendButton?.disabled) return;
+        resetMainChat();
+        chatAgentMode.value = id;
+        openPage("chat");
+        userInput?.focus();
+    });
+    card.append(icon, details, button);
+    document.querySelector("#agents-page .agents-grid").appendChild(card);
+    refreshAgentCounters();
+    status.textContent = `${name} created for this page session.`;
+    button.click();
+});
+
+
+document.querySelectorAll("[data-agent-mode]").forEach(button => {
+    button.addEventListener("click", () => {
+        if (sendButton?.disabled) return;
+        resetMainChat();
+        chatAgentMode.value = button.dataset.agentMode;
+        openPage("chat");
+        userInput?.focus();
+    });
+});
+
 // ========================================
 // CREATE CHAT MESSAGE
 // ========================================
@@ -2259,6 +2351,7 @@ if (role === "user") {
 // ========================================
 
 function resetMainChat() {
+    if (chatAgentMode) chatAgentMode.value = "default";
 
     window.currentConversationId =
         null;
@@ -2467,6 +2560,9 @@ async function openConversation(
 
         window.currentConversationId =
             conversationId;
+        if (chatAgentMode) {
+            chatAgentMode.value = conversationAgentModes.get(conversationId) || "default";
+        }
 
 
         chatBox.innerHTML =
@@ -2517,6 +2613,9 @@ chatBox.scrollTop = 0;
 // ========================================
 
 async function sendMainMessage() {
+    if (sendButton?.disabled) return;
+    const agentMode = chatAgentMode?.value || "default";
+    const customAgent = customAgents.get(agentMode);
 
     if (
         !userInput
@@ -2586,6 +2685,12 @@ async function sendMainMessage() {
                             message:
                                 message,
 
+                            agent_mode: customAgent?.baseMode || agentMode,
+                            custom_agent: customAgent ? {
+                                name: customAgent.name,
+                                instructions: customAgent.instructions,
+                                web_search: customAgent.web_search
+                            } : undefined,
                             conversation_id:
                                 window
                                     .currentConversationId
@@ -2613,6 +2718,7 @@ async function sendMainMessage() {
 
                 window.currentConversationId =
                     data.conversation_id;
+                conversationAgentModes.set(data.conversation_id, agentMode);
 
             }
 
@@ -2648,6 +2754,7 @@ async function sendMainMessage() {
 
                 window.currentConversationId =
                     data.conversation_id;
+                conversationAgentModes.set(data.conversation_id, agentMode);
 
             }
 
@@ -2783,6 +2890,7 @@ async function sendMainMessage() {
 
         window.currentConversationId =
             data.conversation_id;
+        conversationAgentModes.set(data.conversation_id, agentMode);
 
     }
 
@@ -3753,6 +3861,7 @@ async function loadConversations() {
 // ========================================
 
 function startNewConversation() {
+    if (chatAgentMode) chatAgentMode.value = "default";
 
     window.currentConversationId =
         null;

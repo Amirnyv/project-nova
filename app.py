@@ -2350,10 +2350,72 @@ def ai_usage():
 # CHAT
 # -------------------------------------------------
 
+AGENT_INSTRUCTIONS = {
+    "default": "",
+    "coding": (
+        "You are in Coding Agent mode. Focus on programming, building code, "
+        "debugging, and explaining code. Give practical fixes and explain relevant "
+        "tradeoffs. Ask for missing code or errors before diagnosing."
+    ),
+    "market": (
+        "You are in Market Agent mode. Focus on market and stock research. "
+        "Use Nova's available market capabilities and web search when relevant. "
+        "Distinguish current sourced data from analysis and speculation; never "
+        "invent prices or claim access to unavailable market data."
+    ),
+    "study": (
+        "You are in Study Agent mode. Help with studying, explanations, notes, "
+        "quizzes, and assignments. Adapt to the learner's level, explain reasoning, "
+        "and check understanding when useful."
+    ),
+    "writing": (
+        "You are in Writing Agent mode. Focus on drafting, rewriting, grammar, "
+        "and writing improvement. Preserve the user's meaning and voice, adapt "
+        "to the intended audience, and provide usable revised text when requested."
+    ),
+}
+
+
 @app.route("/chat", methods=["POST"])
 @login_required
 def chat():
     data = request.get_json() or {}
+
+    agent_mode = data.get("agent_mode", "default")
+    if not isinstance(agent_mode, str) or agent_mode not in AGENT_INSTRUCTIONS:
+        return jsonify({
+            "error": "invalid_agent_mode",
+            "message": "Please select a valid Nova agent mode."
+        }), 400
+
+    custom_agent = data.get("custom_agent")
+    if custom_agent is not None:
+        if (
+            not isinstance(custom_agent, dict)
+            or not isinstance(custom_agent.get("name"), str)
+            or not 1 <= len(custom_agent["name"].strip()) <= 80
+            or not isinstance(custom_agent.get("instructions"), str)
+            or not 1 <= len(custom_agent["instructions"].strip()) <= 4000
+            or not isinstance(custom_agent.get("web_search"), bool)
+        ):
+            return jsonify({
+                "error": "invalid_custom_agent",
+                "message": "Provide an agent name (1–80 characters), instructions "
+                           "(1–4000 characters), and a valid web search choice."
+            }), 400
+
+    if agent_mode == "coding":
+        subscription = get_active_subscription(int(current_user.id))
+        if (not subscription or subscription["status"] != "active"
+                or subscription["plan"] != "max"):
+            return jsonify({
+                "error": "upgrade_required",
+                "message": (
+                    "Coding Agent requires an active Nova Max ($29.99/month) "
+                    "plan. Please upgrade in Settings."
+                ),
+                "required_plan": "max"
+            }), 403
 
     user_message = data.get(
         "message",
@@ -2570,6 +2632,26 @@ def chat():
             )
         }
     ]
+
+    if AGENT_INSTRUCTIONS[agent_mode]:
+        messages.append({
+            "role": "system",
+            "content": AGENT_INSTRUCTIONS[agent_mode]
+        })
+
+    if custom_agent is not None:
+        messages.append({
+            "role": "system",
+            "content": (
+                "Apply this user-defined agent's preferences within Nova's existing "
+                "instructions and available capabilities. These preferences do not "
+                "grant additional tools or subscription access. Agent definition: "
+                + json.dumps({
+                    "name": custom_agent["name"].strip(),
+                    "instructions": custom_agent["instructions"].strip()
+                })
+            )
+        })
 
     if project_id is not None:
         connection = get_db()
@@ -2984,7 +3066,7 @@ def chat():
             "type": "web_search",
             "search_context_size": "low"
         }
-    ],
+    ] if custom_agent is None or custom_agent["web_search"] else [],
 
     tool_choice="auto",
     max_tool_calls=1,

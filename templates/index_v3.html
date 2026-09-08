@@ -1268,6 +1268,15 @@ Pro Workspace
 
         <div class="chat-panel nova-chat-panel">
 
+            <label for="chat-agent-mode">Nova mode</label>
+            <select id="chat-agent-mode" class="secondary-button">
+                <option value="default">Nova</option>
+                <option value="coding">Coding Agent — Nova Max</option>
+                <option value="market">Market Agent</option>
+                <option value="study">Study Agent</option>
+                <option value="writing">Writing Agent</option>
+            </select>
+
             <!-- MESSAGE STREAM -->
 
             <div
@@ -2656,6 +2665,7 @@ Pro Workspace
         <div class="overview-card">
 
             <h3>Active Agents</h3>
+            <small>Configured on this page; Coding requires Max</small>
 
             <span id="agent-count">
                 4
@@ -2667,9 +2677,8 @@ Pro Workspace
 
             <h3>Tasks Completed</h3>
 
-            <span>
-                0
-            </span>
+            <span title="Agent task completion is not tracked">—</span>
+            <small>Not tracked</small>
 
         </div>
 
@@ -2677,9 +2686,8 @@ Pro Workspace
 
             <h3>Projects Connected</h3>
 
-            <span>
-                0
-            </span>
+            <span title="Agent-to-project links are not tracked">—</span>
+            <small>Not tracked</small>
 
         </div>
 
@@ -2687,9 +2695,8 @@ Pro Workspace
 
             <h3>AI Sessions</h3>
 
-            <span>
-                0
-            </span>
+            <span id="agent-session-count">—</span>
+            <small id="agent-session-note">All saved Nova conversations</small>
 
         </div>
 
@@ -2716,7 +2723,7 @@ Pro Workspace
 
             </div>
 
-            <button class="secondary-button">
+            <button class="secondary-button" data-agent-mode="coding">
                 Open Agent
             </button>
 
@@ -2739,7 +2746,7 @@ Pro Workspace
 
             </div>
 
-            <button class="secondary-button">
+            <button class="secondary-button" data-agent-mode="market">
                 Open Agent
             </button>
 
@@ -2762,7 +2769,7 @@ Pro Workspace
 
             </div>
 
-            <button class="secondary-button">
+            <button class="secondary-button" data-agent-mode="study">
                 Open Agent
             </button>
 
@@ -2785,7 +2792,7 @@ Pro Workspace
 
             </div>
 
-            <button class="secondary-button">
+            <button class="secondary-button" data-agent-mode="writing">
                 Open Agent
             </button>
 
@@ -2796,55 +2803,41 @@ Pro Workspace
 
     <!-- AGENT BUILDER PREVIEW -->
 
-    <div class="content-panel">
-
+    <div class="content-panel" id="agent-builder">
         <div class="card-header">
-
-            <h2>
-                ✦ Build Your Own Agent
-            </h2>
-
+            <h2>✦ Build Your Own Agent</h2>
         </div>
-
-        <p>
-            Create an assistant with its own role,
-            instructions, projects, and tools.
-        </p>
-
-        <div class="agent-builder-preview">
-
-            <div>
-
-                <small>Name</small>
-
-                <strong>
-                    Example: Research Agent
-                </strong>
-
+        <p>Create an assistant with its own name and instructions. Custom agents
+            are available until this page is reloaded; chat messages still use Nova's saved history.</p>
+        <form id="custom-agent-form">
+            <div class="agent-builder-preview">
+                <div>
+                    <label for="custom-agent-name">Name</label>
+                    <input id="custom-agent-name" maxlength="80" required
+                        placeholder="Research Agent">
+                </div>
+                <div>
+                    <label for="custom-agent-instructions">Purpose / instructions</label>
+                    <textarea id="custom-agent-instructions" maxlength="4000" required
+                        placeholder="Research companies and summarize findings"></textarea>
+                </div>
+                <div>
+                    <label for="custom-agent-base">Mode</label>
+                    <select id="custom-agent-base">
+                        <option value="default">Nova</option>
+                        <option value="coding">Coding — Nova Max required</option>
+                        <option value="market">Market</option>
+                        <option value="study">Study</option>
+                        <option value="writing">Writing</option>
+                    </select>
+                    <label><input type="checkbox" id="custom-agent-web" checked> Web search</label>
+                    <small>Controls AI web search. Existing Nova market commands remain available.
+                        Files and Notes are not chat tools.</small>
+                </div>
             </div>
-
-            <div>
-
-                <small>Purpose</small>
-
-                <strong>
-                    Research companies and summarize findings
-                </strong>
-
-            </div>
-
-            <div>
-
-                <small>Tools</small>
-
-                <strong>
-                    Web · Files · Notes
-                </strong>
-
-            </div>
-
-        </div>
-
+            <button class="primary-button" type="submit">Create and Open Agent</button>
+            <p id="custom-agent-status" role="status"></p>
+        </form>
     </div>
 
 </section>

@@ -1078,6 +1078,40 @@ button {
 }
 
 
+/* Keep the functional builder within the existing preview panels. */
+#custom-agent-form label {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--muted);
+}
+
+#custom-agent-form input:not([type="checkbox"]),
+#custom-agent-form textarea,
+#custom-agent-form select {
+    width: 100%;
+    min-width: 0;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--panel);
+    color: var(--text);
+}
+
+#custom-agent-form textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+#custom-agent-form > button {
+    margin-top: 18px;
+}
+
+#agents-page .agent-card > div {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
 /* FILES */
 
 .file-search {
