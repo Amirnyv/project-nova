@@ -1,5 +1,7 @@
 import os
+import time
 import requests
+from concurrent.futures import ThreadPoolExecutor
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -7,6 +9,11 @@ load_dotenv()
 API_KEY = os.getenv("TWELVE_DATA_API_KEY")
 BASE_URL = "https://api.twelvedata.com"
 
+QUOTE_CACHE = {}
+QUOTE_CACHE_TTL = 60
+
+ANALYSIS_CACHE = {}
+ANALYSIS_CACHE_TTL = 300
 
 def get_json(endpoint, params):
     params["apikey"] = API_KEY
@@ -27,6 +34,67 @@ def get_json(endpoint, params):
 
     return data
 
+
+def get_market_quote(symbol):
+    symbol = symbol.upper().strip()
+
+    cached = QUOTE_CACHE.get(symbol)
+
+    if cached:
+        age = time.time() - cached["time"]
+
+        if age < QUOTE_CACHE_TTL:
+            return cached["data"]
+
+    try:
+        quote = get_json(
+            "quote",
+            {
+                "symbol": symbol
+            }
+        )
+
+
+        result = {
+            "symbol": symbol,
+            "company": quote.get(
+                "name",
+                symbol
+            ),
+            "price": round(
+                float(quote["close"]),
+                2
+            ),
+            "change": round(
+                float(
+                    quote["percent_change"]
+                ),
+                2
+            )
+        }
+
+        QUOTE_CACHE[symbol] = {
+            "time": time.time(),
+            "data": result
+        }
+
+        return result
+
+    except requests.RequestException as error:
+        return {
+            "error":
+                f"Market connection failed: {error}"
+        }
+
+    except (
+        ValueError,
+        KeyError,
+        TypeError
+    ) as error:
+        return {
+            "error":
+                f"Market data error: {error}"
+        }
 
 def calculate_rsi(prices, period=14):
     if len(prices) < period + 1:
@@ -88,22 +156,38 @@ def calculate_volatility(prices):
 def analyze_stock(symbol):
     symbol = symbol.upper().strip()
 
-    try:
-        quote = get_json(
-            "quote",
-            {
-                "symbol": symbol
-            }
-        )
+    cached = ANALYSIS_CACHE.get(symbol)
 
-        history = get_json(
-            "time_series",
-            {
-                "symbol": symbol,
-                "interval": "1day",
-                "outputsize": 60
-            }
-        )
+    if cached:
+        age = time.time() - cached["time"]
+
+        if age < ANALYSIS_CACHE_TTL:
+            return cached["data"]
+
+    try:
+            
+        with ThreadPoolExecutor(max_workers=2) as executor:
+
+            quote_future = executor.submit(
+                get_json,
+                "quote",
+                {
+                    "symbol": symbol
+                }
+            )
+
+            history_future = executor.submit(
+                get_json,
+                "time_series",
+                {
+                    "symbol": symbol,
+                    "interval": "1day",
+                    "outputsize": 60
+                }
+            )
+
+            quote = quote_future.result()
+            history = history_future.result()
 
         values = history.get("values", [])
 
@@ -233,7 +317,7 @@ def analyze_stock(symbol):
         else:
             risk = "Low"
 
-        return {
+            result = {
             "symbol": symbol,
             "company": quote.get("name", symbol),
             "price": round(price, 2),
@@ -261,6 +345,13 @@ def analyze_stock(symbol):
             "chart_ma20": ma20_history,
             "chart_ma50": ma50_history
         }
+
+        ANALYSIS_CACHE[symbol] = {
+            "time": time.time(),
+            "data": result
+        }
+
+        return result
 
     except requests.RequestException as error:
         return {

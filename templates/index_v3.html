@@ -2029,97 +2029,269 @@ Pro Workspace
     class="page"
 >
 
-    <div class="page-header">
+    <!-- ================================= -->
+    <!-- MARKETS LANDING VIEW -->
+    <!-- ================================= -->
 
-        <div>
-            <h1>📈 Markets</h1>
+    <div id="markets-home-view">
 
-            <p>
-                Research markets and discover opportunities.
-            </p>
-        </div>
+        <div class="page-header">
 
-    </div>
+            <div>
+                <h1>🌐 Markets</h1>
 
-
-    <!-- MARKET SEARCH -->
-
-    <div class="market-search-bar">
-
-        <span>⌕</span>
-
-        <input
-            id="market-symbol"
-            type="text"
-            placeholder="Search a stock or ticker — AAPL, TSLA, NVDA..."
-        >
-
-        <button
-            id="market-search-button"
-            class="primary-button"
-        >
-            Analyze
-        </button>
-
-    </div>
-
-
-    <!-- MARKET OVERVIEW -->
-
-    <div class="market-overview">
-
-        <div class="market-index-card">
-
-            <small>S&P 500</small>
-
-            <strong>--</strong>
-
-            <span>Market data coming soon</span>
+                <p>
+                    Global markets at a glance.
+                    Search, analyze, and find opportunities.
+                </p>
+            </div>
 
         </div>
 
 
-        <div class="market-index-card">
+        <!-- MARKET SEARCH -->
 
-            <small>NASDAQ</small>
+        <div class="market-search-bar">
 
-            <strong>--</strong>
+            <span>⌕</span>
 
-            <span>Market data coming soon</span>
+            <input
+                id="market-symbol"
+                type="text"
+                placeholder="Search a stock or crypto — AAPL, TSLA, BTC..."
+            >
+
+            <button
+                id="market-search-button"
+                class="primary-button"
+            >
+                Analyze
+            </button>
+
+        </div>
+
+
+        <!-- MARKET OVERVIEW -->
+
+        <div class="market-overview">
+
+            <button
+                type="button"
+                class="market-index-card"
+                data-symbol="SPY"
+            >
+
+                <small>S&P 500</small>
+
+                <strong id="market-sp500-price">
+                    --
+                </strong>
+
+                <span id="market-sp500-change">
+                    Loading market data...
+                </span>
+
+            </button>
+
+
+            <button
+                type="button"
+                class="market-index-card"
+                data-symbol="QQQ"
+            >
+
+                <small>NASDAQ</small>
+
+                <strong id="market-nasdaq-price">
+                    --
+                </strong>
+
+                <span id="market-nasdaq-change">
+                    Loading market data...
+                </span>
+
+            </button>
+
+
+            <button
+                type="button"
+                class="market-index-card"
+                data-symbol="BTC/USD"
+            >
+
+                <small>Bitcoin</small>
+
+                <strong id="market-btc-price">
+                    --
+                </strong>
+
+                <span id="market-btc-change">
+                    Loading market data...
+                </span>
+
+            </button>
+
+
+            <button
+                type="button"
+                class="market-index-card"
+                data-symbol="ETH/USD"
+            >
+
+                <small>Ethereum</small>
+
+                <strong id="market-eth-price">
+                    --
+                </strong>
+
+                <span id="market-eth-change">
+                    Loading market data...
+                </span>
+
+            </button>
 
         </div>
 
 
-        <div class="market-index-card">
+        <!-- TOP MOVERS -->
 
-            <small>Bitcoin</small>
+        <div class="content-panel market-movers-card">
 
-            <strong>--</strong>
+            <div class="card-header">
 
-            <span>Market data coming soon</span>
+                <h2>
+                    🔥 Top Movers
+                </h2>
+
+                <button
+                    type="button"
+                    class="market-text-button"
+                >
+                    See All
+                </button>
+
+            </div>
+
+
+            <div id="market-movers-list">
+
+                <button
+                    type="button"
+                    class="market-stock-row"
+                    data-symbol="AAPL"
+                >
+
+                    <div>
+                        <strong>AAPL</strong>
+                        <span>Apple Inc.</span>
+                    </div>
+
+                    <span class="market-stock-price">
+                        --
+                    </span>
+
+                    <span class="market-stock-change">
+                        --
+                    </span>
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="market-stock-row"
+                    data-symbol="TSLA"
+                >
+
+                    <div>
+                        <strong>TSLA</strong>
+                        <span>Tesla Inc.</span>
+                    </div>
+
+                    <span class="market-stock-price">
+                        --
+                    </span>
+
+                    <span class="market-stock-change">
+                        --
+                    </span>
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="market-stock-row"
+                    data-symbol="NVDA"
+                >
+
+                    <div>
+                        <strong>NVDA</strong>
+                        <span>NVIDIA</span>
+                    </div>
+
+                    <span class="market-stock-price">
+                        --
+                    </span>
+
+                    <span class="market-stock-change">
+                        --
+                    </span>
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="market-stock-row"
+                    data-symbol="AMZN"
+                >
+
+                    <div>
+                        <strong>AMZN</strong>
+                        <span>Amazon</span>
+                    </div>
+
+                    <span class="market-stock-price">
+                        --
+                    </span>
+
+                    <span class="market-stock-change">
+                        --
+                    </span>
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="market-stock-row"
+                    data-symbol="MSFT"
+                >
+
+                    <div>
+                        <strong>MSFT</strong>
+                        <span>Microsoft</span>
+                    </div>
+
+                    <span class="market-stock-price">
+                        --
+                    </span>
+
+                    <span class="market-stock-change">
+                        --
+                    </span>
+
+                </button>
+
+            </div>
 
         </div>
-
-
-        <div class="market-index-card">
-
-            <small>Ethereum</small>
-
-            <strong>--</strong>
-
-            <span>Market data coming soon</span>
-
-        </div>
-
-    </div>
-
-
-    <div class="markets-grid">
 
 
         <!-- WATCHLIST -->
 
-        <div class="content-panel">
+        <div class="content-panel market-watchlist-card">
 
             <div class="card-header">
 
@@ -2127,76 +2299,82 @@ Pro Workspace
                     ⭐ Watchlist
                 </h2>
 
-                <button class="small-button">
+                <button
+                    type="button"
+                    class="small-button"
+                    id="market-add-watchlist-button"
+                >
                     + Add
                 </button>
 
             </div>
 
+
             <div id="market-watchlist">
 
-                <div class="watchlist-row">
+                <button
+                    type="button"
+                    class="market-stock-row"
+                    data-symbol="AAPL"
+                >
 
-                    <strong>AAPL</strong>
+                    <div>
+                        <strong>AAPL</strong>
+                        <span>Apple Inc.</span>
+                    </div>
 
-                    <span>Apple</span>
+                    <span class="market-stock-price">
+                        --
+                    </span>
 
-                    <span>--</span>
+                    <span class="market-stock-change">
+                        --
+                    </span>
 
-                </div>
-
-
-                <div class="watchlist-row">
-
-                    <strong>TSLA</strong>
-
-                    <span>Tesla</span>
-
-                    <span>--</span>
-
-                </div>
-
-
-                <div class="watchlist-row">
-
-                    <strong>NVDA</strong>
-
-                    <span>NVIDIA</span>
-
-                    <span>--</span>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- AI MARKET ANALYSIS -->
-
-        <div class="content-panel">
-
-            <h2>
-                ✦ Nova Market Intelligence
-            </h2>
-
-            <p>
-                Ask Nova to research a company, explain market
-                movement, or compare investments.
-            </p>
-
-            <div class="suggestion-list">
-
-                <button>
-                    Analyze AAPL
                 </button>
 
-                <button>
-                    Compare TSLA vs NVDA
+
+                <button
+                    type="button"
+                    class="market-stock-row"
+                    data-symbol="TSLA"
+                >
+
+                    <div>
+                        <strong>TSLA</strong>
+                        <span>Tesla Inc.</span>
+                    </div>
+
+                    <span class="market-stock-price">
+                        --
+                    </span>
+
+                    <span class="market-stock-change">
+                        --
+                    </span>
+
                 </button>
 
-                <button>
-                    Explain today's market
+
+                <button
+                    type="button"
+                    class="market-stock-row"
+                    data-symbol="NVDA"
+                >
+
+                    <div>
+                        <strong>NVDA</strong>
+                        <span>NVIDIA</span>
+                    </div>
+
+                    <span class="market-stock-price">
+                        --
+                    </span>
+
+                    <span class="market-stock-change">
+                        --
+                    </span>
+
                 </button>
 
             </div>
@@ -2206,20 +2384,235 @@ Pro Workspace
     </div>
 
 
-    <!-- SEARCH RESULT -->
+    <!-- ================================= -->
+    <!-- STOCK DETAIL VIEW -->
+    <!-- ================================= -->
 
     <div
-        id="market-results"
-        class="content-panel"
+        id="market-detail-view"
+        hidden
     >
 
-        <h2>
-            Stock Analysis
-        </h2>
+        <div class="market-detail-header">
 
-        <p>
-            Search for a stock above to begin.
-        </p>
+            <button
+                type="button"
+                id="market-detail-back"
+                class="market-back-button"
+                aria-label="Back to markets"
+            >
+                ←
+            </button>
+
+            <div class="market-detail-title">
+
+                <strong id="market-detail-symbol">
+                    AAPL
+                </strong>
+
+                <span id="market-detail-company">
+                    Apple Inc.
+                </span>
+
+            </div>
+
+            <button
+                type="button"
+                class="market-favorite-button"
+                aria-label="Add to watchlist"
+            >
+                ★
+            </button>
+
+        </div>
+
+
+        <div class="market-detail-price-row">
+
+            <div>
+
+                <strong id="market-detail-price">
+                    $--
+                </strong>
+
+                <span id="market-detail-change">
+                    --
+                </span>
+
+            </div>
+
+            <span
+                id="market-detail-signal"
+                class="market-signal-badge"
+            >
+                HOLD
+            </span>
+
+        </div>
+
+
+        <!-- TIME RANGE -->
+
+        <div class="market-range-buttons">
+
+           <button
+    type="button"
+    data-range="1D"
+>
+    1D
+</button>
+
+            <button
+                type="button"
+                data-range="1W"
+            >
+                1W
+            </button>
+
+            <button
+                type="button"
+                data-range="1M"
+            >
+                1M
+            </button>
+
+            <button
+    type="button"
+    class="active"
+    data-range="3M"
+>
+    3M
+</button>
+
+            <button
+                type="button"
+                data-range="1Y"
+            >
+                1Y
+            </button>
+
+            <button
+                type="button"
+                data-range="ALL"
+            >
+                All
+            </button>
+
+        </div>
+
+
+        <!-- CHART -->
+
+        <div class="market-chart-card">
+
+            <canvas
+                id="market-detail-chart"
+            ></canvas>
+
+        </div>
+
+
+        <!-- STOCK STATS -->
+
+        <div class="market-detail-stats">
+
+            <div class="market-stat-card">
+                <span>RSI</span>
+                <strong id="market-detail-rsi">--</strong>
+            </div>
+
+            <div class="market-stat-card">
+                <span>MA20</span>
+                <strong id="market-detail-ma20">$--</strong>
+            </div>
+
+            <div class="market-stat-card">
+                <span>MA50</span>
+                <strong id="market-detail-ma50">$--</strong>
+            </div>
+
+            <div class="market-stat-card">
+                <span>Risk</span>
+                <strong id="market-detail-risk">--</strong>
+            </div>
+
+        </div>
+
+
+        <!-- AI ANALYSIS -->
+
+        <div class="content-panel market-ai-analysis-card">
+
+            <div class="card-header">
+
+                <h2>
+                    ✦ AI Analysis
+                </h2>
+
+                <span
+                    id="market-ai-signal"
+                    class="market-signal-badge"
+                >
+                    HOLD
+                </span>
+
+            </div>
+
+            <p id="market-detail-reason">
+                Nova's market analysis will appear here.
+            </p>
+
+        </div>
+
+
+        <!-- EXTRA METRICS -->
+
+        <div class="market-detail-extra-stats">
+
+            <div class="market-stat-card">
+                <span>Score</span>
+                <strong id="market-detail-score">--</strong>
+            </div>
+
+            <div class="market-stat-card">
+                <span>Momentum</span>
+                <strong id="market-detail-momentum">--</strong>
+            </div>
+
+            <div class="market-stat-card">
+                <span>Volatility</span>
+                <strong id="market-detail-volatility">--</strong>
+            </div>
+
+        </div>
+
+
+        <!-- NEWS -->
+
+        <div class="content-panel market-news-card">
+
+            <div class="card-header">
+
+                <h2>
+                    Recent News
+                </h2>
+
+                <button
+                    type="button"
+                    class="market-text-button"
+                >
+                    See All
+                </button>
+
+            </div>
+
+            <p
+    id="market-news-placeholder"
+    class="market-news-placeholder"
+>
+         Live company news will appear here.
+</p>
+        </div>
 
     </div>
 

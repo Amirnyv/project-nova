@@ -7583,37 +7583,196 @@ const marketSearchButton =
         "market-search-button"
     );
 
-const marketResults =
+const marketsHomeView =
     document.getElementById(
-        "market-results"
+        "markets-home-view"
     );
 
+const marketDetailView =
+    document.getElementById(
+        "market-detail-view"
+    );
 
-async function analyzeMarketSymbol() {
+const marketDetailBack =
+    document.getElementById(
+        "market-detail-back"
+    );
+
+const marketDetailSymbol =
+    document.getElementById(
+        "market-detail-symbol"
+    );
+
+const marketDetailCompany =
+    document.getElementById(
+        "market-detail-company"
+    );
+
+const marketDetailPrice =
+    document.getElementById(
+        "market-detail-price"
+    );
+
+const marketDetailChange =
+    document.getElementById(
+        "market-detail-change"
+    );
+
+const marketDetailSignal =
+    document.getElementById(
+        "market-detail-signal"
+    );
+
+const marketDetailRsi =
+    document.getElementById(
+        "market-detail-rsi"
+    );
+
+const marketDetailMa20 =
+    document.getElementById(
+        "market-detail-ma20"
+    );
+
+const marketDetailMa50 =
+    document.getElementById(
+        "market-detail-ma50"
+    );
+
+const marketDetailRisk =
+    document.getElementById(
+        "market-detail-risk"
+    );
+
+const marketDetailReason =
+    document.getElementById(
+        "market-detail-reason"
+    );
+
+const marketDetailScore =
+    document.getElementById(
+        "market-detail-score"
+    );
+
+const marketDetailMomentum =
+    document.getElementById(
+        "market-detail-momentum"
+    );
+
+const marketDetailVolatility =
+    document.getElementById(
+        "market-detail-volatility"
+    );
+
+const marketAiSignal =
+    document.getElementById(
+        "market-ai-signal"
+    );
+
+    let currentMarketChartPrices = [];
+
+function showMarketsHome() {
+
+    if (marketsHomeView) {
+        marketsHomeView.hidden = false;
+    }
+
+    if (marketDetailView) {
+        marketDetailView.hidden = true;
+    }
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+
+function showMarketDetail() {
+
+    if (marketsHomeView) {
+        marketsHomeView.hidden = true;
+    }
+
+    if (marketDetailView) {
+        marketDetailView.hidden = false;
+    }
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+
+async function analyzeMarketSymbol(
+    requestedSymbol = null
+) {
 
     const symbol = (
-        marketSymbolInput?.value
+        requestedSymbol
+        || marketSymbolInput?.value
         || ""
     ).trim().toUpperCase();
 
     if (!symbol) {
-
-        marketResults.innerHTML = `
-            <h2>Stock Analysis</h2>
-            <p>Please enter a stock symbol.</p>
-        `;
-
         return;
     }
 
 
-    marketSearchButton.disabled = true;
-    marketSearchButton.textContent = "Analyzing...";
+    showMarketDetail();
 
-    marketResults.innerHTML = `
-        <h2>Stock Analysis</h2>
-        <p>Analyzing ${symbol}...</p>
-    `;
+
+    marketDetailSymbol.textContent =
+        symbol;
+
+    marketDetailCompany.textContent =
+        "Loading...";
+
+    marketDetailPrice.textContent =
+        "$--";
+
+    marketDetailChange.textContent =
+        "--";
+
+    marketDetailSignal.textContent =
+        "ANALYZING";
+
+    marketAiSignal.textContent =
+        "ANALYZING";
+
+    marketDetailRsi.textContent =
+        "--";
+
+    marketDetailMa20.textContent =
+        "$--";
+
+    marketDetailMa50.textContent =
+        "$--";
+
+    marketDetailRisk.textContent =
+        "--";
+
+    marketDetailScore.textContent =
+        "--";
+
+    marketDetailMomentum.textContent =
+        "--";
+
+    marketDetailVolatility.textContent =
+        "--";
+
+    marketDetailReason.textContent =
+        `Nova is analyzing ${symbol}...`;
+
+
+    if (marketSearchButton) {
+
+        marketSearchButton.disabled =
+            true;
+
+        marketSearchButton.textContent =
+            "Analyzing...";
+    }
 
 
     try {
@@ -7635,7 +7794,8 @@ async function analyzeMarketSymbol() {
         );
 
 
-        const data = await response.json();
+        const data =
+            await response.json();
 
 
         if (!response.ok) {
@@ -7647,81 +7807,90 @@ async function analyzeMarketSymbol() {
         }
 
 
-        marketResults.innerHTML = `
-            <h2>
-                ${data.symbol} — ${data.company}
-            </h2>
+        marketDetailSymbol.textContent =
+            data.symbol;
 
-            <p>
-                <strong>Price:</strong>
-                $${data.price}
-            </p>
+        marketDetailCompany.textContent =
+            data.company;
 
-            <p>
-                <strong>Daily Change:</strong>
-                ${data.change > 0 ? "+" : ""}
-                ${data.change}%
-            </p>
+        marketDetailPrice.textContent =
+            `$${data.price}`;
 
-            <p>
-                <strong>Signal:</strong>
-                ${data.signal}
-            </p>
+        marketDetailChange.textContent =
+            `${data.change > 0 ? "+" : ""}${data.change}%`;
 
-            <p>
-                <strong>Score:</strong>
-                ${data.score}/100
-            </p>
+        marketDetailSignal.textContent =
+            data.signal;
 
-            <p>
-                <strong>Risk:</strong>
-                ${data.risk}
-            </p>
+        marketAiSignal.textContent =
+            data.signal;
 
-            <p>
-                <strong>RSI:</strong>
-                ${data.rsi ?? "N/A"}
-            </p>
+        marketDetailRsi.textContent =
+            data.rsi ?? "N/A";
 
-            <p>
-                <strong>20-Day Average:</strong>
-                $${data.ma20}
-            </p>
+        marketDetailMa20.textContent =
+            `$${data.ma20}`;
 
-            <p>
-                <strong>50-Day Average:</strong>
-                $${data.ma50}
-            </p>
+        marketDetailMa50.textContent =
+            `$${data.ma50}`;
 
-            <p>
-                ${data.reason}
-            </p>
-        `;
+        marketDetailRisk.textContent =
+            data.risk;
 
+        marketDetailScore.textContent =
+            `${data.score}/100`;
+
+        marketDetailMomentum.textContent =
+            `${data.momentum > 0 ? "+" : ""}${data.momentum}%`;
+
+        marketDetailVolatility.textContent =
+            `${data.volatility}%`;
+
+        marketDetailReason.textContent =
+            data.reason;
+
+            currentMarketChartPrices =
+    data.chart_prices || [];
+
+drawMarketChart(
+    currentMarketChartPrices
+);
     }
 
     catch (error) {
 
-        marketResults.innerHTML = `
-            <h2>Stock Analysis</h2>
-            <p>
-                ${error.message}
-            </p>
-        `;
+        marketDetailCompany.textContent =
+            "Analysis unavailable";
 
+        marketDetailSignal.textContent =
+            "ERROR";
+
+        marketAiSignal.textContent =
+            "ERROR";
+
+        marketDetailReason.textContent =
+            error.message;
     }
 
     finally {
 
-        marketSearchButton.disabled = false;
-        marketSearchButton.textContent = "Analyze";
+        if (marketSearchButton) {
+
+            marketSearchButton.disabled =
+                false;
+
+            marketSearchButton.textContent =
+                "Analyze";
+        }
     }
 }
 
 
 marketSearchButton?.addEventListener(
     "click",
-    analyzeMarketSymbol
+    () => {
+        analyzeMarketSymbol();
+    }
 );
 
 
@@ -7730,7 +7899,572 @@ marketSymbolInput?.addEventListener(
     (event) => {
 
         if (event.key === "Enter") {
+
             analyzeMarketSymbol();
         }
+    }
+);
+
+
+marketDetailBack?.addEventListener(
+    "click",
+    showMarketsHome
+);
+
+
+document
+    .querySelectorAll(
+        "#markets-page [data-symbol]"
+    )
+    .forEach(
+        (button) => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const symbol =
+                        button.dataset.symbol;
+
+                    if (symbol) {
+
+                        analyzeMarketSymbol(
+                            symbol
+                        );
+                    }
+                }
+            );
+        }
+    );
+
+    async function loadMarketQuote(
+    symbol
+) {
+
+    try {
+
+        const response = await fetch(
+            "/api/markets/quote",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+                    symbol: symbol
+                })
+            }
+        );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+            throw new Error(
+                data.error
+                || "Quote failed."
+            );
+        }
+
+
+        return data;
+
+    }
+
+    catch (error) {
+
+        console.error(
+            `Quote failed for ${symbol}:`,
+            error
+        );
+
+        return null;
+    }
+}
+
+
+function formatMarketChange(
+    change
+) {
+
+    if (
+        change === null
+        || change === undefined
+    ) {
+        return "--";
+    }
+
+    return `${change > 0 ? "+" : ""}${change}%`;
+}
+
+
+async function loadMarketLandingData() {
+
+    const symbols = [
+        "SPY",
+        "QQQ",
+        "BTC/USD",
+        "ETH/USD",
+        "AAPL",
+        "TSLA",
+        "NVDA",
+        "AMZN",
+        "MSFT"
+    ];
+
+
+    const results =
+    await Promise.all(
+        symbols.map(
+            (symbol) =>
+                loadMarketQuote(symbol)
+        )
+    );
+
+
+    const quotes = {};
+
+    symbols.forEach(
+        (symbol, index) => {
+
+            if (results[index]) {
+
+                quotes[symbol] =
+                    results[index];
+            }
+        }
+    );
+
+
+    const sp500 =
+        quotes["SPY"];
+
+    const nasdaq =
+        quotes["QQQ"];
+
+    const bitcoin =
+        quotes["BTC/USD"];
+
+    const ethereum =
+        quotes["ETH/USD"];
+
+
+    if (sp500) {
+
+        document.getElementById(
+            "market-sp500-price"
+        ).textContent =
+            `$${sp500.price}`;
+
+        document.getElementById(
+            "market-sp500-change"
+        ).textContent =
+            formatMarketChange(
+                sp500.change
+            );
+    }
+
+
+    if (nasdaq) {
+
+        document.getElementById(
+            "market-nasdaq-price"
+        ).textContent =
+            `$${nasdaq.price}`;
+
+        document.getElementById(
+            "market-nasdaq-change"
+        ).textContent =
+            formatMarketChange(
+                nasdaq.change
+            );
+    }
+
+
+    if (bitcoin) {
+
+        document.getElementById(
+            "market-btc-price"
+        ).textContent =
+            `$${bitcoin.price}`;
+
+        document.getElementById(
+            "market-btc-change"
+        ).textContent =
+            formatMarketChange(
+                bitcoin.change
+            );
+    }
+
+
+    if (ethereum) {
+
+        document.getElementById(
+            "market-eth-price"
+        ).textContent =
+            `$${ethereum.price}`;
+
+        document.getElementById(
+            "market-eth-change"
+        ).textContent =
+            formatMarketChange(
+                ethereum.change
+            );
+    }
+
+
+    document
+        .querySelectorAll(
+            "#markets-page .market-stock-row"
+        )
+        .forEach(
+            (row) => {
+
+                const symbol =
+                    row.dataset.symbol;
+
+                const quote =
+                    quotes[symbol];
+
+                if (!quote) {
+                    return;
+                }
+
+
+                const priceElement =
+                    row.querySelector(
+                        ".market-stock-price"
+                    );
+
+                const changeElement =
+                    row.querySelector(
+                        ".market-stock-change"
+                    );
+
+
+                if (priceElement) {
+
+                    priceElement.textContent =
+                        `$${quote.price}`;
+                }
+
+
+                if (changeElement) {
+
+                    changeElement.textContent =
+                        formatMarketChange(
+                            quote.change
+                        );
+                }
+            }
+        );
+}
+
+
+loadMarketLandingData();
+
+function drawMarketChart(
+    prices
+) {
+
+    const canvas =
+        document.getElementById(
+            "market-detail-chart"
+        );
+
+    if (
+        !canvas
+        || !prices
+        || prices.length < 2
+    ) {
+        return;
+    }
+
+
+    const context =
+        canvas.getContext("2d");
+
+
+    const ratio =
+        window.devicePixelRatio || 1;
+
+
+    const width =
+        canvas.clientWidth;
+
+    const height =
+        canvas.clientHeight;
+
+
+    canvas.width =
+        width * ratio;
+
+    canvas.height =
+        height * ratio;
+
+
+    context.setTransform(
+        ratio,
+        0,
+        0,
+        ratio,
+        0,
+        0
+    );
+
+
+    context.clearRect(
+        0,
+        0,
+        width,
+        height
+    );
+
+
+    const padding = 14;
+
+    const minPrice =
+        Math.min(...prices);
+
+    const maxPrice =
+        Math.max(...prices);
+
+    const priceRange =
+        maxPrice - minPrice || 1;
+
+
+    const points =
+        prices.map(
+            (price, index) => {
+
+                const x =
+                    padding
+                    + (
+                        index
+                        / (prices.length - 1)
+                    )
+                    * (
+                        width
+                        - padding * 2
+                    );
+
+                const y =
+                    height
+                    - padding
+                    - (
+                        (
+                            price
+                            - minPrice
+                        )
+                        / priceRange
+                    )
+                    * (
+                        height
+                        - padding * 2
+                    );
+
+                return {
+                    x,
+                    y
+                };
+            }
+        );
+
+
+    const gradient =
+        context.createLinearGradient(
+            0,
+            0,
+            0,
+            height
+        );
+
+    gradient.addColorStop(
+        0,
+        "rgba(124, 92, 255, 0.30)"
+    );
+
+    gradient.addColorStop(
+        1,
+        "rgba(124, 92, 255, 0)"
+    );
+
+
+    context.beginPath();
+
+    context.moveTo(
+        points[0].x,
+        height - padding
+    );
+
+
+    for (
+        const point
+        of points
+    ) {
+
+        context.lineTo(
+            point.x,
+            point.y
+        );
+    }
+
+
+    context.lineTo(
+        points[
+            points.length - 1
+        ].x,
+        height - padding
+    );
+
+    context.closePath();
+
+    context.fillStyle =
+        gradient;
+
+    context.fill();
+
+
+    context.beginPath();
+
+    context.moveTo(
+        points[0].x,
+        points[0].y
+    );
+
+
+    for (
+        let index = 1;
+        index < points.length;
+        index++
+    ) {
+
+        context.lineTo(
+            points[index].x,
+            points[index].y
+        );
+    }
+
+
+    context.lineWidth = 3;
+
+    context.lineCap =
+        "round";
+
+    context.lineJoin =
+        "round";
+
+    context.strokeStyle =
+        "#8b6cff";
+
+    context.shadowColor =
+        "rgba(124, 92, 255, 0.45)";
+
+    context.shadowBlur = 10;
+
+    context.stroke();
+
+
+    context.shadowBlur = 0;
+}
+
+const marketRangeButtons =
+    document.querySelectorAll(
+        "#markets-page .market-range-buttons button"
+    );
+
+
+function updateMarketChartRange(
+    range
+) {
+
+    if (
+        !currentMarketChartPrices
+        || currentMarketChartPrices.length < 2
+    ) {
+        return;
+    }
+
+
+    let prices =
+        currentMarketChartPrices;
+
+
+    if (range === "1W") {
+
+        prices =
+            currentMarketChartPrices.slice(
+                -5
+            );
+    }
+
+
+    if (range === "1M") {
+
+        prices =
+            currentMarketChartPrices.slice(
+                -22
+            );
+    }
+
+
+    if (range === "3M") {
+
+        prices =
+            currentMarketChartPrices;
+    }
+
+
+    drawMarketChart(
+        prices
+    );
+}
+
+
+marketRangeButtons.forEach(
+    (button) => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                const range =
+                    button.dataset.range;
+
+
+                if (
+                    range !== "1W"
+                    && range !== "1M"
+                    && range !== "3M"
+                ) {
+                    return;
+                }
+
+
+                marketRangeButtons.forEach(
+                    (item) => {
+
+                        item.classList.remove(
+                            "active"
+                        );
+                    }
+                );
+
+
+                button.classList.add(
+                    "active"
+                );
+
+
+                updateMarketChartRange(
+                    range
+                );
+            }
+        );
     }
 );

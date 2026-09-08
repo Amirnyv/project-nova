@@ -41,7 +41,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from openai import OpenAI
 from dotenv import load_dotenv
 
-from agents.stock_agent import analyze_stock
+from agents.stock_agent import analyze_stock, get_market_quote
 from agents.portfolio_agent import (
     buy_stock,
     sell_stock,
@@ -938,6 +938,32 @@ def market_analyze():
 
     return jsonify(result)
 
+@app.route("/api/markets/quote", methods=["POST"])
+@login_required
+def market_quote():
+
+    data = request.get_json(
+        silent=True
+    ) or {}
+
+    symbol = (
+        data.get("symbol")
+        or ""
+    ).strip().upper()
+
+    if not symbol:
+
+        return jsonify({
+            "error": "Please enter a market symbol."
+        }), 400
+
+    result = get_market_quote(symbol)
+
+    if result.get("error"):
+
+        return jsonify(result), 400
+
+    return jsonify(result)
 
 # -------------------------------------------------
 # STRIPE CHECKOUT

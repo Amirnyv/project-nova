@@ -7569,3 +7569,649 @@ backdrop-filter: blur(14px);
 
     transform: rotate(-45deg);
 }
+
+/* ========================================
+   NOVA MARKETS — MOBILE REDESIGN
+   ======================================== */
+
+#markets-page {
+    padding-bottom: 90px;
+}
+
+
+/* ----------------------------------------
+   MARKETS LANDING
+   ---------------------------------------- */
+
+#markets-home-view {
+    display: block;
+}
+
+#markets-home-view[hidden] {
+    display: none !important;
+}
+
+#market-detail-view[hidden] {
+    display: none !important;
+}
+
+
+#markets-page .market-search-bar {
+    display: grid;
+    grid-template-columns: 22px 1fr auto;
+    align-items: center;
+    gap: 10px;
+
+    padding: 12px 14px;
+    margin-bottom: 18px;
+
+    border-radius: 18px;
+
+    background: rgba(18, 21, 36, 0.92);
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.07);
+}
+
+
+#markets-page .market-search-bar span {
+    opacity: 0.55;
+    font-size: 20px;
+}
+
+
+#markets-page .market-search-bar input {
+    width: 100%;
+
+    border: 0;
+    outline: 0;
+
+    background: transparent;
+
+    color: #ffffff;
+
+    font-size: 14px;
+}
+
+
+#markets-page .market-search-bar input::placeholder {
+    color: rgba(255, 255, 255, 0.42);
+}
+
+
+#markets-page .market-search-bar .primary-button {
+    min-height: 38px;
+
+    padding: 0 14px;
+
+    border-radius: 12px;
+}
+
+
+/* ----------------------------------------
+   MARKET OVERVIEW
+   ---------------------------------------- */
+
+#markets-page .market-overview {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 10px;
+
+    margin-bottom: 18px;
+}
+
+
+#markets-page .market-index-card {
+    min-height: 105px;
+
+    padding: 15px;
+
+    text-align: left;
+
+    border-radius: 18px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.07);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(20, 24, 43, 0.98),
+            rgba(12, 15, 28, 0.98)
+        );
+
+    color: #ffffff;
+
+    cursor: pointer;
+}
+
+
+#markets-page .market-index-card small {
+    display: block;
+
+    margin-bottom: 10px;
+
+    color: rgba(255, 255, 255, 0.56);
+
+    font-size: 11px;
+
+    font-weight: 700;
+}
+
+
+#markets-page .market-index-card strong {
+    display: block;
+
+    margin-bottom: 6px;
+
+    font-size: 20px;
+
+    letter-spacing: -0.4px;
+}
+
+
+#markets-page .market-index-card span {
+    font-size: 11px;
+
+    color: rgba(255, 255, 255, 0.48);
+}
+
+
+/* ----------------------------------------
+   PANELS
+   ---------------------------------------- */
+
+#markets-page .market-movers-card,
+#markets-page .market-watchlist-card,
+#markets-page .market-ai-analysis-card,
+#markets-page .market-news-card {
+    margin-top: 14px;
+
+    border-radius: 20px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(17, 20, 35, 0.98),
+            rgba(10, 13, 24, 0.98)
+        );
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.07);
+}
+
+
+#markets-page .market-text-button {
+    border: 0;
+
+    background: transparent;
+
+    color: #9b82ff;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+/* ----------------------------------------
+   STOCK ROWS
+   ---------------------------------------- */
+
+#markets-page .market-stock-row {
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        auto
+        auto;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 13px 0;
+
+    border: 0;
+
+    border-bottom:
+        1px solid
+        rgba(255, 255, 255, 0.06);
+
+    background: transparent;
+
+    color: #ffffff;
+
+    text-align: left;
+
+    cursor: pointer;
+}
+
+
+#markets-page .market-stock-row:last-child {
+    border-bottom: 0;
+}
+
+
+#markets-page .market-stock-row > div {
+    min-width: 0;
+}
+
+
+#markets-page .market-stock-row strong {
+    display: block;
+
+    margin-bottom: 3px;
+
+    font-size: 14px;
+}
+
+
+#markets-page .market-stock-row div span {
+    display: block;
+
+    overflow: hidden;
+
+    white-space: nowrap;
+
+    text-overflow: ellipsis;
+
+    color: rgba(255, 255, 255, 0.48);
+
+    font-size: 11px;
+}
+
+
+#markets-page .market-stock-price {
+    font-size: 13px;
+
+    font-weight: 700;
+}
+
+
+#markets-page .market-stock-change {
+    min-width: 50px;
+
+    text-align: right;
+
+    font-size: 12px;
+
+    font-weight: 700;
+}
+
+
+/* ----------------------------------------
+   DETAIL HEADER
+   ---------------------------------------- */
+
+#market-detail-view {
+    display: block;
+}
+
+
+#markets-page .market-detail-header {
+    display: grid;
+
+    grid-template-columns:
+        42px
+        minmax(0, 1fr)
+        42px;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin-bottom: 18px;
+}
+
+
+#markets-page .market-back-button,
+#markets-page .market-favorite-button {
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border: 0;
+
+    border-radius: 13px;
+
+    background:
+        rgba(255, 255, 255, 0.06);
+
+    color: #ffffff;
+
+    font-size: 19px;
+
+    cursor: pointer;
+}
+
+
+#markets-page .market-detail-title {
+    min-width: 0;
+}
+
+
+#markets-page .market-detail-title strong {
+    display: block;
+
+    font-size: 20px;
+
+    line-height: 1.1;
+}
+
+
+#markets-page .market-detail-title span {
+    display: block;
+
+    margin-top: 3px;
+
+    color: rgba(255, 255, 255, 0.5);
+
+    font-size: 11px;
+}
+
+
+/* ----------------------------------------
+   DETAIL PRICE
+   ---------------------------------------- */
+
+#markets-page .market-detail-price-row {
+    display: flex;
+
+    align-items: flex-end;
+
+    justify-content: space-between;
+
+    gap: 14px;
+
+    margin-bottom: 14px;
+}
+
+
+#markets-page .market-detail-price-row > div {
+    display: flex;
+
+    align-items: baseline;
+
+    gap: 10px;
+}
+
+
+#markets-page #market-detail-price {
+    font-size: 34px;
+
+    line-height: 1;
+
+    letter-spacing: -1px;
+}
+
+
+#markets-page #market-detail-change {
+    font-size: 13px;
+
+    font-weight: 700;
+}
+
+
+#markets-page .market-signal-badge {
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-height: 28px;
+
+    padding: 4px 11px;
+
+    border-radius: 999px;
+
+    background:
+        rgba(124, 92, 255, 0.16);
+
+    color: #b9a8ff;
+
+    font-size: 11px;
+
+    font-weight: 800;
+}
+
+
+/* ----------------------------------------
+   RANGE BUTTONS
+   ---------------------------------------- */
+
+#markets-page .market-range-buttons {
+    display: grid;
+
+    grid-template-columns:
+        repeat(6, minmax(0, 1fr));
+
+    gap: 6px;
+
+    margin-bottom: 12px;
+}
+
+
+#markets-page .market-range-buttons button {
+    min-height: 34px;
+
+    border: 0;
+
+    border-radius: 10px;
+
+    background:
+        rgba(255, 255, 255, 0.04);
+
+    color:
+        rgba(255, 255, 255, 0.46);
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+#markets-page .market-range-buttons button.active {
+    background:
+        rgba(124, 92, 255, 0.17);
+
+    color: #b6a4ff;
+}
+
+
+/* ----------------------------------------
+   CHART
+   ---------------------------------------- */
+
+#markets-page .market-chart-card {
+    position: relative;
+
+    width: 100%;
+
+    min-height: 220px;
+
+    margin-bottom: 14px;
+
+    padding: 12px;
+
+    border-radius: 20px;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(24, 27, 48, 0.92),
+            rgba(11, 13, 25, 0.98)
+        );
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.07);
+}
+
+
+#markets-page #market-detail-chart {
+    width: 100% !important;
+
+    height: 200px !important;
+}
+
+
+/* ----------------------------------------
+   STATS
+   ---------------------------------------- */
+
+#markets-page .market-detail-stats {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 8px;
+
+    margin-bottom: 14px;
+}
+
+
+#markets-page .market-detail-extra-stats {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 8px;
+
+    margin-top: 14px;
+}
+
+
+#markets-page .market-stat-card {
+    min-width: 0;
+
+    padding: 12px 8px;
+
+    border-radius: 15px;
+
+    text-align: center;
+
+    background:
+        rgba(255, 255, 255, 0.04);
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.06);
+}
+
+
+#markets-page .market-stat-card span {
+    display: block;
+
+    margin-bottom: 5px;
+
+    color:
+        rgba(255, 255, 255, 0.45);
+
+    font-size: 9px;
+
+    font-weight: 700;
+}
+
+
+#markets-page .market-stat-card strong {
+    display: block;
+
+    overflow: hidden;
+
+    white-space: nowrap;
+
+    text-overflow: ellipsis;
+
+    font-size: 12px;
+}
+
+
+/* ----------------------------------------
+   AI ANALYSIS
+   ---------------------------------------- */
+
+#markets-page .market-ai-analysis-card p {
+    margin: 8px 0 0;
+
+    line-height: 1.55;
+
+    color:
+        rgba(255, 255, 255, 0.72);
+
+    font-size: 13px;
+}
+
+
+/* ----------------------------------------
+   NEWS
+   ---------------------------------------- */
+
+#markets-page .market-news-placeholder {
+    margin: 8px 0 0;
+
+    color:
+        rgba(255, 255, 255, 0.5);
+
+    font-size: 12px;
+}
+
+
+/* ----------------------------------------
+   MOBILE
+   ---------------------------------------- */
+
+@media (max-width: 760px) {
+
+    #markets-page {
+        padding-top: 12px;
+    }
+
+
+    #markets-page .page-header {
+        margin-bottom: 14px;
+    }
+
+
+    #markets-page .page-header h1 {
+        margin-bottom: 4px;
+
+        font-size: 25px;
+    }
+
+
+    #markets-page .page-header p {
+        max-width: 320px;
+
+        font-size: 12px;
+
+        line-height: 1.45;
+    }
+
+
+    #markets-page .market-movers-card,
+    #markets-page .market-watchlist-card,
+    #markets-page .market-ai-analysis-card,
+    #markets-page .market-news-card {
+        padding: 15px;
+    }
+}
