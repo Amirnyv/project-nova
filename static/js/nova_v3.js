@@ -7568,3 +7568,169 @@ const results =
 
     }
 );
+
+// ========================================
+// MARKETS
+// ========================================
+
+const marketSymbolInput =
+    document.getElementById(
+        "market-symbol"
+    );
+
+const marketSearchButton =
+    document.getElementById(
+        "market-search-button"
+    );
+
+const marketResults =
+    document.getElementById(
+        "market-results"
+    );
+
+
+async function analyzeMarketSymbol() {
+
+    const symbol = (
+        marketSymbolInput?.value
+        || ""
+    ).trim().toUpperCase();
+
+    if (!symbol) {
+
+        marketResults.innerHTML = `
+            <h2>Stock Analysis</h2>
+            <p>Please enter a stock symbol.</p>
+        `;
+
+        return;
+    }
+
+
+    marketSearchButton.disabled = true;
+    marketSearchButton.textContent = "Analyzing...";
+
+    marketResults.innerHTML = `
+        <h2>Stock Analysis</h2>
+        <p>Analyzing ${symbol}...</p>
+    `;
+
+
+    try {
+
+        const response = await fetch(
+            "/api/markets/analyze",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+                    symbol: symbol
+                })
+            }
+        );
+
+
+        const data = await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error
+                || "Market analysis failed."
+            );
+        }
+
+
+        marketResults.innerHTML = `
+            <h2>
+                ${data.symbol} — ${data.company}
+            </h2>
+
+            <p>
+                <strong>Price:</strong>
+                $${data.price}
+            </p>
+
+            <p>
+                <strong>Daily Change:</strong>
+                ${data.change > 0 ? "+" : ""}
+                ${data.change}%
+            </p>
+
+            <p>
+                <strong>Signal:</strong>
+                ${data.signal}
+            </p>
+
+            <p>
+                <strong>Score:</strong>
+                ${data.score}/100
+            </p>
+
+            <p>
+                <strong>Risk:</strong>
+                ${data.risk}
+            </p>
+
+            <p>
+                <strong>RSI:</strong>
+                ${data.rsi ?? "N/A"}
+            </p>
+
+            <p>
+                <strong>20-Day Average:</strong>
+                $${data.ma20}
+            </p>
+
+            <p>
+                <strong>50-Day Average:</strong>
+                $${data.ma50}
+            </p>
+
+            <p>
+                ${data.reason}
+            </p>
+        `;
+
+    }
+
+    catch (error) {
+
+        marketResults.innerHTML = `
+            <h2>Stock Analysis</h2>
+            <p>
+                ${error.message}
+            </p>
+        `;
+
+    }
+
+    finally {
+
+        marketSearchButton.disabled = false;
+        marketSearchButton.textContent = "Analyze";
+    }
+}
+
+
+marketSearchButton?.addEventListener(
+    "click",
+    analyzeMarketSymbol
+);
+
+
+marketSymbolInput?.addEventListener(
+    "keydown",
+    (event) => {
+
+        if (event.key === "Enter") {
+            analyzeMarketSymbol();
+        }
+    }
+);

@@ -907,6 +907,42 @@ def admin_dashboard():
         total_tokens=total_tokens
     )
 
+# -------------------------------------------------
+# MARKETS API
+# -------------------------------------------------
+
+@app.route("/api/markets/analyze", methods=["POST"])
+@login_required
+def market_analyze():
+
+    data = request.get_json(
+        silent=True
+    ) or {}
+
+    symbol = (
+        data.get("symbol")
+        or ""
+    ).strip().upper()
+
+    if not symbol:
+
+        return jsonify({
+            "error": "Please enter a stock symbol."
+        }), 400
+
+    result = analyze_stock(symbol)
+
+    if result.get("error"):
+
+        return jsonify(result), 400
+
+    return jsonify(result)
+
+
+# -------------------------------------------------
+# STRIPE CHECKOUT
+# -------------------------------------------------
+
 @app.route("/create-checkout-session", methods=["POST"])
 @login_required
 def create_checkout_session():
