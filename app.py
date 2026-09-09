@@ -2224,9 +2224,11 @@ def delete_conversation(conversation_id):
         )
     )
 
+    # Retain billed usage while releasing the conversation foreign key.
     connection.execute(
         """
-        DELETE FROM ai_usage
+        UPDATE ai_usage
+        SET conversation_id = NULL
         WHERE conversation_id = ?
         AND user_id = ?
         """,
