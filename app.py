@@ -6,6 +6,11 @@ import resend
 from html import escape
 import hashlib
 import hmac
+import fcntl
+import secrets
+import tempfile
+import time
+from functools import wraps
 
 from itsdangerous import (
     URLSafeTimedSerializer,
@@ -25,7 +30,9 @@ from flask import (
     flash,
     send_from_directory,
     Response,
-    stream_with_context
+    stream_with_context,
+    session,
+    make_response
 )
 
 from flask_login import (
@@ -53,7 +60,7 @@ from agents.project_agent import (
     get_projects
 )
 
-from database import get_db, init_db
+from database import get_db, init_db, USE_POSTGRES
 from user_model import User, get_user_by_id
 
 
@@ -70,6 +77,154 @@ if not app.secret_key:
     raise RuntimeError(
         "FLASK_SECRET_KEY is missing from the .env file."
     )
+
+
+# Local HTTP remains supported; set NOVA_ENV=production for HTTPS deployment.
+app.config.update(
+    DEBUG=False,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=os.getenv("NOVA_ENV", "development").lower() == "production",
+)
+
+MAX_CHAT_MESSAGE_LENGTH = 16000
+MAX_AI_OUTPUT_TOKENS = 4096
+
+
+def local_guard_file(name):
+    # Shared by workers on this host; no user input or credentials in filenames.
+    namespace = hashlib.sha256(app.secret_key.encode()).hexdigest()[:20]
+    path = os.path.join(tempfile.gettempdir(), f"nova-{namespace}-{name}.lock")
+    fd = os.open(path, os.O_RDWR | os.O_CREAT, 0o600)
+    return os.fdopen(fd, "r+")
+
+
+def acquire_chat_guard(user_id):
+    if USE_POSTGRES:
+        connection = get_db()
+        try:
+            row = connection.execute(
+                "SELECT pg_try_advisory_lock(1313822273, ?) AS acquired",
+                (user_id,)
+            ).fetchone()
+            if row["acquired"]:
+                connection.commit()
+                # A session-level lock spans the entire streaming response.
+                return connection.close
+        except Exception:
+            connection.close()
+            raise
+        connection.close()
+        return None
+
+    handle = local_guard_file(f"chat-{user_id}")
+    try:
+        fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        handle.close()
+        return None
+    except BaseException:
+        handle.close()
+        raise
+    return handle.close
+
+
+def serialize_chat(view):
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        try:
+            release = acquire_chat_guard(int(current_user.id))
+        except Exception:
+            app.logger.error("Could not acquire Nova generation guard")
+            return jsonify(error="chat_unavailable", message="Nova is temporarily unavailable."), 503
+        if release is None:
+            return jsonify(
+                error="generation_in_progress",
+                message="Nova is still finishing your previous request. Please wait and try again."
+            ), 429
+        try:
+            response = make_response(view(*args, **kwargs))
+            if response.is_streamed:
+                response.call_on_close(release)
+            else:
+                release()
+            return response
+        except BaseException:
+            release()
+            raise
+    return wrapped
+
+
+def csrf_token():
+    if "csrf_token" not in session:
+        session["csrf_token"] = secrets.token_urlsafe(32)
+    return session["csrf_token"]
+
+
+@app.context_processor
+def csrf_context():
+    return {"csrf_token": csrf_token}
+
+
+@app.before_request
+def protect_browser_mutations():
+    # Billing endpoints and the signed Stripe webhook are deliberately unchanged.
+    protected = {
+        "login", "signup", "forgot_password", "reset_password", "logout", "chat",
+        "add_project", "save_project_notes", "create_project_task",
+        "update_project_task", "delete_project_task", "upload_project_file",
+        "delete_project_file", "delete_conversation"
+    }
+    if request.method not in {"POST", "PATCH", "PUT", "DELETE"} or request.endpoint not in protected:
+        return None
+    expected = session.get("csrf_token")
+    supplied = request.headers.get("X-CSRF-Token") or request.form.get("csrf_token")
+    if not expected or not supplied or not hmac.compare_digest(expected.encode(), supplied.encode()):
+        message = "Your session could not be verified. Reload the page and try again."
+        if request.is_json or request.path.startswith("/api/"):
+            return jsonify(error="csrf_failed", message=message), 403
+        return message, 403
+
+
+@app.before_request
+def limit_auth_requests():
+    policies = {"login": (60, 10, 900), "signup": (20, 5, 3600),
+                "forgot_password": (20, 5, 3600), "reset_password": (30, 10, 900)}
+    if request.method != "POST" or request.endpoint not in policies:
+        return None
+    ip_limit, account_limit, window = policies[request.endpoint]
+    account = request.form.get("email", "").strip().lower()
+    if request.endpoint == "reset_password":
+        account = (request.view_args or {}).get("token", "")
+    identities = [("ip:" + (request.remote_addr or "unknown"), ip_limit)]
+    if account:
+        identities.append(("account:" + account, account_limit))
+    keys = [(hashlib.sha256((request.endpoint + identity).encode()).hexdigest(), limit)
+            for identity, limit in identities]
+    now = time.time()
+    try:
+        with local_guard_file("auth-rates") as handle:
+            fcntl.flock(handle, fcntl.LOCK_EX)
+            raw = handle.read()
+            buckets = json.loads(raw) if raw else {}
+            buckets = {key: value for key, value in buckets.items() if value[1] > now}
+            retry_after = max([int(buckets[key][1] - now) + 1 for key, limit in keys
+                               if key in buckets and buckets[key][0] >= limit] or [0])
+            if len(buckets) >= 10000:
+                retry_after = max(retry_after, 60)
+            if not retry_after:
+                for key, limit in keys:
+                    count, expires = buckets.get(key, [0, now + window])
+                    buckets[key] = [count + 1, expires]
+            handle.seek(0)
+            handle.truncate()
+            json.dump(buckets, handle)
+    except (OSError, ValueError):
+        app.logger.error("Authentication rate guard unavailable")
+        return "Authentication is temporarily unavailable. Please try again later.", 503
+    if retry_after:
+        return ("Too many attempts. Please wait before trying again.", 429,
+                {"Retry-After": str(retry_after)})
 
 
 # -------------------------------------------------
@@ -752,7 +907,7 @@ def reset_password(token):
 # LOGOUT
 # -------------------------------------------------
 
-@app.route("/logout")
+@app.route("/logout", methods=["POST"])
 @login_required
 def logout():
     logout_user()
@@ -1877,11 +2032,12 @@ def record_ai_usage(
             output_tokens,
             total_tokens
         )
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES (?, (SELECT id FROM conversations WHERE id = ? AND user_id = ?), ?, ?, ?, ?)
         """,
         (
             user_id,
             conversation_id,
+            user_id,
             model,
             input_tokens,
             output_tokens,
@@ -2380,8 +2536,16 @@ AGENT_INSTRUCTIONS = {
 
 @app.route("/chat", methods=["POST"])
 @login_required
+@serialize_chat
 def chat():
     data = request.get_json() or {}
+    if not isinstance(data, dict):
+        return jsonify(error="invalid_request", message="Please send a valid chat request."), 400
+    raw_message = data.get("message", "")
+    if not isinstance(raw_message, str):
+        return jsonify(error="invalid_message", message="Please send a text message."), 400
+    if len(raw_message) > MAX_CHAT_MESSAGE_LENGTH:
+        return jsonify(error="message_too_long", message="Please keep messages to 16,000 characters or fewer."), 400
 
     agent_mode = data.get("agent_mode", "default")
     if not isinstance(agent_mode, str) or agent_mode not in AGENT_INSTRUCTIONS:
@@ -3056,6 +3220,40 @@ def chat():
 
         full_reply_parts = []
         final_response = None
+        response_id = None
+        stream = None
+        usage_recorded = False
+        message_saved = False
+        reply = ""
+
+        def persist_generation():
+            nonlocal usage_recorded, message_saved
+            usage = getattr(final_response, "usage", None)
+            if usage is not None and not usage_recorded:
+                # Record cost before saving content, which may have been deleted.
+                record_ai_usage(user_id, conversation_id, nova_model,
+                                usage.input_tokens, usage.output_tokens)
+                usage_recorded = True
+            content = reply or "".join(full_reply_parts).strip()
+            if content and not message_saved:
+                try:
+                    save_conversation_message(conversation_id, user_id, "assistant", content,
+                                              output_tokens=getattr(usage, "output_tokens", 0))
+                    message_saved = True
+                except sqlite3.IntegrityError:
+                    # Conversation deletion must not erase the generation's usage.
+                    message_saved = True
+
+        def consume_event(event):
+            nonlocal final_response, response_id
+            response = getattr(event, "response", None)
+            if response is not None:
+                response_id = getattr(response, "id", response_id)
+            if event.type in {"response.completed", "response.incomplete", "response.failed"}:
+                final_response = response
+            if event.type == "response.output_text.delta" and event.delta:
+                full_reply_parts.append(event.delta)
+
 
         try:
 
@@ -3072,6 +3270,8 @@ def chat():
 
     tool_choice="auto",
     max_tool_calls=1,
+    max_output_tokens=MAX_AI_OUTPUT_TOKENS,
+    timeout=60,
 
     text={
         "verbosity": "low"
@@ -3081,6 +3281,7 @@ def chat():
 )
 
             for event in stream:
+                consume_event(event)
 
                 if (
                     event.type
@@ -3093,10 +3294,6 @@ def chat():
                     )
 
                     if delta:
-
-                        full_reply_parts.append(
-                            delta
-                        )
 
                         yield (
                             json.dumps({
@@ -3283,22 +3480,7 @@ def chat():
                 else 0
             )
 
-            save_conversation_message(
-                conversation_id,
-                user_id,
-                "assistant",
-                reply,
-                input_tokens=0,
-                output_tokens=output_tokens
-            )
-
-            record_ai_usage(
-                user_id,
-                conversation_id,
-                nova_model,
-                input_tokens,
-                output_tokens
-            )
+            persist_generation()
 
             yield (
                 json.dumps({
@@ -3319,12 +3501,18 @@ def chat():
                 + "\n"
             )
 
+        except GeneratorExit:
+            if stream is not None:
+                try:
+                    for event in stream:
+                        consume_event(event)
+                except Exception:
+                    app.logger.warning("Nova stream ended before final usage was received")
+            raise
+
         except Exception as error:
 
-            print(
-                "Nova AI streaming error:",
-                repr(error)
-            )
+            app.logger.warning("Nova AI stream failed (%s)", type(error).__name__)
 
             yield (
                 json.dumps({
@@ -3338,6 +3526,21 @@ def chat():
                 })
                 + "\n"
             )
+
+        finally:
+            try:
+                if response_id and getattr(final_response, "usage", None) is None:
+                    try:
+                        final_response = client.responses.retrieve(response_id, timeout=10)
+                    except Exception:
+                        app.logger.warning("Could not retrieve final Nova usage")
+                persist_generation()
+                if stream is not None and not usage_recorded:
+                    app.logger.error("Nova usage requires reconciliation: response=%s user=%s",
+                                     response_id, user_id)
+            finally:
+                if stream is not None:
+                    stream.close()
 
     return Response(
         stream_with_context(
@@ -4056,7 +4259,7 @@ def delete_project_file(
 
 if __name__ == "__main__":
     app.run(
-        debug=True,
+        debug=False,
         host="0.0.0.0",
         port=5001
     )

@@ -1,3 +1,24 @@
+// Add CSRF only to local state-changing requests; external and billing calls stay unchanged.
+function novaFetch(url, options = {}) {
+    const headers = new Headers(options.headers);
+    if (!["GET", "HEAD", "OPTIONS"].includes((options.method || "GET").toUpperCase())) {
+        headers.set("X-CSRF-Token", document.querySelector('meta[name="csrf-token"]').content);
+    }
+    return fetch(url, {...options, headers});
+}
+
+function safePopupContent(title, ...lines) {
+    const content = document.createElement("div");
+    const heading = document.createElement("strong");
+    heading.textContent = title;
+    content.appendChild(heading);
+    lines.filter(Boolean).forEach(line => {
+        content.appendChild(document.createElement("br"));
+        content.appendChild(document.createTextNode(line));
+    });
+    return content;
+}
+
 // ========================================
 // NOVA V3 - PART 1
 // CORE NAVIGATION
@@ -540,7 +561,7 @@ async function loadProjects() {
     try {
 
         const response =
-            await fetch(
+            await novaFetch(
                 "/api/projects"
             );
 
@@ -614,36 +635,16 @@ async function loadProjects() {
                     "project-item";
 
 
-                card.innerHTML = `
-                    <div>
-
-                        <h3>
-                            📁 ${project.name}
-                        </h3>
-
-                        <p>
-                            ${
-                                project.description
-                                ||
-                                "No description"
-                            }
-                        </p>
-
-                    </div>
-
-                    <button
-                        class="secondary-button open-project"
-                    >
-                        Open →
-                    </button>
-                `;
-
-
-                const openButton =
-                    card.querySelector(
-                        ".open-project"
-                    );
-
+                const details = document.createElement("div");
+                const heading = document.createElement("h3");
+                heading.textContent = "📁 " + project.name;
+                const description = document.createElement("p");
+                description.textContent = project.description || "No description";
+                details.append(heading, description);
+                const openButton = document.createElement("button");
+                openButton.className = "secondary-button open-project";
+                openButton.textContent = "Open →";
+                card.append(details, openButton);
 
                 openButton
                     ?.addEventListener(
@@ -690,32 +691,20 @@ async function loadProjects() {
                             "recent-project-item";
 
 
-                        recent.innerHTML = `
-    <span class="recent-project-icon">
-        📁
-    </span>
-
-    <div class="recent-project-info">
-
-        <strong>
-            ${project.name}
-        </strong>
-
-        <small>
-            ${
-                project.description
-                ||
-                "No description"
-            }
-        </small>
-
-    </div>
-
-    <span class="recent-project-arrow">
-        →
-    </span>
-`;
-
+                        const icon = document.createElement("span");
+                        icon.className = "recent-project-icon";
+                        icon.textContent = "📁";
+                        const info = document.createElement("div");
+                        info.className = "recent-project-info";
+                        const name = document.createElement("strong");
+                        name.textContent = project.name;
+                        const description = document.createElement("small");
+                        description.textContent = project.description || "No description";
+                        info.append(name, description);
+                        const arrow = document.createElement("span");
+                        arrow.className = "recent-project-arrow";
+                        arrow.textContent = "→";
+                        recent.append(icon, info, arrow);
 
                         recent.addEventListener(
                             "click",
@@ -794,7 +783,7 @@ createProjectButton
             try {
 
                 const response =
-                    await fetch(
+                    await novaFetch(
                         "/api/projects",
                         {
                             method: "POST",
@@ -1090,7 +1079,7 @@ async function loadProjectNotes(
     try {
 
         const response =
-            await fetch(
+            await novaFetch(
                 `/api/projects/${projectId}/notes`
             );
 
@@ -1136,7 +1125,7 @@ saveNotesButton?.addEventListener(
         try {
 
             const response =
-                await fetch(
+                await novaFetch(
                     `/api/projects/${window.currentProject.id}/notes`,
                     {
                         method: "POST",
@@ -1225,7 +1214,7 @@ async function loadProjectTasks(
     try {
 
         const response =
-            await fetch(
+            await novaFetch(
                 `/api/projects/${projectId}/tasks`
             );
 
@@ -1330,7 +1319,7 @@ async function loadProjectTasks(
                     async () => {
 
                         const response =
-                            await fetch(
+                            await novaFetch(
                                 `/api/projects/${projectId}/tasks/${task.id}`,
                                 {
                                     method:
@@ -1383,7 +1372,7 @@ async function loadProjectTasks(
 
 
                             const response =
-                                await fetch(
+                                await novaFetch(
                                     `/api/projects/${projectId}/tasks/${task.id}`,
                                     {
                                         method:
@@ -1475,7 +1464,7 @@ newTaskButton?.addEventListener(
         try {
 
             const response =
-                await fetch(
+                await novaFetch(
                     `/api/projects/${window.currentProject.id}/tasks`,
                     {
                         method:
@@ -1611,7 +1600,7 @@ async function loadProjectFiles(
     try {
 
         const response =
-            await fetch(
+            await novaFetch(
                 `/api/projects/${projectId}/files`
             );
 
@@ -1769,7 +1758,7 @@ async function loadProjectFiles(
                             try {
 
                                 const response =
-                                    await fetch(
+                                    await novaFetch(
                                         `/api/projects/${projectId}/files/${file.id}`,
                                         {
                                             method:
@@ -1968,7 +1957,7 @@ workspaceFileInput
             try {
 
                 const response =
-                    await fetch(
+                    await novaFetch(
                         `/api/projects/${window.currentProject.id}/files`,
                         {
                             method:
@@ -2087,7 +2076,7 @@ async function refreshAgentCounters() {
     const note = document.getElementById("agent-session-note");
     if (!sessions) return;
     try {
-        const response = await fetch("/api/conversations");
+        const response = await novaFetch("/api/conversations");
         if (!response.ok) throw new Error("Could not load sessions");
         const data = await response.json();
         if (!Array.isArray(data.conversations)) throw new Error("Invalid sessions");
@@ -2392,7 +2381,7 @@ async function loadConversations() {
     try {
 
         const response =
-            await fetch(
+            await novaFetch(
                 "/api/conversations"
             );
 
@@ -2540,7 +2529,7 @@ async function openConversation(
     try {
 
         const response =
-            await fetch(
+            await novaFetch(
                 `/api/conversations/${conversationId}`
             );
 
@@ -2669,7 +2658,7 @@ async function sendMainMessage() {
        try {
 
         const response =
-            await fetch(
+            await novaFetch(
                 "/chat",
                 {
                     method:
@@ -3089,7 +3078,7 @@ async function loadProjectConversation(
     try {
 
         const response =
-            await fetch(
+            await novaFetch(
                 "/api/conversations"
             );
 
@@ -3129,7 +3118,7 @@ async function loadProjectConversation(
 
 
         const detailResponse =
-            await fetch(
+            await novaFetch(
                 `/api/conversations/${conversation.id}`
             );
 
@@ -3251,7 +3240,7 @@ async function sendWorkspaceMessage() {
         try {
 
         const response =
-            await fetch(
+            await novaFetch(
                 "/chat",
                 {
                     method:
@@ -3605,7 +3594,7 @@ async function deleteConversation(
     try {
 
         const response =
-            await fetch(
+            await novaFetch(
                 `/api/conversations/${conversationId}`,
                 {
                     method:
@@ -3667,7 +3656,7 @@ async function loadConversations() {
     try {
 
         const response =
-            await fetch(
+            await novaFetch(
                 "/api/conversations"
             );
 
@@ -3915,7 +3904,7 @@ async function restoreLatestConversation() {
     try {
 
         const response =
-            await fetch(
+            await novaFetch(
                 "/api/conversations"
             );
 
@@ -6605,7 +6594,7 @@ let driveCameraData = [];
 async function loadDriveCameras() {
     try {
         const response =
-            await fetch(
+            await novaFetch(
                 "/api/drive/cameras"
             );
 
@@ -6667,14 +6656,7 @@ function showDriveCameraMarkers(
                 new mapboxgl.Popup({
                     offset: 20
                 })
-                .setHTML(
-                    "<strong>" +
-                    camera.name +
-                    "</strong><br>" +
-                    camera.street +
-                    "<br>" +
-                    camera.borough
-                );
+                .setDOMContent(safePopupContent(camera.name, camera.street, camera.borough));
 
             const marker =
                 new mapboxgl.Marker({
@@ -7545,16 +7527,7 @@ function showDrivePlaceMarkers(
                 new mapboxgl.Popup({
                     offset: 24
                 })
-                .setHTML(
-                    "<strong>" +
-                    name +
-                    "</strong>" +
-                    (
-                        address
-                            ? "<br>" + address
-                            : ""
-                    )
-                );
+                .setDOMContent(safePopupContent(name, address));
 
             const marker =
                 new mapboxgl.Marker({
@@ -7886,7 +7859,7 @@ async function analyzeMarketSymbol(
 
     try {
 
-        const response = await fetch(
+        const response = await novaFetch(
             "/api/markets/analyze",
             {
                 method: "POST",
@@ -8052,7 +8025,7 @@ document
 
     try {
 
-        const response = await fetch(
+        const response = await novaFetch(
             "/api/markets/quote",
             {
                 method: "POST",

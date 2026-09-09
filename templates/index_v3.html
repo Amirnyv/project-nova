@@ -3,6 +3,7 @@
 <html lang="en">
 
 <head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
 <meta charset="UTF-8">
 
@@ -59,7 +60,7 @@ AI Workspace
 
 </div>
 
-<button
+<button disabled title="Not available at launch"
 class="create-button">
 
 ＋ New Project
@@ -727,12 +728,12 @@ Pro Workspace
     <div class="projects-toolbar">
 
         <input
-            id="project-search"
+            id="project-search" disabled title="Not available at launch"
             type="text"
             placeholder="Search projects..."
         >
 
-        <select id="project-filter">
+        <select id="project-filter" disabled title="Not available at launch">
 
             <option>All Projects</option>
 
@@ -761,9 +762,7 @@ Pro Workspace
 
             <h3>⭐ Favorites</h3>
 
-            <span>
-                0
-            </span>
+            <span title="Not tracked in this view">—</span>
 
         </div>
 
@@ -771,9 +770,7 @@ Pro Workspace
 
             <h3>💬 AI Chats</h3>
 
-            <span>
-                0
-            </span>
+            <span title="Not tracked in this view">—</span>
 
         </div>
 
@@ -781,9 +778,7 @@ Pro Workspace
 
             <h3>📄 Files</h3>
 
-            <span>
-                0
-            </span>
+            <span title="Not tracked in this view">—</span>
 
         </div>
 
@@ -1236,7 +1231,7 @@ Pro Workspace
                     </h3>
                 </div>
 
-                <button
+                <button disabled title="Not available at launch"
                     type="button"
                     class="history-new-chat"
                     aria-label="New conversation"
@@ -1314,22 +1309,22 @@ Pro Workspace
 
                 <div class="chat-suggestions">
 
-                    <button type="button">
+                    <button disabled title="Not available at launch" type="button">
                         <span>⌘</span>
                         Help me code
                     </button>
 
-                    <button type="button">
+                    <button disabled title="Not available at launch" type="button">
                         <span>↗</span>
                         Analyze a stock
                     </button>
 
-                    <button type="button">
+                    <button disabled title="Not available at launch" type="button">
                         <span>◇</span>
                         Help me study
                     </button>
 
-                    <button type="button">
+                    <button disabled title="Not available at launch" type="button">
                         <span>✎</span>
                         Help me write
                     </button>
@@ -1339,7 +1334,7 @@ Pro Workspace
 
                 <div class="chat-input-area nova-composer">
 
-                    <button
+                    <button disabled title="Not available at launch"
                         type="button"
                         class="attachment-button"
                         aria-label="Attach file"
@@ -1408,11 +1403,11 @@ Pro Workspace
 
         <div class="workspace-actions">
 
-    <button class="secondary-button">
+    <button disabled title="Not available at launch" class="secondary-button">
         ⭐ Favorite
     </button>
 
-    <button class="primary-button">
+    <button disabled title="Not available at launch" class="primary-button">
         Ask Nova
     </button>
 
@@ -1484,9 +1479,7 @@ Pro Workspace
             <div>
                 <small>Files</small>
 
-                <strong id="workspace-file-count">
-                    0
-                </strong>
+                <strong id="workspace-file-count" title="Not tracked in this view">—</strong>
             </div>
 
         </div>
@@ -1501,9 +1494,7 @@ Pro Workspace
             <div>
                 <small>Notes</small>
 
-                <strong id="workspace-note-count">
-                    0
-                </strong>
+                <strong id="workspace-note-count" title="Not tracked in this view">—</strong>
             </div>
 
         </div>
@@ -1518,9 +1509,7 @@ Pro Workspace
             <div>
                 <small>Tasks</small>
 
-                <strong id="workspace-task-count">
-                    0
-                </strong>
+                <strong id="workspace-task-count" title="Not tracked in this view">—</strong>
             </div>
 
         </div>
@@ -1535,9 +1524,7 @@ Pro Workspace
             <div>
                 <small>AI Chats</small>
 
-                <strong id="workspace-chat-count">
-                    0
-                </strong>
+                <strong id="workspace-chat-count" title="Not tracked in this view">—</strong>
             </div>
 
         </div>
@@ -1573,7 +1560,7 @@ Pro Workspace
                         Pick up where you left off in this project.
                     </p>
 
-                    <button class="primary-button">
+                    <button disabled title="Not available at launch" class="primary-button">
                         Open Recent Work →
                     </button>
 
@@ -1617,15 +1604,15 @@ Pro Workspace
 
                     <div class="suggestion-list">
 
-                        <button>
+                        <button disabled title="Not available at launch">
                             Summarize this project
                         </button>
 
-                        <button>
+                        <button disabled title="Not available at launch">
                             Suggest next steps
                         </button>
 
-                        <button>
+                        <button disabled title="Not available at launch">
                             Find unfinished tasks
                         </button>
 
@@ -1642,19 +1629,19 @@ Pro Workspace
 
                     <div class="workspace-quick-actions">
 
-                        <button>
+                        <button disabled title="Not available at launch">
                             📝 New Note
                         </button>
 
-                        <button>
+                        <button disabled title="Not available at launch">
                             ✅ New Task
                         </button>
 
-                        <button>
+                        <button disabled title="Not available at launch">
                             📄 Upload File
                         </button>
 
-                        <button>
+                        <button disabled title="Not available at launch">
                             💬 Ask Nova
                         </button>
 
@@ -1762,7 +1749,7 @@ Pro Workspace
                         📝 Notes
                     </h2>
 
-                    <button class="primary-button">
+                    <button disabled title="Not available at launch" class="primary-button">
                         + New Note
                     </button>
 
@@ -1832,7 +1819,7 @@ Pro Workspace
                 </h2>
 
                 <p>
-                    Rename, favorite, export, or delete this project.
+                    Project settings are not available at launch.
                 </p>
 
             </div>
@@ -1856,13 +1843,14 @@ Pro Workspace
 
         <div>
             <h1>💼 Portfolio</h1>
+            <p role="status">The portfolio dashboard is not available at launch. Paper trading remains available in Nova Chat using buy, sell, portfolio, and trade history commands.</p>
 
             <p>
                 Track your paper trading portfolio.
             </p>
         </div>
 
-        <button
+        <button disabled title="Not available at launch"
             class="primary-button"
             id="portfolio-trade-button"
         >
@@ -1874,7 +1862,7 @@ Pro Workspace
 
     <!-- PORTFOLIO SUMMARY -->
 
-    <div class="portfolio-stats">
+    <div class="portfolio-stats launch-unavailable">
 
         <div class="stat-card">
 
@@ -1928,7 +1916,7 @@ Pro Workspace
 
     <!-- PORTFOLIO CONTENT -->
 
-    <div class="portfolio-grid">
+    <div class="portfolio-grid launch-unavailable">
 
         <div class="content-panel large-card">
 
@@ -1938,7 +1926,7 @@ Pro Workspace
                     Portfolio Performance
                 </h2>
 
-                <select id="portfolio-range">
+                <select id="portfolio-range" disabled title="Not available at launch">
 
                     <option>1D</option>
                     <option>1W</option>
@@ -1960,7 +1948,7 @@ Pro Workspace
         </div>
 
 
-        <div class="content-panel">
+        <div class="content-panel launch-unavailable">
 
             <h2>
                 ✦ Nova Portfolio Insight
@@ -1971,7 +1959,7 @@ Pro Workspace
                 risk, performance, and opportunities.
             </p>
 
-            <button class="secondary-button">
+            <button disabled title="Not available at launch" class="secondary-button">
                 Analyze Portfolio
             </button>
 
@@ -2003,7 +1991,7 @@ Pro Workspace
             id="portfolio-positions"
             class="empty-state"
         >
-            No open positions yet.
+            View your positions using “portfolio” in Nova Chat. This dashboard is not available at launch.
         </div>
 
     </div>
@@ -2011,7 +1999,7 @@ Pro Workspace
 
     <!-- TRADE HISTORY -->
 
-    <div class="content-panel">
+    <div class="content-panel launch-unavailable">
 
         <h2>
             Trade History
@@ -2172,7 +2160,7 @@ Pro Workspace
                     🔥 Top Movers
                 </h2>
 
-                <button
+                <button disabled title="Not available at launch"
                     type="button"
                     class="market-text-button"
                 >
@@ -2425,7 +2413,7 @@ Pro Workspace
 
             </div>
 
-            <button
+            <button disabled title="Not available at launch"
                 type="button"
                 class="market-favorite-button"
                 aria-label="Add to watchlist"
@@ -2464,7 +2452,7 @@ Pro Workspace
 
         <div class="market-range-buttons">
 
-           <button
+           <button disabled title="Not available at launch"
     type="button"
     data-range="1D"
 >
@@ -2493,14 +2481,14 @@ Pro Workspace
     3M
 </button>
 
-            <button
+            <button disabled title="Not available at launch"
                 type="button"
                 data-range="1Y"
             >
                 1Y
             </button>
 
-            <button
+            <button disabled title="Not available at launch"
                 type="button"
                 data-range="ALL"
             >
@@ -2606,7 +2594,7 @@ Pro Workspace
                     Recent News
                 </h2>
 
-                <button
+                <button disabled title="Not available at launch"
                     type="button"
                     class="market-text-button"
                 >
@@ -2619,7 +2607,7 @@ Pro Workspace
     id="market-news-placeholder"
     class="market-news-placeholder"
 >
-         Live company news will appear here.
+         Company news is not available at launch.
 </p>
         </div>
 
@@ -2856,6 +2844,7 @@ Pro Workspace
         <div>
 
             <h1>📄 Files</h1>
+            <p role="status">The global file library is not available at launch. Upload, download, and delete files inside an existing project.</p>
 
             <p>
                 Keep documents, images, code,
@@ -2864,7 +2853,7 @@ Pro Workspace
 
         </div>
 
-        <button
+        <button disabled title="Not available at launch"
             class="primary-button"
             id="upload-file-button"
         >
@@ -2876,7 +2865,7 @@ Pro Workspace
 
     <!-- FILE STATS -->
 
-    <div class="file-overview">
+    <div class="file-overview launch-unavailable">
 
         <div class="overview-card">
 
@@ -2926,14 +2915,14 @@ Pro Workspace
 
     <!-- FILE TOOLBAR -->
 
-    <div class="files-toolbar">
+    <div class="files-toolbar launch-unavailable">
 
         <div class="file-search">
 
             <span>⌕</span>
 
             <input
-                id="file-search"
+                id="file-search" disabled title="Not available at launch"
                 type="text"
                 placeholder="Search files..."
             >
@@ -2941,7 +2930,7 @@ Pro Workspace
         </div>
 
 
-        <select id="file-filter">
+        <select id="file-filter" disabled title="Not available at launch">
 
             <option>All Files</option>
 
@@ -2962,7 +2951,7 @@ Pro Workspace
 
     <div
         id="file-drop-zone"
-        class="file-drop-zone"
+        class="file-drop-zone launch-unavailable"
     >
 
         <div class="drop-zone-icon">
@@ -2982,7 +2971,7 @@ Pro Workspace
 
     <!-- FILE LIST -->
 
-    <div class="content-panel">
+    <div class="content-panel launch-unavailable">
 
         <div class="card-header">
 
@@ -3333,8 +3322,7 @@ Pro Workspace
                     </strong>
 
                     <p>
-                        Allow Nova to remember useful
-                        project context.
+                        Conversation history is used for context. This setting is not available at launch.
                     </p>
 
                 </div>
@@ -3344,6 +3332,7 @@ Pro Workspace
                     <input
                         type="checkbox"
                         id="memory-toggle"
+                        disabled title="This setting is not available at launch"
                         checked
                     >
 
@@ -3363,7 +3352,7 @@ Pro Workspace
                     </strong>
 
                     <p>
-                        Show recommendations on your dashboard.
+                        Dashboard recommendations are not available at launch.
                     </p>
 
                 </div>
@@ -3373,6 +3362,7 @@ Pro Workspace
                     <input
                         type="checkbox"
                         id="suggestions-toggle"
+                        disabled title="This setting is not available at launch"
                         checked
                     >
 
@@ -3402,7 +3392,7 @@ Pro Workspace
                     </strong>
 
                     <p>
-                        Get notified about important activity.
+                        Notifications are not available at launch.
                     </p>
 
                 </div>
@@ -3412,6 +3402,7 @@ Pro Workspace
                     <input
                         type="checkbox"
                         id="notifications-toggle"
+                        disabled title="This setting is not available at launch"
                         checked
                     >
 
@@ -3432,12 +3423,10 @@ Pro Workspace
                 Account
             </h2>
 
-            <a
-                href="{{ url_for('logout') }}"
-                class="logout-button"
-            >
-                Log Out
-            </a>
+            <form method="POST" action="{{ url_for('logout') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="logout-button">Log Out</button>
+            </form>
 
         </div>
 

@@ -8249,3 +8249,13 @@ backdrop-filter: blur(14px);
         padding: 15px;
     }
 }
+/* Launch-only availability states; working controls retain their current styling. */
+.launch-unavailable {
+    display: none !important;
+}
+button:disabled[title*="launch"],
+input:disabled[title*="launch"],
+select:disabled[title*="launch"] {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
