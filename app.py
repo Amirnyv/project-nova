@@ -2686,7 +2686,7 @@ def chat():
                 )
             })
 
-    for item in conversation_history:
+    for item in conversation_history[-20:]:
         role = item.get("role")
 
         content = item.get(
