@@ -18,19 +18,23 @@ ANALYSIS_CACHE_TTL = 300
 def get_json(endpoint, params):
     params["apikey"] = API_KEY
 
-    response = requests.get(
-        f"{BASE_URL}/{endpoint}",
-        params=params,
-        timeout=10
-    )
+    try:
+        response = requests.get(
+            f"{BASE_URL}/{endpoint}",
+            params=params,
+            timeout=10
+        )
 
-    response.raise_for_status()
-    data = response.json()
+        response.raise_for_status()
+        data = response.json()
+    except requests.RequestException:
+        # Upstream exceptions may contain the credential-bearing request URL.
+        raise requests.RequestException("Market connection failed.") from None
+    except ValueError:
+        raise ValueError("Market data request failed.") from None
 
     if "code" in data or data.get("status") == "error":
-        raise ValueError(
-            data.get("message", "Market data request failed.")
-        )
+        raise ValueError("Market data request failed.")
 
     return data
 
@@ -80,20 +84,20 @@ def get_market_quote(symbol):
 
         return result
 
-    except requests.RequestException as error:
+    except requests.RequestException:
         return {
             "error":
-                f"Market connection failed: {error}"
+                "Market connection failed. Please try again later."
         }
 
     except (
         ValueError,
         KeyError,
         TypeError
-    ) as error:
+    ):
         return {
             "error":
-                f"Market data error: {error}"
+                "Market data is unavailable. Please try again later."
         }
 
 def calculate_rsi(prices, period=14):
@@ -317,7 +321,7 @@ def analyze_stock(symbol):
         else:
             risk = "Low"
 
-            result = {
+        result = {
             "symbol": symbol,
             "company": quote.get("name", symbol),
             "price": round(price, 2),
@@ -353,12 +357,12 @@ def analyze_stock(symbol):
 
         return result
 
-    except requests.RequestException as error:
+    except requests.RequestException:
         return {
-            "error": f"Market connection failed: {error}"
+            "error": "Market connection failed. Please try again later."
         }
 
-    except (ValueError, KeyError, TypeError) as error:
+    except (ValueError, KeyError, TypeError):
         return {
-            "error": f"Market data error: {error}"
+            "error": "Market data is unavailable. Please try again later."
         }
