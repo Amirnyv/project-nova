@@ -96,7 +96,7 @@ class ChatIntegrationTests(unittest.TestCase):
         self.assertEqual([e['type'] for e in events], ['delta', 'done'])
         self.assertEqual(events[0]['delta'], 'Hello')
         self.assertEqual(events[-1]['conversation_id'], 1)
-        self.ns['jarvis_result_context'].assert_called_once_with(1, decision)
+        self.ns['jarvis_result_context'].assert_called_once_with(1, decision, conversation_id=1)
         self.assertEqual(self.fixture.router.call_args.args[0][-1], context[0])
         self.assertEqual(self.ns['record_ai_usage'].call_args_list,
                          [call(1, 1, 'test:planner', 12, 3), call(1, 1, 'test:test-model', 120, 30)])
