@@ -333,6 +333,239 @@ def routed_chat_completion(
     )
 
 
+
+# -------------------------------------------------
+# ROUTED STREAMING CHAT
+# -------------------------------------------------
+
+def routed_chat_stream(
+    messages,
+    max_tokens=4096,
+    temperature=0.7,
+    allow_openai_fallback=True
+):
+    """
+    Stream a Nova response through the provider fallback chain.
+
+    Yields dictionaries:
+
+        {
+            "type": "start",
+            "provider": "...",
+            "model": "..."
+        }
+
+        {
+            "type": "delta",
+            "delta": "..."
+        }
+
+        {
+            "type": "done",
+            "provider": "...",
+            "model": "...",
+            "usage": {
+                "input_tokens": 0,
+                "output_tokens": 0,
+                "total_tokens": 0
+            }
+        }
+
+    A provider may be replaced only before visible output has
+    been emitted. Once text has started streaming, a provider
+    failure is raised instead of mixing two different answers.
+    """
+
+    for provider in _providers():
+
+        name = provider["name"]
+        client = provider["client"]
+        model = provider["model"]
+
+        if client is None:
+            continue
+
+        if (
+            provider["is_paid_fallback"]
+            and not allow_openai_fallback
+        ):
+            continue
+
+        if not _is_available(name):
+            continue
+
+        stream = None
+        emitted_text = False
+        usage = {
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "total_tokens": 0,
+        }
+
+        try:
+            stream = (
+                client
+                .chat
+                .completions
+                .create(
+                    model=model,
+                    messages=messages,
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                    stream=True,
+                    stream_options={
+                        "include_usage": True
+                    },
+                )
+            )
+
+            started = False
+
+            for chunk in stream:
+
+                chunk_usage = getattr(
+                    chunk,
+                    "usage",
+                    None
+                )
+
+                if chunk_usage is not None:
+                    input_tokens = (
+                        getattr(
+                            chunk_usage,
+                            "prompt_tokens",
+                            0
+                        )
+                        or 0
+                    )
+
+                    output_tokens = (
+                        getattr(
+                            chunk_usage,
+                            "completion_tokens",
+                            0
+                        )
+                        or 0
+                    )
+
+                    total_tokens = (
+                        getattr(
+                            chunk_usage,
+                            "total_tokens",
+                            0
+                        )
+                        or (
+                            input_tokens
+                            + output_tokens
+                        )
+                    )
+
+                    usage = {
+                        "input_tokens":
+                            input_tokens,
+
+                        "output_tokens":
+                            output_tokens,
+
+                        "total_tokens":
+                            total_tokens,
+                    }
+
+                choices = (
+                    getattr(
+                        chunk,
+                        "choices",
+                        None
+                    )
+                    or []
+                )
+
+                if not choices:
+                    continue
+
+                delta_object = getattr(
+                    choices[0],
+                    "delta",
+                    None
+                )
+
+                if delta_object is None:
+                    continue
+
+                delta = (
+                    getattr(
+                        delta_object,
+                        "content",
+                        None
+                    )
+                    or ""
+                )
+
+                if not delta:
+                    continue
+
+                if not started:
+                    yield {
+                        "type": "start",
+                        "provider": name,
+                        "model": model,
+                    }
+
+                    started = True
+
+                emitted_text = True
+
+                yield {
+                    "type": "delta",
+                    "delta": delta,
+                }
+
+            if not emitted_text:
+                raise RuntimeError(
+                    "Provider returned an empty stream."
+                )
+
+            _mark_success(name)
+
+            yield {
+                "type": "done",
+                "provider": name,
+                "model": model,
+                "usage": usage,
+            }
+
+            return
+
+        except Exception as error:
+
+            _mark_failure(
+                name,
+                error
+            )
+
+            print(
+                f"Nova router provider failed: "
+                f"{name} "
+                f"({type(error).__name__})"
+            )
+
+            if emitted_text:
+                raise
+
+            continue
+
+        finally:
+            if stream is not None:
+                try:
+                    stream.close()
+                except Exception:
+                    pass
+
+    raise RuntimeError(
+        "All Nova AI providers are unavailable."
+    )
+
+
 # -------------------------------------------------
 # STATUS
 # -------------------------------------------------
