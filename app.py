@@ -47,6 +47,7 @@ from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from openai import OpenAI
 from services.ai_router import routed_chat_stream
+from services.jarvis_planner import plan_jarvis_action, jarvis_result_context
 from dotenv import load_dotenv
 
 from agents.stock_agent import analyze_stock, get_market_quote
@@ -3311,6 +3312,9 @@ def chat():
                 nonlocal router_saved
                 nonlocal router_usage_recorded
 
+                if router_stream is None:
+                    return
+
                 content = "".join(
                     router_reply_parts
                 ).strip()
@@ -3357,8 +3361,24 @@ def chat():
                         router_saved = True
 
             try:
+                def record_planner_usage(provider, model, input_tokens, output_tokens):
+                    record_ai_usage(user_id, conversation_id, f"{provider}:{model}",
+                                    input_tokens, output_tokens)
+
+                decision = plan_jarvis_action(
+                    messages, user_message, record_usage=record_planner_usage,
+                )
+                # Planning consumes allowance too; do not start another AI call
+                # or execute a tool if it exhausted the current allowance.
+                if not check_ai_usage_limit(user_id).get("allowed"):
+                    yield json.dumps({
+                        "type": "error", "message": "AI usage limit reached. Please try again after your allowance renews.",
+                        "conversation_id": conversation_id,
+                    }) + "\n"
+                    return
+                response_messages = messages + jarvis_result_context(user_id, decision)
                 router_stream = routed_chat_stream(
-                    messages,
+                    response_messages,
                     max_tokens=MAX_AI_OUTPUT_TOKENS,
                     temperature=0.7,
                     allow_openai_fallback=True,

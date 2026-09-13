@@ -74,13 +74,22 @@ class HardeningTests(unittest.TestCase):
         self.stream = FakeStream(events())
         self.provider.responses.create.return_value = self.stream
         self.provider.responses.retrieve.return_value = result()
+        self.router_stream = FakeStream([
+            {'type': 'start', 'provider': 'test', 'model': 'test-model'},
+            {'type': 'delta', 'delta': 'Hello'},
+            {'type': 'done', 'provider': 'test', 'model': 'test-model',
+             'usage': {'input_tokens': 120, 'output_tokens': 30, 'total_tokens': 150}},
+        ])
+        self.router = Mock(return_value=self.router_stream)
         self.ns = dict(
             app=self.app, os=os, fcntl=fcntl, hashlib=hashlib, hmac=hmac, secrets=secrets,
             tempfile=SimpleNamespace(gettempdir=lambda: self.directory.name), time=time, json=json,
             wraps=wraps, sqlite3=sqlite3, USE_POSTGRES=False, request=request, session=session,
             jsonify=jsonify, make_response=make_response, Response=Response, stream_with_context=stream_with_context,
             current_user=current_user, login_required=login_required, logout_user=logout_user,
-            redirect=redirect, url_for=url_for, client=self.provider,
+            redirect=redirect, url_for=url_for, client=self.provider, routed_chat_stream=self.router,
+            plan_jarvis_action=Mock(return_value={'action': 'respond'}),
+            jarvis_result_context=Mock(return_value=[]),
             check_ai_usage_limit=Mock(return_value={'allowed': True, 'plan': 'max', 'remaining': 100000}),
             get_active_subscription=Mock(return_value={'status': 'active', 'plan': 'max'}),
             create_conversation=Mock(return_value=1), get_conversation_messages=Mock(return_value=[]),
@@ -117,23 +126,23 @@ class HardeningTests(unittest.TestCase):
         response = self.chat()
         self.assertEqual(response.status_code, 200)
         self.assertIn('"type": "done"', response.text)
-        args = self.provider.responses.create.call_args.kwargs
-        self.assertEqual(args['max_output_tokens'], 4096)
-        self.assertTrue(args['stream'])
-        self.assertEqual([m['content'] for m in args['input'] if m['role'] == 'user'], [str(i) for i in range(10, 30)] + ['Hello Nova'])
-        self.ns['record_ai_usage'].assert_called_once_with(1, 1, 'gpt-5-mini', 120, 30)
-        self.assertTrue(self.stream.closed)
+        args = self.router.call_args.kwargs
+        self.assertEqual(args['max_tokens'], 4096)
+        self.provider.responses.create.assert_not_called()
+        self.assertEqual([m['content'] for m in self.router.call_args.args[0] if m['role'] == 'user'], [str(i) for i in range(10, 30)] + ['Hello Nova'])
+        self.ns['record_ai_usage'].assert_called_once_with(1, 1, 'test:test-model', 120, 30)
+        self.assertTrue(self.router_stream.closed)
 
     def test_disconnect_accounts_and_keeps_guard_until_close(self):
         response = self.chat(buffered=False)
         self.ns['record_ai_usage'].assert_not_called()
         self.assertIsNone(self.ns['acquire_chat_guard'](1))
         response.close()
-        self.ns['record_ai_usage'].assert_called_once_with(1, 1, 'gpt-5-mini', 120, 30)
+        self.ns['record_ai_usage'].assert_called_once_with(1, 1, 'test:test-model', 120, 30)
         release = self.ns['acquire_chat_guard'](1)
         self.assertIsNotNone(release)
         release()
-        self.assertTrue(self.stream.closed)
+        self.assertTrue(self.router_stream.closed)
 
     def test_busy_request_does_not_check_usage_or_call_ai(self):
         release = self.ns['acquire_chat_guard'](1)
@@ -143,6 +152,7 @@ class HardeningTests(unittest.TestCase):
             self.assertEqual(response.json['error'], 'generation_in_progress')
             self.ns['check_ai_usage_limit'].assert_not_called()
             self.provider.responses.create.assert_not_called()
+            self.router.assert_not_called()
             other = self.ns['acquire_chat_guard'](2)
             self.assertIsNotNone(other)
             other()
@@ -178,6 +188,7 @@ class HardeningTests(unittest.TestCase):
         for message in ['x' * 16001, 42, None]:
             self.assertEqual(self.chat(message=message).status_code, 400)
         self.provider.responses.create.assert_not_called()
+        self.router.assert_not_called()
         release = self.ns['acquire_chat_guard'](1)
         self.assertIsNotNone(release)
         release()
@@ -197,11 +208,11 @@ class HardeningTests(unittest.TestCase):
     def test_incomplete_and_broken_stream_usage(self):
         for terminal in ['response.incomplete', 'response.failed']:
             self.provider.responses.create.return_value = FakeStream(events(terminal))
-            self.chat().close()
+            self.chat(message='Search the web for news').close()
         self.assertEqual(self.ns['record_ai_usage'].call_count, 2)
         self.ns['record_ai_usage'].reset_mock()
         self.provider.responses.create.return_value = FakeStream(events()[:2] + [RuntimeError('synthetic upstream failure')])
-        response = self.chat()
+        response = self.chat(message='Search the web for news')
         self.assertIn('"type": "error"', response.text)
         self.provider.responses.retrieve.assert_called_with('resp_test', timeout=10)
         self.ns['record_ai_usage'].assert_called_once()
