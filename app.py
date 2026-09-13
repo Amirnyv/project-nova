@@ -3215,6 +3215,40 @@ def chat():
 
 
         # NORMAL OPENAI CHAT
+    web_search_phrases = (
+        "latest",
+        "today",
+        "right now",
+        "currently",
+        "current ",
+        "recent",
+        "news",
+        "breaking",
+        "weather",
+        "live score",
+        "stock price",
+        "market price",
+        "search the web",
+        "search online",
+        "look it up",
+        "find online",
+        "as of ",
+        "http://",
+        "https://",
+        "www.",
+    )
+
+    needs_web_search = (
+        (
+            custom_agent is not None
+            and custom_agent["web_search"]
+        )
+        or any(
+            phrase in lower_message
+            for phrase in web_search_phrases
+        )
+    )
+
     nova_model = "gpt-5-mini"
 
     def generate_nova_response():
@@ -3226,6 +3260,200 @@ def chat():
         usage_recorded = False
         message_saved = False
         reply = ""
+
+        if not needs_web_search:
+            router_stream = None
+            router_reply_parts = []
+            router_provider = None
+            router_model = None
+            router_usage = {
+                "input_tokens": 0,
+                "output_tokens": 0,
+                "total_tokens": 0,
+            }
+            router_saved = False
+            router_usage_recorded = False
+
+            def consume_router_event(event):
+                nonlocal router_provider
+                nonlocal router_model
+                nonlocal router_usage
+
+                event_type = event.get("type")
+
+                if event_type == "start":
+                    router_provider = event.get("provider")
+                    router_model = event.get("model")
+
+                elif event_type == "delta":
+                    delta = event.get("delta") or ""
+
+                    if delta:
+                        router_reply_parts.append(delta)
+
+                elif event_type == "done":
+                    router_provider = (
+                        event.get("provider")
+                        or router_provider
+                    )
+
+                    router_model = (
+                        event.get("model")
+                        or router_model
+                    )
+
+                    router_usage = (
+                        event.get("usage")
+                        or router_usage
+                    )
+
+            def persist_router_generation():
+                nonlocal router_saved
+                nonlocal router_usage_recorded
+
+                content = "".join(
+                    router_reply_parts
+                ).strip()
+
+                model_label = (
+                    f"{router_provider}:{router_model}"
+                    if router_provider and router_model
+                    else "nova-router"
+                )
+
+                if not router_usage_recorded:
+                    record_ai_usage(
+                        user_id,
+                        conversation_id,
+                        model_label,
+                        router_usage.get(
+                            "input_tokens",
+                            0
+                        ),
+                        router_usage.get(
+                            "output_tokens",
+                            0
+                        ),
+                    )
+
+                    router_usage_recorded = True
+
+                if content and not router_saved:
+                    try:
+                        save_conversation_message(
+                            conversation_id,
+                            user_id,
+                            "assistant",
+                            content,
+                            output_tokens=router_usage.get(
+                                "output_tokens",
+                                0
+                            ),
+                        )
+
+                        router_saved = True
+
+                    except sqlite3.IntegrityError:
+                        router_saved = True
+
+            try:
+                router_stream = routed_chat_stream(
+                    messages,
+                    max_tokens=MAX_AI_OUTPUT_TOKENS,
+                    temperature=0.7,
+                    allow_openai_fallback=True,
+                )
+
+                for event in router_stream:
+                    consume_router_event(event)
+
+                    if event.get("type") == "delta":
+                        delta = event.get("delta") or ""
+
+                        if delta:
+                            yield (
+                                json.dumps({
+                                    "type": "delta",
+                                    "delta": delta,
+                                })
+                                + "\n"
+                            )
+
+                reply = "".join(
+                    router_reply_parts
+                ).strip()
+
+                if not reply:
+                    reply = (
+                        "I couldn't generate a response. "
+                        "Please try again."
+                    )
+
+                persist_router_generation()
+
+                yield (
+                    json.dumps({
+                        "type": "done",
+                        "conversation_id":
+                            conversation_id,
+                        "reply":
+                            reply,
+                        "provider":
+                            router_provider,
+                        "model":
+                            router_model,
+                        "usage":
+                            router_usage,
+                    })
+                    + "\n"
+                )
+
+                return
+
+            except GeneratorExit:
+                if router_stream is not None:
+                    try:
+                        for event in router_stream:
+                            consume_router_event(event)
+
+                    except Exception:
+                        app.logger.warning(
+                            "Nova routed stream ended "
+                            "before final usage was received"
+                        )
+
+                persist_router_generation()
+                raise
+
+            except Exception as error:
+                app.logger.warning(
+                    "Nova routed AI stream failed (%s)",
+                    type(error).__name__,
+                )
+
+                persist_router_generation()
+
+                yield (
+                    json.dumps({
+                        "type": "error",
+                        "message": (
+                            "Nova is temporarily unavailable. "
+                            "Please try again shortly."
+                        ),
+                        "conversation_id":
+                            conversation_id,
+                    })
+                    + "\n"
+                )
+
+                return
+
+            finally:
+                if router_stream is not None:
+                    try:
+                        router_stream.close()
+                    except Exception:
+                        pass
 
         def persist_generation():
             nonlocal usage_recorded, message_saved
