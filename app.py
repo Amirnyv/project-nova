@@ -46,6 +46,7 @@ from flask_login import (
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from openai import OpenAI
+from services.ai_router import routed_chat_stream
 from dotenv import load_dotenv
 
 from agents.stock_agent import analyze_stock, get_market_quote
