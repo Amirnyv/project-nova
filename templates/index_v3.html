@@ -117,6 +117,14 @@ class="create-button">
         AI TOOLS
     </p>
 
+<button
+    class="sidebar-button"
+    data-page="jarvis"
+>
+    <span class="sidebar-icon">✦</span>
+    <span>Jarvis</span>
+</button>
+
     <button
         class="sidebar-button"
         data-page="agents"
@@ -2609,6 +2617,897 @@ Pro Workspace
 >
          Company news is not available at launch.
 </p>
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ================================= -->
+<!-- JARVIS V3 -->
+<!-- ================================= -->
+
+<section
+    id="jarvis-page"
+    class="page"
+>
+
+    <div class="jarvis-v3-app">
+
+        <!-- ================================= -->
+        <!-- TOP NAVIGATION -->
+        <!-- ================================= -->
+
+        <header class="jarvis-v3-topbar">
+
+            <div class="jarvis-v3-logo">
+                <span class="jarvis-v3-logo-text">
+                    N<span>O</span>VA
+                </span>
+
+                <small>
+                    YOUR AI. YOUR WORLD.
+                </small>
+            </div>
+
+
+            <nav class="jarvis-v3-topnav">
+
+                <button
+                    class="jarvis-v3-topnav-item active"
+                    type="button"
+                    data-page="jarvis"
+                >
+                    <span class="jarvis-v3-topnav-icon">●</span>
+                    <span>Jarvis</span>
+                </button>
+
+                <button
+                    class="jarvis-v3-topnav-item"
+                    type="button"
+                    data-page="chat"
+                >
+                    <span class="jarvis-v3-topnav-icon">◯</span>
+                    <span>Chat</span>
+                </button>
+
+                <button
+                    class="jarvis-v3-topnav-item"
+                    type="button"
+                    data-page="projects"
+                >
+                    <span class="jarvis-v3-topnav-icon">◇</span>
+                    <span>Projects</span>
+                </button>
+
+                <button
+                    class="jarvis-v3-topnav-item"
+                    type="button"
+                >
+                    <span class="jarvis-v3-topnav-icon">☑</span>
+                    <span>Tasks</span>
+                </button>
+
+                <button
+                    class="jarvis-v3-topnav-item"
+                    type="button"
+                    data-page="markets"
+                >
+                    <span class="jarvis-v3-topnav-icon">⌁</span>
+                    <span>Markets</span>
+                </button>
+
+                <button
+                    class="jarvis-v3-topnav-item"
+                    type="button"
+                    data-page="portfolio"
+                >
+                    <span class="jarvis-v3-topnav-icon">⌁</span>
+                    <span>Portfolio</span>
+                </button>
+
+                <button
+                    class="jarvis-v3-topnav-item"
+                    type="button"
+                    data-page="files"
+                >
+                    <span class="jarvis-v3-topnav-icon">□</span>
+                    <span>Files</span>
+                </button>
+
+                <button
+                    class="jarvis-v3-topnav-item"
+                    type="button"
+                >
+                    <span class="jarvis-v3-topnav-icon">▦</span>
+                    <span>Apps</span>
+                </button>
+
+            </nav>
+
+
+            <div class="jarvis-v3-topbar-right">
+
+                <div class="jarvis-v3-search">
+                    <span>⌕</span>
+
+                    <input
+                        type="text"
+                        placeholder="Search anything..."
+                    >
+                </div>
+
+                <div class="jarvis-v3-user">
+
+                    <div class="jarvis-v3-user-avatar">
+                        {{ user.username[0]|upper }}
+                    </div>
+
+                    <div>
+                        <strong>
+                            {{ user.username }}
+                        </strong>
+
+                        <small>
+                            Pro Plan
+                        </small>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- ================================= -->
+        <!-- MAIN DASHBOARD -->
+        <!-- ================================= -->
+
+        <div class="jarvis-v3-grid">
+
+            <!-- ================================= -->
+            <!-- LEFT CONTROL RAIL -->
+            <!-- ================================= -->
+
+            <aside class="jarvis-v3-left">
+
+                <div class="jarvis-v3-left-main">
+
+                    <div class="jarvis-v3-left-title">
+                        JARVIS
+                    </div>
+
+                    <div class="jarvis-v3-left-subtitle">
+                        INTELLIGENT ASSISTANT
+                    </div>
+
+
+                    <nav class="jarvis-v3-control-nav">
+
+                        <button
+                            class="jarvis-v3-control-item active"
+                            type="button"
+                        >
+                            <span>⌂</span>
+                            Home
+                        </button>
+
+                        <button
+                            class="jarvis-v3-control-item"
+                            type="button"
+                        >
+                            <span>♩</span>
+                            Voice
+                        </button>
+
+                        <button
+                            class="jarvis-v3-control-item"
+                            type="button"
+                        >
+                            <span>⌘</span>
+                            Tools
+                        </button>
+
+                        <button
+                            class="jarvis-v3-control-item"
+                            type="button"
+                        >
+                            <span>⚙</span>
+                            Automation
+                        </button>
+
+                        <button
+                            class="jarvis-v3-control-item"
+                            type="button"
+                        >
+                            <span>▣</span>
+                            Devices
+                        </button>
+
+                        <button
+                            class="jarvis-v3-control-item"
+                            type="button"
+                        >
+                            <span>▤</span>
+                            Memory
+                        </button>
+
+                        <button
+                            class="jarvis-v3-control-item"
+                            type="button"
+                        >
+                            <span>⚙</span>
+                            Settings
+                        </button>
+
+                    </nav>
+
+
+                    <div class="jarvis-v3-quote">
+                        “A more capable<br>
+                        you, every day.”
+                    </div>
+
+                </div>
+
+
+                <div class="jarvis-v3-system">
+
+    <div class="jarvis-v3-card-title">
+        System Status
+    </div>
+
+    <div class="jarvis-v3-system-master">
+        <span
+            id="jarvis-status-master-dot"
+            class="jarvis-v3-green-dot"
+        ></span>
+
+        <span id="jarvis-status-master">
+            Checking Nova...
+        </span>
+    </div>
+
+    <div class="jarvis-v3-system-row">
+        <span>Jarvis Tools</span>
+
+        <strong id="jarvis-status-tools">
+            • Checking
+        </strong>
+    </div>
+
+    <div class="jarvis-v3-system-row">
+        <span>AI Planner</span>
+
+        <strong id="jarvis-status-planner">
+            • Checking
+        </strong>
+    </div>
+
+    <div class="jarvis-v3-system-row">
+        <span>Confirmations</span>
+
+        <strong id="jarvis-status-confirmations">
+            • Checking
+        </strong>
+    </div>
+
+    <div class="jarvis-v3-system-row">
+        <span>Project Resolution</span>
+
+        <strong id="jarvis-status-projects">
+            • Checking
+        </strong>
+    </div>
+
+    <div class="jarvis-v3-system-row">
+        <span>Available Tools</span>
+
+        <strong id="jarvis-status-tool-count">
+            • --
+        </strong>
+    </div>
+
+</div>
+
+            </aside>
+
+
+            <!-- ================================= -->
+            <!-- CENTER -->
+            <!-- ================================= -->
+
+            <main class="jarvis-v3-center">
+
+                <!-- HERO -->
+
+                <section class="jarvis-v3-hero">
+
+                    <div class="jarvis-v3-state-rail">
+
+                        <div class="jarvis-v3-state-row active">
+                            <span></span>
+                            LISTENING
+                        </div>
+
+                        <div class="jarvis-v3-state-row">
+                            <span></span>
+                            THINKING
+                        </div>
+
+                        <div class="jarvis-v3-state-row">
+                            <span></span>
+                            PLANNING
+                        </div>
+
+                        <div class="jarvis-v3-state-row">
+                            <span></span>
+                            EXECUTING
+                        </div>
+
+                        <div class="jarvis-v3-state-row">
+                            <span></span>
+                            COMPLETE
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        class="jarvis-v3-orb"
+                        id="jarvis-orb"
+                        data-state="listening"
+                    >
+
+                        <div class="jarvis-v3-orbit orbit-a"></div>
+                        <div class="jarvis-v3-orbit orbit-b"></div>
+                        <div class="jarvis-v3-orbit orbit-c"></div>
+
+                        <div class="jarvis-v3-energy-sphere">
+
+                            <div class="jarvis-v3-orb-text">
+                                <strong>
+                                    N<span>O</span>VA
+                                </strong>
+
+                                <small>
+                                    JARVIS MODE
+                                </small>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="jarvis-v3-hero-quote">
+                        “Ideas become<br>
+                        reality when you<br>
+                        have the right tools.”
+                    </div>
+
+
+                    <div class="jarvis-v3-earth"></div>
+
+                </section>
+
+
+                <!-- QUICK ACTIONS -->
+
+                <section class="jarvis-v3-actions">
+
+                    <button
+                        class="jarvis-v3-action"
+                        type="button"
+                    >
+                        <span class="jarvis-v3-action-icon">
+                            □
+                        </span>
+
+                        <strong>
+                            New Project
+                        </strong>
+
+                        <small>
+                            Plan. Build. Achieve.
+                        </small>
+                    </button>
+
+
+                    <button
+                        class="jarvis-v3-action"
+                        type="button"
+                    >
+                        <span class="jarvis-v3-action-icon">
+                            ✓
+                        </span>
+
+                        <strong>
+                            Create Task
+                        </strong>
+
+                        <small>
+                            Stay on track.
+                        </small>
+                    </button>
+
+
+                    <button
+                        class="jarvis-v3-action"
+                        type="button"
+                    >
+                        <span class="jarvis-v3-action-icon">
+                            ▥
+                        </span>
+
+                        <strong>
+                            Analyze Market
+                        </strong>
+
+                        <small>
+                            Get AI insights.
+                        </small>
+                    </button>
+
+
+                    <button
+                        class="jarvis-v3-action"
+                        type="button"
+                    >
+                        <span class="jarvis-v3-action-icon">
+                            ◎
+                        </span>
+
+                        <strong>
+                            Search Web
+                        </strong>
+
+                        <small>
+                            Real-time answers.
+                        </small>
+                    </button>
+
+
+                    <button
+                        class="jarvis-v3-action"
+                        type="button"
+                    >
+                        <span class="jarvis-v3-action-icon">
+                            ▤
+                        </span>
+
+                        <strong>
+                            Open File
+                        </strong>
+
+                        <small>
+                            Find anything.
+                        </small>
+                    </button>
+
+
+                    <button
+                        class="jarvis-v3-action"
+                        type="button"
+                    >
+                        <span class="jarvis-v3-action-icon">
+                            ▦
+                        </span>
+
+                        <strong>
+                            More Tools
+                        </strong>
+
+                        <small>
+                            Expand Jarvis.
+                        </small>
+                    </button>
+
+                </section>
+
+
+                <!-- COMMAND CENTER -->
+
+                <section class="jarvis-v3-command">
+
+                    <h2>
+                        What would you like me to do,
+                        {{ user.username }}?
+                    </h2>
+
+
+                    <div class="jarvis-v3-suggestions">
+
+                        <button type="button">
+                            Analyze AAPL
+                        </button>
+
+                        <button type="button">
+                            Show my projects
+                        </button>
+
+                        <button type="button">
+                            Add a new task
+                        </button>
+
+                        <button type="button">
+                            Summarize this file
+                        </button>
+
+                        <button type="button">
+                            Latest AI news
+                        </button>
+
+                    </div>
+
+
+                    <div class="jarvis-v3-input-row">
+
+                        <button
+                            id="jarvis-plus-button"
+                            class="jarvis-v3-round-button"
+                            type="button"
+                        >
+                            ＋
+                        </button>
+
+                        <button
+                            id="jarvis-mic-button"
+                            class="jarvis-v3-round-button jarvis-v3-mic"
+                            type="button"
+                        >
+                            ♩
+                        </button>
+
+                        <input
+                            id="jarvis-command-input"
+                            type="text"
+                            placeholder="Message Jarvis..."
+                            autocomplete="off"
+                        >
+
+                        <button
+                            class="jarvis-v3-sliders"
+                            type="button"
+                        >
+                            ☷
+                        </button>
+
+                        <button
+                            id="jarvis-send-button"
+                            class="jarvis-v3-send"
+                            type="button"
+                        >
+                            ➤
+                        </button>
+
+                    </div>
+
+                </section>
+
+
+                <!-- BOTTOM INFO -->
+
+                <section class="jarvis-v3-bottom">
+
+                    <!-- MARKETS -->
+
+                    <div class="jarvis-v3-bottom-card">
+
+                        <div class="jarvis-v3-card-header">
+
+                            <strong>
+                                Markets Overview
+                            </strong>
+
+                            <button
+                                type="button"
+                                data-page="markets"
+                            >
+                                View Markets →
+                            </button>
+
+                        </div>
+
+
+                        <div class="jarvis-v3-market-grid">
+
+                            <div class="jarvis-v3-market-box">
+                                <strong>AAPL</strong>
+                                <span>$178.32</span>
+                                <small class="positive">
+                                    +1.24%
+                                </small>
+                                <div class="jarvis-v3-mini-chart up"></div>
+                            </div>
+
+                            <div class="jarvis-v3-market-box">
+                                <strong>TSLA</strong>
+                                <span>$248.17</span>
+                                <small class="negative">
+                                    -0.83%
+                                </small>
+                                <div class="jarvis-v3-mini-chart down"></div>
+                            </div>
+
+                            <div class="jarvis-v3-market-box">
+                                <strong>NVDA</strong>
+                                <span>$465.29</span>
+                                <small class="positive">
+                                    +2.11%
+                                </small>
+                                <div class="jarvis-v3-mini-chart up"></div>
+                            </div>
+
+                            <div class="jarvis-v3-market-box">
+                                <strong>BTC</strong>
+                                <span>$63,428</span>
+                                <small class="positive">
+                                    +0.92%
+                                </small>
+                                <div class="jarvis-v3-mini-chart up"></div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- PROJECTS -->
+
+                    <div class="jarvis-v3-bottom-card">
+
+                        <div class="jarvis-v3-card-header">
+
+                            <strong>
+                                Your Projects
+                            </strong>
+
+                            <button
+                                type="button"
+                                data-page="projects"
+                            >
+                                View All →
+                            </button>
+
+                        </div>
+
+
+                        <div id="jarvis-projects-list">
+
+    <div class="jarvis-v3-project-row">
+        <strong>Loading projects...</strong>
+        <small>--</small>
+    </div>
+
+</div>
+
+                    </div>
+
+                </section>
+
+            </main>
+
+
+            <!-- ================================= -->
+            <!-- RIGHT RAIL -->
+            <!-- ================================= -->
+
+            <aside class="jarvis-v3-right">
+
+                <div class="jarvis-v3-time-card">
+
+                    <div
+                        id="jarvis-date"
+                        class="jarvis-v3-date"
+                    >
+                        Today
+                    </div>
+
+                    <div
+                        id="jarvis-time"
+                        class="jarvis-v3-time"
+                    >
+                        --:--
+                    </div>
+
+                    <p>
+                        Discipline today.<br>
+                        A bigger tomorrow.
+                    </p>
+
+                    <div class="jarvis-v3-earth-corner"></div>
+
+                </div>
+
+
+                <div class="jarvis-v3-right-card">
+
+                    <div class="jarvis-v3-card-header">
+
+                        <strong>
+                            Active Tasks
+                        </strong>
+
+                        <button type="button">
+                            View All →
+                        </button>
+
+                    </div>
+
+
+                    <div class="jarvis-v3-task-row">
+                        <span class="task-circle"></span>
+
+                        <div>
+                            <strong>
+                                Finish English essay
+                            </strong>
+
+                            <small>
+                                School
+                            </small>
+                        </div>
+
+                        <em class="today">
+                            Today
+                        </em>
+                    </div>
+
+
+                    <div class="jarvis-v3-task-row">
+                        <span class="task-circle"></span>
+
+                        <div>
+                            <strong>
+                                Review project code
+                            </strong>
+
+                            <small>
+                                Nova
+                            </small>
+                        </div>
+
+                        <em>
+                            Tomorrow
+                        </em>
+                    </div>
+
+
+                    <div class="jarvis-v3-task-row">
+                        <span class="task-circle"></span>
+
+                        <div>
+                            <strong>
+                                Gym workout
+                            </strong>
+
+                            <small>
+                                Personal
+                            </small>
+                        </div>
+
+                        <em>
+                            Tomorrow
+                        </em>
+                    </div>
+
+
+                    <div class="jarvis-v3-task-row">
+                        <span class="task-circle"></span>
+
+                        <div>
+                            <strong>
+                                Plan content ideas
+                            </strong>
+
+                            <small>
+                                Business
+                            </small>
+                        </div>
+
+                        <em>
+                            Sep 10
+                        </em>
+                    </div>
+
+                </div>
+
+
+                <div class="jarvis-v3-right-card">
+
+                    <div class="jarvis-v3-card-header">
+
+                        <strong>
+                            Recent Activity
+                        </strong>
+
+                        <button type="button">
+                            View All →
+                        </button>
+
+                    </div>
+
+
+                    <div class="jarvis-v3-activity-row">
+                        <span>▣</span>
+                        <strong>Analyzed AAPL</strong>
+                        <small>2m ago</small>
+                    </div>
+
+                    <div class="jarvis-v3-activity-row">
+                        <span>✓</span>
+                        <strong>Created task</strong>
+                        <small>12m ago</small>
+                    </div>
+
+                    <div class="jarvis-v3-activity-row">
+                        <span>□</span>
+                        <strong>Opened project</strong>
+                        <small>28m ago</small>
+                    </div>
+
+                    <div class="jarvis-v3-activity-row">
+                        <span>⌕</span>
+                        <strong>Searched the web</strong>
+                        <small>41m ago</small>
+                    </div>
+
+                    <div class="jarvis-v3-activity-row">
+                        <span>▤</span>
+                        <strong>Updated notes</strong>
+                        <small>1h ago</small>
+                    </div>
+
+                </div>
+
+
+                <div class="jarvis-v3-right-card jarvis-v3-devices">
+
+                    <div class="jarvis-v3-card-header">
+
+                        <strong>
+                            Connected Devices
+                        </strong>
+
+                        <button type="button">
+                            Manage →
+                        </button>
+
+                    </div>
+
+                    <div class="jarvis-v3-device-row">
+                        <span>▱</span>
+                        <strong>
+                            {{ user.username }}'s MacBook
+                        </strong>
+                        <small>
+                            ● Online
+                        </small>
+                    </div>
+
+                    <div class="jarvis-v3-device-row">
+                        <span>▯</span>
+                        <strong>
+                            iPhone
+                        </strong>
+                        <small>
+                            ● Online
+                        </small>
+                    </div>
+
+                    <button
+                        class="jarvis-v3-connect-device"
+                        type="button"
+                    >
+                        ＋ Connect a Device
+                    </button>
+
+                </div>
+
+            </aside>
+
         </div>
 
     </div>

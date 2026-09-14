@@ -49,6 +49,7 @@ from openai import OpenAI
 from services.ai_router import routed_chat_stream
 from services.jarvis_planner import plan_jarvis_action, jarvis_result_context, tool_result_context
 from services.jarvis_confirmations import confirmation_intent, pending_actions
+from services.jarvis_tools import JARVIS_TOOLS
 from dotenv import load_dotenv
 
 from agents.stock_agent import analyze_stock, get_market_quote
@@ -2414,6 +2415,29 @@ def delete_conversation(conversation_id):
 
     return jsonify({
         "success": True
+    })
+
+
+@app.route("/api/jarvis/status", methods=["GET"])
+@login_required
+def jarvis_status():
+    """Installed capabilities only; no provider probes or user-data reads."""
+    return jsonify({
+        "ok": True,
+        "jarvis": {
+            "tools_available": bool(JARVIS_TOOLS),
+            "planner_available": True,
+            "confirmations_available": True,
+            "project_resolution_available": True,
+        },
+        "capabilities": {
+            "read_tools": sorted(tool.name for tool in JARVIS_TOOLS.values()
+                                 if tool.risk_level == "read"),
+            "write_tools": sorted(tool.name for tool in JARVIS_TOOLS.values()
+                                  if tool.risk_level == "write"),
+            "destructive_tools": [],
+        },
+        "confirmation_store": {"type": "memory", "production_ready": False},
     })
 
 

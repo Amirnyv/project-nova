@@ -2966,6 +2966,872 @@ async function sendMainMessage() {
 
 }
 
+// ========================================
+// JARVIS REAL COMMAND PIPELINE
+// ========================================
+
+async function sendJarvisCommand(message) {
+    if (!message) {
+        return;
+    }
+
+    if (jarvisSendButton?.disabled) {
+        return;
+    }
+
+    const originalButtonText =
+        jarvisSendButton?.textContent || "";
+
+    if (jarvisSendButton) {
+        jarvisSendButton.disabled = true;
+    }
+
+    setJarvisState?.("thinking");
+
+    let fullReply = "";
+
+    try {
+
+        const response =
+            await novaFetch(
+                "/chat",
+                {
+                    method:
+                        "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+                            message:
+                                message,
+
+                            agent_mode:
+                                "default",
+
+                            conversation_id:
+                                window
+                                    .jarvisConversationId
+                                || null
+                        })
+                }
+            );
+
+
+        if (!response.ok) {
+
+            let errorMessage =
+                "Nova is temporarily unavailable.";
+
+            try {
+
+                const data =
+                    await response.json();
+
+                errorMessage =
+                    data.message
+                    ||
+                    data.reply
+                    ||
+                    errorMessage;
+
+            } catch (error) {
+
+                console.error(
+                    "Jarvis error response:",
+                    error
+                );
+
+            }
+
+            setJarvisState?.("idle");
+
+            speakJarvisResponse(
+                errorMessage
+            );
+
+            return;
+        }
+
+
+        const contentType =
+            response.headers.get(
+                "content-type"
+            )
+            || "";
+
+
+        // ========================================
+        // NORMAL JSON RESPONSE
+        // ========================================
+
+        if (
+            contentType.includes(
+                "application/json"
+            )
+        ) {
+
+            const data =
+                await response.json();
+
+
+            if (
+                data.conversation_id
+            ) {
+
+                window.jarvisConversationId =
+                    data.conversation_id;
+
+            }
+
+
+            fullReply =
+                data.reply
+                ||
+                data.message
+                ||
+                "Nova could not respond.";
+
+
+            setJarvisState?.("complete");
+
+            speakJarvisResponse(
+                fullReply
+            );
+
+            console.log(
+                "Jarvis response:",
+                fullReply
+            );
+
+            return;
+        }
+
+
+        // ========================================
+        // STREAMING NDJSON RESPONSE
+        // ========================================
+
+        const reader =
+            response.body.getReader();
+
+        const decoder =
+            new TextDecoder();
+
+        let buffer = "";
+        let firstChunkReceived =
+            false;
+
+
+        while (true) {
+
+            const {
+                value,
+                done
+            } = await reader.read();
+
+
+            if (done) {
+                break;
+            }
+
+
+            buffer += decoder.decode(
+                value,
+                {
+                    stream: true
+                }
+            );
+
+
+            const lines =
+                buffer.split("\n");
+
+
+            buffer =
+                lines.pop()
+                || "";
+
+
+            for (const line of lines) {
+
+                if (!line.trim()) {
+                    continue;
+                }
+
+
+                let data;
+
+                try {
+
+                    data =
+                        JSON.parse(
+                            line
+                        );
+
+                } catch (error) {
+
+                    console.error(
+                        "Jarvis stream JSON error:",
+                        error,
+                        line
+                    );
+
+                    continue;
+                }
+
+
+                if (
+                    data.type
+                    === "delta"
+                ) {
+
+                    if (
+                        !firstChunkReceived
+                    ) {
+
+                        firstChunkReceived =
+                            true;
+
+                        setJarvisState?.(
+                            "executing"
+                        );
+
+                    }
+
+
+                    fullReply +=
+                        data.delta
+                        || "";
+
+                }
+
+
+                else if (
+                    data.type
+                    === "done"
+                ) {
+
+                    if (
+                        data.conversation_id
+                    ) {
+
+                        window.jarvisConversationId =
+                            data.conversation_id;
+
+                    }
+
+                }
+
+            }
+
+        }
+
+
+        fullReply =
+            fullReply.trim();
+
+
+        if (!fullReply) {
+
+            fullReply =
+                "Nova completed the request.";
+
+        }
+
+
+        setJarvisState?.(
+            "complete"
+        );
+
+
+        console.log(
+            "Jarvis response:",
+            fullReply
+        );
+
+
+        speakJarvisResponse(
+            fullReply
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Jarvis command failed:",
+            error
+        );
+
+        setJarvisState?.(
+            "idle"
+        );
+
+        speakJarvisResponse(
+            "I ran into a problem processing that command."
+        );
+
+
+    } finally {
+
+        if (jarvisSendButton) {
+
+            jarvisSendButton.disabled =
+                false;
+
+            jarvisSendButton.textContent =
+                originalButtonText;
+
+        }
+
+    }
+}
+
+
+// ========================================
+// JARVIS TEXT TO SPEECH
+// ========================================
+
+function speakJarvisResponse(text) {
+
+    if (
+        !text ||
+        !("speechSynthesis" in window)
+    ) {
+        return;
+    }
+
+    let speechText = text
+        .replace(/```[\s\S]*?```/g, "")
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+        .replace(/[*_`#>]/g, "")
+        .replace(/\|/g, " ")
+        .replace(/-{3,}/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+
+    if (!speechText) {
+        return;
+    }
+
+
+    window.speechSynthesis.cancel();
+
+
+    const utterance =
+        new SpeechSynthesisUtterance(
+            speechText
+        );
+
+
+    const voices =
+        window
+            .speechSynthesis
+            .getVoices();
+
+
+    const preferredVoice =
+        voices.find(
+            voice =>
+                voice.name.includes("Samantha")
+        )
+        ||
+        voices.find(
+            voice =>
+                voice.name.includes("Ava")
+        )
+        ||
+        voices.find(
+            voice =>
+                voice.name.includes("Alex")
+        )
+        ||
+        voices.find(
+            voice =>
+                voice.lang
+                    ?.toLowerCase()
+                    .startsWith("en-us")
+        );
+
+
+    if (preferredVoice) {
+        utterance.voice =
+            preferredVoice;
+    }
+
+
+    utterance.rate = 0.95;
+    utterance.pitch = 0.92;
+    utterance.volume = 1;
+
+
+    utterance.onstart = () => {
+
+        console.log(
+            "Nova is speaking..."
+        );
+
+        setJarvisState("executing");
+    };
+
+
+    utterance.onend = () => {
+
+        setJarvisState("listening");
+    };
+
+
+    window
+        .speechSynthesis
+        .speak(
+            utterance
+        );
+
+}
+
+// ========================================
+// JARVIS SYSTEM STATUS
+// ========================================
+
+async function loadJarvisSystemStatus() {
+
+    const master =
+        document.getElementById(
+            "jarvis-status-master"
+        );
+
+    const tools =
+        document.getElementById(
+            "jarvis-status-tools"
+        );
+
+    const planner =
+        document.getElementById(
+            "jarvis-status-planner"
+        );
+
+    const confirmations =
+        document.getElementById(
+            "jarvis-status-confirmations"
+        );
+
+    const projects =
+        document.getElementById(
+            "jarvis-status-projects"
+        );
+
+    const toolCount =
+        document.getElementById(
+            "jarvis-status-tool-count"
+        );
+
+
+    if (!master) {
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await novaFetch(
+                "/api/jarvis/status",
+                {
+                    method: "GET"
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Jarvis status returned ${response.status}`
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        const jarvis =
+            data.jarvis || {};
+
+        const capabilities =
+            data.capabilities || {};
+
+
+        master.textContent =
+            data.ok
+                ? "Jarvis Ready"
+                : "Jarvis Limited";
+
+
+        if (tools) {
+
+            tools.textContent =
+                jarvis.tools_available
+                    ? "• Ready"
+                    : "• Unavailable";
+
+        }
+
+
+        if (planner) {
+
+            planner.textContent =
+                jarvis.planner_available
+                    ? "• Ready"
+                    : "• Unavailable";
+
+        }
+
+
+        if (confirmations) {
+
+            confirmations.textContent =
+                jarvis.confirmations_available
+                    ? "• Ready"
+                    : "• Unavailable";
+
+        }
+
+
+        if (projects) {
+
+            projects.textContent =
+                jarvis.project_resolution_available
+                    ? "• Ready"
+                    : "• Unavailable";
+
+        }
+
+
+        if (toolCount) {
+
+            const readTools =
+                Array.isArray(
+                    capabilities.read_tools
+                )
+                    ? capabilities.read_tools.length
+                    : 0;
+
+
+            const writeTools =
+                Array.isArray(
+                    capabilities.write_tools
+                )
+                    ? capabilities.write_tools.length
+                    : 0;
+
+
+            const totalTools =
+                readTools + writeTools;
+
+
+            toolCount.textContent =
+                `• ${totalTools}`;
+
+        }
+
+
+        console.log(
+            "Jarvis system status:",
+            data
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Jarvis status failed:",
+            error
+        );
+
+
+        master.textContent =
+            "Jarvis Status Unavailable";
+
+
+        [
+            tools,
+            planner,
+            confirmations,
+            projects,
+            toolCount
+
+        ].forEach(
+            element => {
+
+                if (element) {
+
+                    element.textContent =
+                        "• Unavailable";
+
+                }
+
+            }
+        );
+
+    }
+
+}
+
+if (
+    document.readyState === "loading"
+) {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        loadJarvisSystemStatus
+    );
+
+} else {
+
+    loadJarvisSystemStatus();
+
+}
+
+// ========================================
+// JARVIS REAL PROJECTS
+// ========================================
+
+async function loadJarvisProjects() {
+
+    const container =
+        document.getElementById(
+            "jarvis-projects-list"
+        );
+
+
+    if (!container) {
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await novaFetch(
+                "/api/projects",
+                {
+                    method: "GET"
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Projects returned ${response.status}`
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        const projects =
+            Array.isArray(data.projects)
+                ? data.projects
+                : [];
+
+
+        if (projects.length === 0) {
+
+            container.innerHTML = `
+                <div class="jarvis-v3-project-row">
+                    <strong>No projects yet</strong>
+                    <small>0 tasks</small>
+                </div>
+            `;
+
+            return;
+
+        }
+
+
+        const visibleProjects =
+            projects.slice(0, 4);
+
+
+        const projectsWithTasks =
+            await Promise.all(
+
+                visibleProjects.map(
+                    async (project) => {
+
+                        try {
+
+                            const taskResponse =
+                                await novaFetch(
+                                    `/api/projects/${project.id}/tasks`,
+                                    {
+                                        method: "GET"
+                                    }
+                                );
+
+
+                            if (!taskResponse.ok) {
+
+                                return {
+                                    project,
+                                    taskCount: null
+                                };
+
+                            }
+
+
+                            const taskData =
+                                await taskResponse.json();
+
+
+                            const tasks =
+                                Array.isArray(taskData.tasks)
+                                    ? taskData.tasks
+                                    : [];
+
+
+                            return {
+                                project,
+                                taskCount: tasks.length
+                            };
+
+
+                        } catch (error) {
+
+                            console.error(
+                                `Jarvis task count failed for project ${project.id}:`,
+                                error
+                            );
+
+
+                            return {
+                                project,
+                                taskCount: null
+                            };
+
+                        }
+
+                    }
+                )
+
+            );
+
+
+        const dotColors = [
+            "green",
+            "purple",
+            "orange",
+            "blue"
+        ];
+
+
+        container.innerHTML =
+            projectsWithTasks
+                .map(
+                    (
+                        item,
+                        index
+                    ) => {
+
+                        const project =
+                            item.project;
+
+                        const taskText =
+                            item.taskCount === null
+                                ? "Tasks unavailable"
+                                : `${item.taskCount} ${
+                                    item.taskCount === 1
+                                        ? "task"
+                                        : "tasks"
+                                }`;
+
+
+                        return `
+                            <div
+                                class="jarvis-v3-project-row"
+                                data-project-id="${project.id}"
+                            >
+
+                                <span
+                                    class="project-dot ${dotColors[index % dotColors.length]}"
+                                ></span>
+
+                                <strong>
+                                    ${escapeJarvisProjectText(project.name)}
+                                </strong>
+
+                                <small>
+                                    ${taskText}
+                                </small>
+
+                            </div>
+                        `;
+
+                    }
+                )
+                .join("");
+
+
+        console.log(
+            "Jarvis projects loaded:",
+            projectsWithTasks
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Jarvis projects failed:",
+            error
+        );
+
+
+        container.innerHTML = `
+            <div class="jarvis-v3-project-row">
+                <strong>Projects unavailable</strong>
+                <small>Try again later</small>
+            </div>
+        `;
+
+    }
+
+}
+
+
+function escapeJarvisProjectText(value) {
+
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+if (
+    document.readyState === "loading"
+) {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        loadJarvisProjects
+    );
+
+} else {
+
+    loadJarvisProjects();
+
+}
 
 // ========================================
 // MAIN CHAT BUTTONS
@@ -8550,3 +9416,309 @@ marketRangeButtons.forEach(
         );
     }
 );
+
+// =========================================
+// JARVIS FRONTEND
+// =========================================
+
+const jarvisPage = document.getElementById("jarvis-page");
+const jarvisCommandInput = document.getElementById("jarvis-command-input");
+const jarvisSendButton = document.getElementById("jarvis-send-button");
+const jarvisMicButton = document.getElementById("jarvis-mic-button");
+const jarvisOrb = document.getElementById("jarvis-orb");
+
+const jarvisStates = document.querySelectorAll(".jarvis-state");
+const jarvisSuggestionButtons = document.querySelectorAll(
+    ".jarvis-suggestions button"
+);
+
+let jarvisCurrentState = "listening";
+
+function setJarvisState(state) {
+    jarvisCurrentState = state;
+
+    jarvisStates.forEach((stateElement) => {
+        stateElement.classList.toggle(
+            "active",
+            stateElement.dataset.state === state
+        );
+    });
+
+    if (!jarvisOrb) {
+        return;
+    }
+
+    jarvisOrb.dataset.state = state;
+}
+
+if (jarvisSuggestionButtons.length > 0) {
+    jarvisSuggestionButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            if (!jarvisCommandInput) {
+                return;
+            }
+
+            jarvisCommandInput.value = button.textContent.trim();
+            jarvisCommandInput.focus();
+        });
+    });
+}
+
+if (jarvisSendButton && jarvisCommandInput) {
+
+    jarvisSendButton.addEventListener(
+        "click",
+        () => {
+
+            const message =
+                jarvisCommandInput.value.trim();
+
+            if (!message) {
+                return;
+            }
+
+            jarvisCommandInput.value = "";
+
+            sendJarvisCommand(message);
+        }
+    );
+
+
+    jarvisCommandInput.addEventListener(
+        "keydown",
+        (event) => {
+
+            if (event.key !== "Enter") {
+                return;
+            }
+
+            event.preventDefault();
+
+            const message =
+                jarvisCommandInput.value.trim();
+
+            if (!message) {
+                return;
+            }
+
+            jarvisCommandInput.value = "";
+
+            sendJarvisCommand(message);
+        }
+    );
+
+}
+
+// =========================================
+// JARVIS VOICE - STEP 1
+// CLICK TO TALK
+// =========================================
+
+let jarvisSpeechRecognition = null;
+let jarvisIsListening = false;
+let jarvisLastTranscript = "";
+
+const JarvisSpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+if (JarvisSpeechRecognition) {
+
+    jarvisSpeechRecognition =
+        new JarvisSpeechRecognition();
+
+    jarvisSpeechRecognition.continuous = false;
+    jarvisSpeechRecognition.interimResults = true;
+    jarvisSpeechRecognition.lang = "en-US";
+
+
+    jarvisSpeechRecognition.addEventListener(
+        "start",
+        () => {
+
+            jarvisIsListening = true;
+
+            if (jarvisMicButton) {
+                jarvisMicButton.classList.add(
+                    "active"
+                );
+
+                jarvisMicButton.textContent = "●";
+            }
+
+            if (jarvisOrb) {
+                jarvisOrb.dataset.state =
+                    "listening";
+            }
+
+            console.log(
+                "Jarvis is listening..."
+            );
+
+        }
+    );
+
+
+    jarvisSpeechRecognition.addEventListener(
+        "result",
+        event => {
+
+            let transcript = "";
+
+            for (
+                let i = event.resultIndex;
+                i < event.results.length;
+                i++
+            ) {
+
+                transcript +=
+                    event.results[i][0]
+                        .transcript;
+
+            }
+
+            transcript =
+    transcript.trim();
+
+if (transcript) {
+
+    jarvisLastTranscript =
+        transcript;
+
+}
+
+if (
+    jarvisCommandInput &&
+    transcript
+) {
+
+    jarvisCommandInput.value =
+        transcript;
+
+}
+
+        }
+    );
+
+
+    jarvisSpeechRecognition.addEventListener(
+    "end",
+    () => {
+
+        jarvisIsListening = false;
+
+        if (jarvisMicButton) {
+
+            jarvisMicButton.classList.remove(
+                "active"
+            );
+
+            jarvisMicButton.textContent = "♩";
+        }
+
+
+        console.log(
+            "Jarvis stopped listening."
+        );
+
+
+        const command =
+            (
+                jarvisLastTranscript
+                ||
+                jarvisCommandInput?.value
+                ||
+                ""
+            ).trim();
+
+
+        console.log(
+            "Jarvis captured command:",
+            command
+        );
+
+
+        jarvisLastTranscript = "";
+
+
+        if (!command) {
+
+            console.log(
+                "Jarvis did not capture any speech."
+            );
+
+            return;
+        }
+
+
+        if (jarvisCommandInput) {
+
+            jarvisCommandInput.value = "";
+
+        }
+
+
+        console.log(
+            "Jarvis sending command:",
+            command
+        );
+
+
+        sendJarvisCommand(
+            command
+        );
+
+    }
+);
+
+
+    if (jarvisMicButton) {
+
+        jarvisMicButton.addEventListener(
+            "click",
+            () => {
+
+                if (jarvisIsListening) {
+
+                    jarvisSpeechRecognition.stop();
+
+                    return;
+
+                }
+
+                try {
+
+                    jarvisSpeechRecognition.start();
+
+                } catch (error) {
+
+                    console.error(
+                        "Could not start Jarvis voice:",
+                        error
+                    );
+
+                }
+
+            }
+        );
+
+    }
+
+} else {
+
+    if (jarvisMicButton) {
+
+        jarvisMicButton.addEventListener(
+            "click",
+            () => {
+
+                alert(
+                    "Voice recognition is not supported by this browser."
+                );
+
+            }
+        );
+
+    }
+
+}
