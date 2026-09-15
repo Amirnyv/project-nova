@@ -2998,9 +2998,10 @@ Pro Workspace
                 <section class="jarvis-v3-actions">
 
                     <button
-                        class="jarvis-v3-action"
-                        type="button"
-                    >
+    class="jarvis-v3-action"
+    type="button"
+    data-jarvis-command="Help me create a new project. Ask me for the project name and description."
+>
                         <span class="jarvis-v3-action-icon">
                             □
                         </span>
@@ -3016,9 +3017,10 @@ Pro Workspace
 
 
                     <button
-                        class="jarvis-v3-action"
-                        type="button"
-                    >
+    class="jarvis-v3-action"
+    type="button"
+    data-jarvis-command="Help me create a new task. Ask me which project and what the task should be called."
+>
                         <span class="jarvis-v3-action-icon">
                             ✓
                         </span>
@@ -3034,9 +3036,10 @@ Pro Workspace
 
 
                     <button
-                        class="jarvis-v3-action"
-                        type="button"
-                    >
+    class="jarvis-v3-action"
+    type="button"
+    data-jarvis-command="Ask me which market symbol I want you to analyze."
+>
                         <span class="jarvis-v3-action-icon">
                             ▥
                         </span>
@@ -3052,9 +3055,10 @@ Pro Workspace
 
 
                     <button
-                        class="jarvis-v3-action"
-                        type="button"
-                    >
+    class="jarvis-v3-action"
+    type="button"
+    data-jarvis-command="Ask me what I want you to search the web for."
+>
                         <span class="jarvis-v3-action-icon">
                             ◎
                         </span>
@@ -3070,9 +3074,10 @@ Pro Workspace
 
 
                     <button
-                        class="jarvis-v3-action"
-                        type="button"
-                    >
+    class="jarvis-v3-action"
+    type="button"
+    data-jarvis-command="Ask me which file I want to work with."
+>
                         <span class="jarvis-v3-action-icon">
                             ▤
                         </span>
@@ -3088,9 +3093,10 @@ Pro Workspace
 
 
                     <button
-                        class="jarvis-v3-action"
-                        type="button"
-                    >
+    class="jarvis-v3-action"
+    type="button"
+    data-jarvis-command="Tell me which Jarvis tools and capabilities are currently available to me."
+>
                         <span class="jarvis-v3-action-icon">
                             ▦
                         </span>
@@ -3119,28 +3125,66 @@ Pro Workspace
 
                     <div class="jarvis-v3-suggestions">
 
-                        <button type="button">
-                            Analyze AAPL
-                        </button>
+    <button
+        type="button"
+        data-jarvis-command="Analyze AAPL"
+    >
+        Analyze AAPL
+    </button>
 
-                        <button type="button">
-                            Show my projects
-                        </button>
+    <button
+        type="button"
+        data-jarvis-command="Show me my projects"
+    >
+        Show my projects
+    </button>
 
-                        <button type="button">
-                            Add a new task
-                        </button>
+    <button
+        type="button"
+        data-jarvis-command="Help me create a new task. Ask me which project and what the task should be called."
+    >
+        Add a new task
+    </button>
 
-                        <button type="button">
-                            Summarize this file
-                        </button>
+    <button
+        type="button"
+        data-jarvis-command="Ask me which file I want you to summarize."
+    >
+        Summarize this file
+    </button>
 
-                        <button type="button">
-                            Latest AI news
-                        </button>
+    <button
+        type="button"
+        data-jarvis-command="Search the web for the latest AI news."
+    >
+        Latest AI news
+    </button>
 
-                    </div>
+</div>
 
+<div
+    id="jarvis-response-panel"
+    class="jarvis-v3-response"
+    hidden
+>
+    <div class="jarvis-v3-response-header">
+
+        <span class="jarvis-v3-response-dot"></span>
+
+        <strong>NOVA</strong>
+
+        <small id="jarvis-response-status">
+            Ready
+        </small>
+
+    </div>
+
+    <div
+        id="jarvis-response-text"
+        class="jarvis-v3-response-text"
+    ></div>
+
+</div>
 
                     <div class="jarvis-v3-input-row">
 

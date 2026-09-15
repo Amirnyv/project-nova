@@ -2988,6 +2988,37 @@ async function sendJarvisCommand(message) {
 
     setJarvisState?.("thinking");
 
+const jarvisResponsePanel =
+    document.getElementById(
+        "jarvis-response-panel"
+    );
+
+const jarvisResponseText =
+    document.getElementById(
+        "jarvis-response-text"
+    );
+
+const jarvisResponseStatus =
+    document.getElementById(
+        "jarvis-response-status"
+    );
+
+
+if (jarvisResponsePanel) {
+    jarvisResponsePanel.hidden = false;
+}
+
+
+if (jarvisResponseText) {
+    jarvisResponseText.textContent = "";
+}
+
+
+if (jarvisResponseStatus) {
+    jarvisResponseStatus.textContent =
+        "Thinking...";
+}
+
     let fullReply = "";
 
     try {
@@ -3098,6 +3129,20 @@ async function sendJarvisCommand(message) {
 
             setJarvisState?.("complete");
 
+if (jarvisResponsePanel) {
+    jarvisResponsePanel.hidden = false;
+}
+
+if (jarvisResponseText) {
+    jarvisResponseText.textContent =
+        fullReply;
+}
+
+if (jarvisResponseStatus) {
+    jarvisResponseStatus.textContent =
+        "Complete";
+}
+
             speakJarvisResponse(
                 fullReply
             );
@@ -3207,6 +3252,20 @@ async function sendJarvisCommand(message) {
                         data.delta
                         || "";
 
+                        if (jarvisResponseText) {
+
+    jarvisResponseText.textContent =
+        fullReply;
+
+}
+
+if (jarvisResponseStatus) {
+
+    jarvisResponseStatus.textContent =
+        "Responding...";
+
+}
+
                 }
 
 
@@ -3244,38 +3303,76 @@ async function sendJarvisCommand(message) {
 
 
         setJarvisState?.(
-            "complete"
-        );
+    "complete"
+);
 
 
-        console.log(
-            "Jarvis response:",
-            fullReply
-        );
+if (jarvisResponsePanel) {
+    jarvisResponsePanel.hidden = false;
+}
+
+if (jarvisResponseText) {
+    jarvisResponseText.textContent =
+        fullReply;
+}
+
+if (jarvisResponseStatus) {
+    jarvisResponseStatus.textContent =
+        "Complete";
+}
 
 
-        speakJarvisResponse(
-            fullReply
-        );
+console.log(
+    "Jarvis response:",
+    fullReply
+);
+
+
+speakJarvisResponse(
+    fullReply
+);
 
 
     } catch (error) {
 
-        console.error(
-            "Jarvis command failed:",
-            error
-        );
-
-        setJarvisState?.(
-            "idle"
-        );
-
-        speakJarvisResponse(
-            "I ran into a problem processing that command."
-        );
+    console.error(
+        "Jarvis command failed:",
+        error
+    );
 
 
-    } finally {
+    const errorMessage =
+        "I ran into a problem processing that command.";
+
+
+    setJarvisState?.(
+        "idle"
+    );
+
+
+    if (jarvisResponsePanel) {
+        jarvisResponsePanel.hidden = false;
+    }
+
+    if (jarvisResponseText) {
+        jarvisResponseText.textContent =
+            errorMessage;
+    }
+
+    if (jarvisResponseStatus) {
+        jarvisResponseStatus.textContent =
+            "Error";
+    }
+
+
+    speakJarvisResponse(
+        errorMessage
+    );
+
+
+
+
+}finally {
 
         if (jarvisSendButton) {
 
@@ -3290,6 +3387,48 @@ async function sendJarvisCommand(message) {
     }
 }
 
+// ========================================
+// JARVIS QUICK ACTIONS + SUGGESTIONS
+// ========================================
+
+document.addEventListener(
+    "click",
+    (event) => {
+
+        const button =
+            event.target.closest(
+                "[data-jarvis-command]"
+            );
+
+
+        if (!button) {
+            return;
+        }
+
+
+        const command =
+            button.dataset
+                .jarvisCommand
+                ?.trim();
+
+
+        if (!command) {
+            return;
+        }
+
+
+        console.log(
+            "Jarvis quick command:",
+            command
+        );
+
+
+        sendJarvisCommand(
+            command
+        );
+
+    }
+);
 
 // ========================================
 // JARVIS TEXT TO SPEECH
@@ -3381,8 +3520,53 @@ function speakJarvisResponse(text) {
 
     utterance.onend = () => {
 
-        setJarvisState("listening");
-    };
+    console.log(
+        "Nova finished speaking."
+    );
+
+
+    if (!jarvisVoiceSessionActive) {
+
+        setJarvisState("complete");
+
+        return;
+
+    }
+
+
+    window.setTimeout(
+        () => {
+
+            if (
+                !jarvisVoiceSessionActive ||
+                jarvisIsListening
+            ) {
+                return;
+            }
+
+
+            try {
+
+                console.log(
+                    "Jarvis listening again..."
+                );
+
+                jarvisSpeechRecognition?.start();
+
+            } catch (error) {
+
+                console.error(
+                    "Could not resume Jarvis listening:",
+                    error
+                );
+
+            }
+
+        },
+        500
+    );
+
+};
 
 
     window
@@ -4295,6 +4479,21 @@ async function sendWorkspaceMessage() {
                     fullReply +=
                         data.delta
                         || "";
+
+                        if (jarvisResponseText) {
+
+    jarvisResponseText.textContent =
+        fullReply;
+
+}
+
+
+if (jarvisResponseStatus) {
+
+    jarvisResponseStatus.textContent =
+        "Responding...";
+
+}
 
 
                     if (liveText) {
@@ -9517,6 +9716,7 @@ if (jarvisSendButton && jarvisCommandInput) {
 let jarvisSpeechRecognition = null;
 let jarvisIsListening = false;
 let jarvisLastTranscript = "";
+let jarvisVoiceSessionActive = false;
 
 const JarvisSpeechRecognition =
     window.SpeechRecognition ||
@@ -9674,35 +9874,54 @@ if (
 
     if (jarvisMicButton) {
 
-        jarvisMicButton.addEventListener(
-            "click",
-            () => {
+    jarvisMicButton.addEventListener(
+        "click",
+        () => {
+
+            if (jarvisVoiceSessionActive) {
+
+                jarvisVoiceSessionActive = false;
 
                 if (jarvisIsListening) {
-
                     jarvisSpeechRecognition.stop();
-
-                    return;
-
                 }
 
-                try {
+                window.speechSynthesis?.cancel();
 
-                    jarvisSpeechRecognition.start();
+                setJarvisState("complete");
 
-                } catch (error) {
+                console.log(
+                    "Jarvis voice session ended."
+                );
 
-                    console.error(
-                        "Could not start Jarvis voice:",
-                        error
-                    );
+                return;
+            }
 
-                }
+
+            jarvisVoiceSessionActive = true;
+
+            console.log(
+                "Jarvis voice session started."
+            );
+
+
+            try {
+
+                jarvisSpeechRecognition.start();
+
+            } catch (error) {
+
+                console.error(
+                    "Could not start Jarvis voice:",
+                    error
+                );
 
             }
-        );
 
-    }
+        }
+    );
+
+}
 
 } else {
 
