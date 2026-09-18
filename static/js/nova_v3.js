@@ -3990,6 +3990,215 @@ async function loadJarvisProjects() {
 
 }
 
+// ========================================
+// JARVIS REAL ACTIVE TASKS
+// ========================================
+
+async function loadJarvisActiveTasks() {
+
+    const container =
+        document.getElementById(
+            "jarvis-active-tasks"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    try {
+
+        const projectsResponse =
+            await novaFetch(
+                "/api/projects",
+                {
+                    method: "GET"
+                }
+            );
+
+        if (!projectsResponse.ok) {
+            throw new Error(
+                `Projects returned ${projectsResponse.status}`
+            );
+        }
+
+        const projectsData =
+            await projectsResponse.json();
+
+        const projects =
+            Array.isArray(projectsData.projects)
+                ? projectsData.projects
+                : [];
+
+        if (projects.length === 0) {
+
+            container.innerHTML = `
+                <div class="jarvis-v3-task-row">
+                    <span class="task-circle"></span>
+
+                    <div>
+                        <strong>No active tasks</strong>
+                        <small>No projects yet</small>
+                    </div>
+
+                    <em>--</em>
+                </div>
+            `;
+
+            return;
+        }
+
+        const taskResults =
+            await Promise.all(
+
+                projects.map(
+                    async (project) => {
+
+                        try {
+
+                            const response =
+                                await novaFetch(
+                                    `/api/projects/${project.id}/tasks`,
+                                    {
+                                        method: "GET"
+                                    }
+                                );
+
+                            if (!response.ok) {
+                                return [];
+                            }
+
+                            const data =
+                                await response.json();
+
+                            const tasks =
+                                Array.isArray(data.tasks)
+                                    ? data.tasks
+                                    : [];
+
+                            return tasks.map(
+                                (task) => ({
+                                    ...task,
+                                    projectId: project.id,
+                                    projectName: project.name
+                                })
+                            );
+
+                        } catch (error) {
+
+                            console.error(
+                                `Jarvis active tasks failed for project ${project.id}:`,
+                                error
+                            );
+
+                            return [];
+                        }
+                    }
+                )
+            );
+
+        const allTasks =
+            taskResults.flat();
+
+        console.log(
+            "Jarvis task data:",
+            allTasks
+        );
+
+        const activeTasks =
+            allTasks.filter(
+                (task) =>
+                    !task.completed &&
+                    !task.is_completed
+            );
+
+        if (activeTasks.length === 0) {
+
+            container.innerHTML = `
+                <div class="jarvis-v3-task-row">
+                    <span class="task-circle"></span>
+
+                    <div>
+                        <strong>No active tasks</strong>
+                        <small>You're all caught up</small>
+                    </div>
+
+                    <em>✓</em>
+                </div>
+            `;
+
+            return;
+        }
+
+        const visibleTasks =
+            activeTasks.slice(0, 4);
+
+        container.innerHTML =
+            visibleTasks
+                .map(
+                    (task) => {
+
+                        const taskName =
+                            task.title ||
+                            task.name ||
+                            task.task ||
+                            "Untitled task";
+
+                        return `
+                            <div
+                                class="jarvis-v3-task-row"
+                                data-task-id="${task.id}"
+                                data-project-id="${task.projectId}"
+                            >
+
+                                <span class="task-circle"></span>
+
+                                <div>
+                                    <strong>
+                                        ${escapeJarvisProjectText(taskName)}
+                                    </strong>
+
+                                    <small>
+                                        ${escapeJarvisProjectText(task.projectName)}
+                                    </small>
+                                </div>
+
+                                <em>
+                                    Active
+                                </em>
+
+                            </div>
+                        `;
+                    }
+                )
+                .join("");
+
+        console.log(
+            "Jarvis active tasks loaded:",
+            activeTasks
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Jarvis active tasks failed:",
+            error
+        );
+
+        container.innerHTML = `
+            <div class="jarvis-v3-task-row">
+                <span class="task-circle"></span>
+
+                <div>
+                    <strong>Tasks unavailable</strong>
+                    <small>Try again later</small>
+                </div>
+
+                <em>--</em>
+            </div>
+        `;
+    }
+}
+
 
 function escapeJarvisProjectText(value) {
 
@@ -4008,13 +4217,16 @@ if (
 
     document.addEventListener(
         "DOMContentLoaded",
-        loadJarvisProjects
+        () => {
+            loadJarvisProjects();
+            loadJarvisActiveTasks();
+        }
     );
 
 } else {
 
     loadJarvisProjects();
-
+    loadJarvisActiveTasks();
 }
 
 // ========================================
