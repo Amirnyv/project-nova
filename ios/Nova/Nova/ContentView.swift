@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 struct ContentView: View {
     @State private var showSignIn = false
     @State private var isLoggedIn = false
+    @State private var showAgents = false
     @State private var showMarkets = false
     @State private var showJarvis = false
     @StateObject private var jarvisModel = JarvisViewModel()
@@ -447,7 +448,7 @@ struct ContentView: View {
                             }
 
                             Button {
-                                print("AI Agents tapped")
+                                showAgents = true
                             } label: {
 
                                 VStack(
@@ -518,6 +519,9 @@ struct ContentView: View {
                     .padding(.top, 10)
                     .padding(.bottom, 30)
                 }
+            }
+            .sheet(isPresented: $showAgents) {
+                AgentsView(csrfToken: csrfToken)
             }
             .sheet(isPresented: $showMarkets) {
                 MarketsView(csrfToken: csrfToken)

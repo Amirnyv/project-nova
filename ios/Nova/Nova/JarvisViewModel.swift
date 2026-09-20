@@ -25,6 +25,9 @@ final class JarvisViewModel: ObservableObject {
     @Published var sending = false
     private(set) var conversationID: Int?
     private let api = JarvisAPIService()
+    private let agentMode: String
+
+    init(agentMode: String = "default") { self.agentMode = agentMode }
     private var requestTask: Task<Void, Never>?
 
     func refresh() async {
@@ -64,7 +67,7 @@ final class JarvisViewModel: ObservableObject {
         requestTask = Task {
             defer { sending = false; requestTask = nil }
             do {
-                try await api.chat(message: text, conversationID: conversationID, csrfToken: csrfToken) { event in
+                try await api.chat(message: text, conversationID: conversationID, csrfToken: csrfToken, agentMode: agentMode) { event in
                     if let id = event.conversation_id { self.conversationID = id }
                     if event.type == "delta" {
                         // The backend exposes response deltas, not separate tool progress events.

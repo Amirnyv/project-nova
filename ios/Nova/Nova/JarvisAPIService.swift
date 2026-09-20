@@ -43,7 +43,7 @@ struct JarvisAPIService {
         return try JSONDecoder().decode(T.self, from: data)
     }
 
-    func chat(message: String, conversationID: Int?, csrfToken: String,
+    func chat(message: String, conversationID: Int?, csrfToken: String, agentMode: String = "default",
               receive: (JarvisEvent) -> Void) async throws {
         guard !csrfToken.isEmpty else {
             throw JarvisFailure(message: "Your session could not be verified. Please sign in again.")
@@ -53,7 +53,7 @@ struct JarvisAPIService {
         request.timeoutInterval = 120
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue(csrfToken, forHTTPHeaderField: "X-CSRF-Token")
-        var body: [String: Any] = ["message": message, "agent_mode": "default"]
+        var body: [String: Any] = ["message": message, "agent_mode": agentMode]
         if let conversationID { body["conversation_id"] = conversationID }
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
         let (bytes, response) = try await session.bytes(for: request)
