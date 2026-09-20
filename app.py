@@ -46,6 +46,10 @@ from flask_login import (
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from openai import OpenAI
+from services.ai_router import routed_chat_stream
+from services.jarvis_planner import plan_jarvis_action, jarvis_result_context, tool_result_context
+from services.jarvis_confirmations import confirmation_intent, pending_actions
+from services.jarvis_tools import JARVIS_TOOLS
 from dotenv import load_dotenv
 
 from agents.stock_agent import analyze_stock, get_market_quote
@@ -2414,6 +2418,29 @@ def delete_conversation(conversation_id):
     })
 
 
+@app.route("/api/jarvis/status", methods=["GET"])
+@login_required
+def jarvis_status():
+    """Installed capabilities only; no provider probes or user-data reads."""
+    return jsonify({
+        "ok": True,
+        "jarvis": {
+            "tools_available": bool(JARVIS_TOOLS),
+            "planner_available": True,
+            "confirmations_available": True,
+            "project_resolution_available": True,
+        },
+        "capabilities": {
+            "read_tools": sorted(tool.name for tool in JARVIS_TOOLS.values()
+                                 if tool.risk_level == "read"),
+            "write_tools": sorted(tool.name for tool in JARVIS_TOOLS.values()
+                                  if tool.risk_level == "write"),
+            "destructive_tools": [],
+        },
+        "confirmation_store": {"type": "memory", "production_ready": False},
+    })
+
+
 @app.route("/api/ai/usage", methods=["GET"])
 @login_required
 def ai_usage():
@@ -2873,6 +2900,11 @@ def chat():
     })
 
     lower_message = user_message.lower()
+    action_intent = confirmation_intent(user_message)
+    if action_intent is None:
+        # A different request invalidates an earlier proposal, avoiding an
+        # ambiguous later yes in this conversation (including market shortcuts).
+        pending_actions.discard(user_id, conversation_id)
 
     # TRADE HISTORY
     if "trade history" in lower_message:
@@ -3214,6 +3246,40 @@ def chat():
 
 
         # NORMAL OPENAI CHAT
+    web_search_phrases = (
+        "latest",
+        "today",
+        "right now",
+        "currently",
+        "current ",
+        "recent",
+        "news",
+        "breaking",
+        "weather",
+        "live score",
+        "stock price",
+        "market price",
+        "search the web",
+        "search online",
+        "look it up",
+        "find online",
+        "as of ",
+        "http://",
+        "https://",
+        "www.",
+    )
+
+    needs_web_search = (
+        (
+            custom_agent is not None
+            and custom_agent["web_search"]
+        )
+        or any(
+            phrase in lower_message
+            for phrase in web_search_phrases
+        )
+    )
+
     nova_model = "gpt-5-mini"
 
     def generate_nova_response():
@@ -3225,6 +3291,228 @@ def chat():
         usage_recorded = False
         message_saved = False
         reply = ""
+
+        if not needs_web_search or action_intent is not None:
+            router_stream = None
+            router_reply_parts = []
+            router_provider = None
+            router_model = None
+            router_usage = {
+                "input_tokens": 0,
+                "output_tokens": 0,
+                "total_tokens": 0,
+            }
+            router_saved = False
+            router_usage_recorded = False
+
+            def consume_router_event(event):
+                nonlocal router_provider
+                nonlocal router_model
+                nonlocal router_usage
+
+                event_type = event.get("type")
+
+                if event_type == "start":
+                    router_provider = event.get("provider")
+                    router_model = event.get("model")
+
+                elif event_type == "delta":
+                    delta = event.get("delta") or ""
+
+                    if delta:
+                        router_reply_parts.append(delta)
+
+                elif event_type == "done":
+                    router_provider = (
+                        event.get("provider")
+                        or router_provider
+                    )
+
+                    router_model = (
+                        event.get("model")
+                        or router_model
+                    )
+
+                    router_usage = (
+                        event.get("usage")
+                        or router_usage
+                    )
+
+            def persist_router_generation():
+                nonlocal router_saved
+                nonlocal router_usage_recorded
+
+                if router_stream is None:
+                    return
+
+                content = "".join(
+                    router_reply_parts
+                ).strip()
+
+                model_label = (
+                    f"{router_provider}:{router_model}"
+                    if router_provider and router_model
+                    else "nova-router"
+                )
+
+                if not router_usage_recorded:
+                    record_ai_usage(
+                        user_id,
+                        conversation_id,
+                        model_label,
+                        router_usage.get(
+                            "input_tokens",
+                            0
+                        ),
+                        router_usage.get(
+                            "output_tokens",
+                            0
+                        ),
+                    )
+
+                    router_usage_recorded = True
+
+                if content and not router_saved:
+                    try:
+                        save_conversation_message(
+                            conversation_id,
+                            user_id,
+                            "assistant",
+                            content,
+                            output_tokens=router_usage.get(
+                                "output_tokens",
+                                0
+                            ),
+                        )
+
+                        router_saved = True
+
+                    except sqlite3.IntegrityError:
+                        router_saved = True
+
+            try:
+                def record_planner_usage(provider, model, input_tokens, output_tokens):
+                    record_ai_usage(user_id, conversation_id, f"{provider}:{model}",
+                                    input_tokens, output_tokens)
+
+                decision = None
+                if action_intent is None:
+                    decision = plan_jarvis_action(
+                        messages, user_message, record_usage=record_planner_usage,
+                    )
+                # Planning consumes allowance too; do not start another AI call
+                # or execute a tool if it exhausted the current allowance.
+                if not check_ai_usage_limit(user_id).get("allowed"):
+                    yield json.dumps({
+                        "type": "error", "message": "AI usage limit reached. Please try again after your allowance renews.",
+                        "conversation_id": conversation_id,
+                    }) + "\n"
+                    return
+                if action_intent is not None:
+                    # Resolve only the stored action; never ask the planner to
+                    # reinterpret confirmation, even on expiry or replay.
+                    result = pending_actions.resolve(user_id, conversation_id, user_message)
+                    context = tool_result_context(result)
+                else:
+                    context = jarvis_result_context(user_id, decision, conversation_id=conversation_id)
+                response_messages = messages + context
+                router_stream = routed_chat_stream(
+                    response_messages,
+                    max_tokens=MAX_AI_OUTPUT_TOKENS,
+                    temperature=0.7,
+                    allow_openai_fallback=True,
+                )
+
+                for event in router_stream:
+                    consume_router_event(event)
+
+                    if event.get("type") == "delta":
+                        delta = event.get("delta") or ""
+
+                        if delta:
+                            yield (
+                                json.dumps({
+                                    "type": "delta",
+                                    "delta": delta,
+                                })
+                                + "\n"
+                            )
+
+                reply = "".join(
+                    router_reply_parts
+                ).strip()
+
+                if not reply:
+                    reply = (
+                        "I couldn't generate a response. "
+                        "Please try again."
+                    )
+
+                persist_router_generation()
+
+                yield (
+                    json.dumps({
+                        "type": "done",
+                        "conversation_id":
+                            conversation_id,
+                        "reply":
+                            reply,
+                        "provider":
+                            router_provider,
+                        "model":
+                            router_model,
+                        "usage":
+                            router_usage,
+                    })
+                    + "\n"
+                )
+
+                return
+
+            except GeneratorExit:
+                if router_stream is not None:
+                    try:
+                        for event in router_stream:
+                            consume_router_event(event)
+
+                    except Exception:
+                        app.logger.warning(
+                            "Nova routed stream ended "
+                            "before final usage was received"
+                        )
+
+                persist_router_generation()
+                raise
+
+            except Exception as error:
+                app.logger.warning(
+                    "Nova routed AI stream failed (%s)",
+                    type(error).__name__,
+                )
+
+                persist_router_generation()
+
+                yield (
+                    json.dumps({
+                        "type": "error",
+                        "message": (
+                            "Nova is temporarily unavailable. "
+                            "Please try again shortly."
+                        ),
+                        "conversation_id":
+                            conversation_id,
+                    })
+                    + "\n"
+                )
+
+                return
+
+            finally:
+                if router_stream is not None:
+                    try:
+                        router_stream.close()
+                    except Exception:
+                        pass
 
         def persist_generation():
             nonlocal usage_recorded, message_saved
