@@ -254,6 +254,8 @@
 				DEVELOPMENT_TEAM = 5P4RSFGF5N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Nova uses your microphone for Jarvis voice commands.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Nova transcribes your speech to send commands to your authenticated Nova account.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -286,6 +288,8 @@
 				DEVELOPMENT_TEAM = 5P4RSFGF5N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Nova uses your microphone for Jarvis voice commands.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Nova transcribes your speech to send commands to your authenticated Nova account.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

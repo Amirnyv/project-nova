@@ -4,6 +4,9 @@ import UniformTypeIdentifiers
 struct ContentView: View {
     @State private var showSignIn = false
     @State private var isLoggedIn = false
+    @State private var showMarkets = false
+    @State private var showJarvis = false
+    @StateObject private var jarvisModel = JarvisViewModel()
     @State private var showChat = false
     @State private var showProjects = false
     @State private var csrfToken = ""
@@ -38,6 +41,15 @@ struct ContentView: View {
                 ScrollView {
 
                     VStack(spacing: 16) {
+
+                        Button { showJarvis = true } label: {
+                            Label("Open Jarvis", systemImage: "waveform.circle.fill")
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.cyan.opacity(0.12), in: RoundedRectangle(cornerRadius: 16))
+                                .foregroundStyle(.cyan)
+                        }
 
                         // MARK: - HERO
 
@@ -368,7 +380,7 @@ struct ContentView: View {
                         HStack(spacing: 10) {
 
                             Button {
-                                print("Markets tapped")
+                                showMarkets = true
                             } label: {
 
                                 VStack(
@@ -506,6 +518,12 @@ struct ContentView: View {
                     .padding(.top, 10)
                     .padding(.bottom, 30)
                 }
+            }
+            .sheet(isPresented: $showMarkets) {
+                MarketsView(csrfToken: csrfToken)
+            }
+            .sheet(isPresented: $showJarvis) {
+                JarvisView(csrfToken: csrfToken, model: jarvisModel)
             }
             .sheet(isPresented: $showChat) {
                 NovaChatView(csrfToken: csrfToken)
