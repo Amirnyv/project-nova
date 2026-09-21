@@ -56,8 +56,18 @@ class JarvisStatusTests(unittest.TestCase):
             'jarvis': {'tools_available': True, 'planner_available': True,
                        'confirmations_available': True, 'project_resolution_available': True},
             'capabilities': {
-                'read_tools': sorted(['projects.list', 'projects.get', 'tasks.list', 'notes.get',
-                                      'markets.quote', 'markets.analyze', 'portfolio.get', 'trades.history']),
+                'read_tools': sorted([
+    'projects.list',
+    'projects.get',
+    'tasks.list',
+    'notes.get',
+    'markets.quote',
+    'markets.analyze',
+    'portfolio.get',
+    'trades.history',
+    'connections.list',
+    'connections.capabilities'
+]),
                 'write_tools': ['tasks.create', 'tasks.toggle'], 'destructive_tools': []},
             'confirmation_store': {'type': 'memory', 'production_ready': False}})
 

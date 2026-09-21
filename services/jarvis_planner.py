@@ -117,8 +117,14 @@ def plan_jarvis_action(messages, user_message, *, record_usage):
     import json
 
     prompt = (
-        'Choose one Nova tool only when it materially helps, otherwise respond normally. '
-        'Never invent tools or IDs. Use IDs only when explicitly available in context; '
+    'Choose one Nova tool only when it materially helps, otherwise respond normally. '
+    'When the user asks about their own connected apps, connected accounts, integrations, '
+    'or which external capabilities Nova can currently use, you must use the appropriate '
+    'connections tool instead of answering from general knowledge. '
+    'Use connections.list for questions about which apps or accounts are connected. '
+    'Use connections.capabilities for questions about what Nova can currently do through '
+    'connected apps. '
+    'Never invent tools or IDs. Use IDs only when explicitly available in context; '
         'When a user gives a project name, propose the intended tool directly with project_name '
         'instead of project_id; the server will resolve it. Do not call projects.list merely '
         'to discover an ID for that named request. Never provide both name and ID. '

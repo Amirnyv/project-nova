@@ -154,6 +154,110 @@ def _trades_history(user_id):
     from agents.portfolio_agent import get_trade_history
     return get_trade_history(user_id)
 
+def _connections_list(user_id):
+    with _connection() as connection:
+        rows = connection.execute(
+            """
+            SELECT
+                id,
+                provider,
+                provider_account_id,
+                display_name,
+                status,
+                connection_type,
+                created_at,
+                updated_at
+            FROM connections
+            WHERE user_id = ?
+            ORDER BY created_at ASC
+            """,
+            (
+                user_id,
+            )
+        ).fetchall()
+
+        return [
+            dict(row)
+            for row in rows
+        ]
+
+
+def _connections_capabilities(user_id):
+    with _connection() as connection:
+        rows = connection.execute(
+            """
+            SELECT
+                provider,
+                provider_account_id,
+                display_name,
+                status,
+                connection_type
+            FROM connections
+            WHERE user_id = ?
+            AND status = ?
+            ORDER BY created_at ASC
+            """,
+            (
+                user_id,
+                "connected"
+            )
+        ).fetchall()
+
+        connected = [
+            dict(row)
+            for row in rows
+        ]
+
+    capabilities = []
+
+    for account in connected:
+        provider = account.get("provider")
+
+        if provider == "google":
+            capabilities.append({
+                "provider": "google",
+                "display_name": (
+                    account.get("display_name")
+                    or "Google"
+                ),
+                "provider_account_id": (
+                    account.get(
+                        "provider_account_id"
+                    )
+                ),
+                "connection_type": (
+                    account.get(
+                        "connection_type"
+                    )
+                ),
+                "services": [
+                    {
+                        "id": "gmail",
+                        "display_name": "Gmail",
+                        "capabilities": [
+                            "email.read",
+                            "email.search",
+                            "email.send"
+                        ]
+                    },
+                    {
+                        "id": "google_calendar",
+                        "display_name": (
+                            "Google Calendar"
+                        ),
+                        "capabilities": [
+                            "calendar.read",
+                            "calendar.create",
+                            "calendar.update"
+                        ]
+                    }
+                ]
+            })
+
+    return {
+        "connected_accounts": connected,
+        "capabilities": capabilities
+    }
 
 def _schema(**properties):
     return {'type': 'object', 'properties': deepcopy(properties),
@@ -175,8 +279,24 @@ _TOOLS = (
     JarvisTool('notes.get', 'Read the notes for your project.', _schema(project_id=_ID), 'read', False, _notes_get),
     JarvisTool('markets.quote', 'Read an existing Nova market quote.', _schema(symbol=_SYMBOL), 'read', False, _markets_quote),
     JarvisTool('markets.analyze', 'Read existing Nova technical market analysis.', _schema(symbol=_SYMBOL), 'read', False, _markets_analyze),
-    JarvisTool('portfolio.get', 'Read your simulated cash and positions; never place trades.', _schema(), 'read', False, _portfolio_get),
+        JarvisTool('portfolio.get', 'Read your simulated cash and positions; never place trades.', _schema(), 'read', False, _portfolio_get),
     JarvisTool('trades.history', 'Read your paper trade history; never place trades.', _schema(), 'read', False, _trades_history),
+    JarvisTool(
+        'connections.list',
+        'List the external app accounts you have connected to Nova.',
+        _schema(),
+        'read',
+        False,
+        _connections_list
+    ),
+    JarvisTool(
+        'connections.capabilities',
+        'Read which external app capabilities are currently available through your connected accounts.',
+        _schema(),
+        'read',
+        False,
+        _connections_capabilities
+    ),
 )
 JARVIS_TOOLS = MappingProxyType({tool.name: tool for tool in _TOOLS})
 

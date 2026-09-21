@@ -3841,6 +3841,159 @@ def chat():
     )
 
 
+# -------------------------------------------------
+# CONNECTIONS
+# -------------------------------------------------
+
+CONNECTION_PROVIDER_CATALOG = {
+    "google": {
+        "provider": "google",
+        "display_name": "Google",
+        "connection_type": "direct",
+        "oauth": True,
+        "services": [
+            {
+                "id": "gmail",
+                "display_name": "Gmail",
+                "capabilities": [
+                    "email.read",
+                    "email.search",
+                    "email.send"
+                ]
+            },
+            {
+                "id": "google_calendar",
+                "display_name": "Google Calendar",
+                "capabilities": [
+                    "calendar.read",
+                    "calendar.create",
+                    "calendar.update"
+                ]
+            }
+        ]
+    }
+}
+
+
+@app.route(
+    "/api/connections",
+    methods=["GET"]
+)
+@login_required
+def list_connections():
+    user_id = int(current_user.id)
+
+    connection = get_db()
+
+    rows = connection.execute(
+        """
+        SELECT
+            id,
+            provider,
+            provider_account_id,
+            display_name,
+            status,
+            connection_type,
+            created_at,
+            updated_at
+        FROM connections
+        WHERE user_id = ?
+        ORDER BY created_at ASC
+        """,
+        (
+            user_id,
+        )
+    ).fetchall()
+
+    connection.close()
+
+    connections = [
+        dict(row)
+        for row in rows
+    ]
+
+    return jsonify({
+        "connections": connections
+    })
+
+
+@app.route(
+    "/api/connections/capabilities",
+    methods=["GET"]
+)
+@login_required
+def connection_capabilities():
+    user_id = int(current_user.id)
+
+    connection = get_db()
+
+    rows = connection.execute(
+        """
+        SELECT
+            provider,
+            provider_account_id,
+            display_name,
+            status,
+            connection_type
+        FROM connections
+        WHERE user_id = ?
+        AND status = ?
+        ORDER BY created_at ASC
+        """,
+        (
+            user_id,
+            "connected"
+        )
+    ).fetchall()
+
+    connection.close()
+
+    connected_providers = {}
+
+    for row in rows:
+        row_data = dict(row)
+
+        provider = row_data.get(
+            "provider"
+        )
+
+        if provider:
+            connected_providers.setdefault(
+                provider,
+                []
+            ).append(
+                row_data
+            )
+
+    providers = []
+
+    for (
+        provider_name,
+        provider_info
+    ) in CONNECTION_PROVIDER_CATALOG.items():
+
+        accounts = connected_providers.get(
+            provider_name,
+            []
+        )
+
+        provider_data = dict(
+            provider_info
+        )
+
+        provider_data["connected"] = bool(
+            accounts
+        )
+
+        provider_data["accounts"] = accounts
+
+        providers.append(
+            provider_data
+        )
+
+    return jsonify({
+        "providers": providers
+    })
 
 # -------------------------------------------------
 # PROJECTS

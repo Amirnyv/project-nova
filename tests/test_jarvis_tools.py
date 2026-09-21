@@ -97,8 +97,20 @@ class JarvisToolsTests(unittest.TestCase):
         return result
 
     def test_registry_and_detached_definitions(self):
-        expected = {'projects.list','projects.get','tasks.list','tasks.create','tasks.toggle',
-                    'notes.get','markets.quote','markets.analyze','portfolio.get','trades.history'}
+        expected = {
+    'projects.list',
+    'projects.get',
+    'tasks.list',
+    'tasks.create',
+    'tasks.toggle',
+    'notes.get',
+    'markets.quote',
+    'markets.analyze',
+    'portfolio.get',
+    'trades.history',
+    'connections.list',
+    'connections.capabilities'
+}
         definitions = planner.get_jarvis_tool_definitions()
         self.assertEqual(set(tools.JARVIS_TOOLS), expected)
         json.dumps(definitions)
