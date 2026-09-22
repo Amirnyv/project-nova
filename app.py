@@ -3896,12 +3896,15 @@ def connect_google():
     )
 
     try:
-        authorization_url, returned_state = (
+        authorization_url, returned_state, code_verifier = (
             create_authorization_url(
                 redirect_uri,
                 state
             )
         )
+
+        session["google_oauth_code_verifier"] = code_verifier
+
     except GoogleOAuthError as error:
         session.pop(
             "google_oauth_state",
@@ -3947,19 +3950,14 @@ def google_oauth_callback():
         ""
     )
 
-    if (
-        not expected_state
-        or not supplied_state
-        or not hmac.compare_digest(
-            expected_state.encode(),
-            supplied_state.encode()
-        )
-    ):
+    code_verifier = session.pop(
+        "google_oauth_code_verifier",
+        None
+    )
+
+    if not code_verifier:
         return jsonify({
-            "error": "google_oauth_state_failed",
-            "message": (
-                "Google connection could not be verified."
-            )
+            "error": "google_oauth_verifier_missing"
         }), 403
 
     redirect_uri = url_for(
@@ -3969,12 +3967,13 @@ def google_oauth_callback():
 
     try:
         profile, credential_data = (
-            finish_authorization(
-                redirect_uri,
-                supplied_state,
-                request.url
-            )
-        )
+    finish_authorization(
+        redirect_uri,
+        supplied_state,
+        request.url,
+        code_verifier
+    )
+)
     except Exception:
         app.logger.exception(
             "Google OAuth callback failed."
@@ -4063,7 +4062,7 @@ def google_oauth_callback():
                     "google",
                     provider_account_id,
                     email or "Google",
-                    "connected",
+                    "pending",
                     "direct",
                 )
             )
@@ -4081,11 +4080,38 @@ def google_oauth_callback():
     finally:
         connection.close()
 
-    save_credentials(
+        save_credentials(
         user_id,
         connection_id,
         credential_data
     )
+
+    connection = get_db()
+
+    try:
+        connection.execute(
+            """
+            UPDATE connections
+            SET status = ?,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+            AND user_id = ?
+            """,
+            (
+                "connected",
+                connection_id,
+                user_id,
+            )
+        )
+
+        connection.commit()
+
+    except Exception:
+        connection.rollback()
+        raise
+
+    finally:
+        connection.close()
 
     return redirect(url_for("home"))
 

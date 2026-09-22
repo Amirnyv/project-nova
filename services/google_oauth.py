@@ -51,10 +51,15 @@ def create_authorization_url(redirect_uri, state):
         prompt="consent",
     )
 
-    return authorization_url, returned_state
+    return authorization_url, returned_state, flow.code_verifier
 
 
-def finish_authorization(redirect_uri, state, authorization_response):
+def finish_authorization(
+    redirect_uri,
+    state,
+    authorization_response,
+    code_verifier
+):
     flow = Flow.from_client_config(
         _client_config(),
         scopes=GOOGLE_OAUTH_SCOPES,
@@ -62,6 +67,7 @@ def finish_authorization(redirect_uri, state, authorization_response):
     )
 
     flow.redirect_uri = redirect_uri
+    flow.code_verifier = code_verifier
 
     flow.fetch_token(
         authorization_response=authorization_response
