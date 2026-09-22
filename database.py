@@ -452,6 +452,17 @@ def init_sqlite_db():
                 REFERENCES users(id)
         );
 
+                CREATE TABLE IF NOT EXISTS connection_credentials (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            connection_id INTEGER NOT NULL UNIQUE,
+            encrypted_credentials TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (connection_id)
+                REFERENCES connections(id)
+                ON DELETE CASCADE
+        );
+
         CREATE TABLE IF NOT EXISTS conversations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
@@ -665,6 +676,17 @@ def init_postgres_db():
             UNIQUE(user_id, provider, provider_account_id),
             FOREIGN KEY (user_id)
                 REFERENCES users(id)
+        )
+        """,
+
+        """
+        CREATE TABLE IF NOT EXISTS connection_credentials (
+            id SERIAL PRIMARY KEY,
+            connection_id INTEGER NOT NULL UNIQUE
+                REFERENCES connections(id) ON DELETE CASCADE,
+            encrypted_credentials TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
         """,
 
