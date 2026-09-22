@@ -50,6 +50,12 @@ from services.ai_router import routed_chat_stream
 from services.jarvis_planner import plan_jarvis_action, jarvis_result_context, tool_result_context
 from services.jarvis_confirmations import confirmation_intent, pending_actions
 from services.jarvis_tools import JARVIS_TOOLS
+from services.connection_vault import save_credentials
+from services.google_oauth import (
+    GoogleOAuthError,
+    create_authorization_url,
+    finish_authorization,
+)
 from dotenv import load_dotenv
 
 from agents.stock_agent import analyze_stock, get_market_quote
@@ -3873,6 +3879,215 @@ CONNECTION_PROVIDER_CATALOG = {
         ]
     }
 }
+
+@app.route(
+    "/api/connections/google/connect",
+    methods=["GET"]
+)
+@login_required
+def connect_google():
+    state = secrets.token_urlsafe(32)
+
+    session["google_oauth_state"] = state
+
+    redirect_uri = url_for(
+        "google_oauth_callback",
+        _external=True
+    )
+
+    try:
+        authorization_url, returned_state = (
+            create_authorization_url(
+                redirect_uri,
+                state
+            )
+        )
+    except GoogleOAuthError as error:
+        session.pop(
+            "google_oauth_state",
+            None
+        )
+
+        return jsonify({
+            "error": "google_oauth_not_configured",
+            "message": str(error)
+        }), 503
+
+    if not hmac.compare_digest(
+        state.encode(),
+        returned_state.encode()
+    ):
+        session.pop(
+            "google_oauth_state",
+            None
+        )
+
+        return jsonify({
+            "error": "google_oauth_state_failed"
+        }), 500
+
+    return redirect(
+        authorization_url
+    )
+
+
+@app.route(
+    "/api/connections/google/callback",
+    methods=["GET"]
+)
+@login_required
+def google_oauth_callback():
+    expected_state = session.pop(
+        "google_oauth_state",
+        None
+    )
+
+    supplied_state = request.args.get(
+        "state",
+        ""
+    )
+
+    if (
+        not expected_state
+        or not supplied_state
+        or not hmac.compare_digest(
+            expected_state.encode(),
+            supplied_state.encode()
+        )
+    ):
+        return jsonify({
+            "error": "google_oauth_state_failed",
+            "message": (
+                "Google connection could not be verified."
+            )
+        }), 403
+
+    redirect_uri = url_for(
+        "google_oauth_callback",
+        _external=True
+    )
+
+    try:
+        profile, credential_data = (
+            finish_authorization(
+                redirect_uri,
+                supplied_state,
+                request.url
+            )
+        )
+    except Exception:
+        app.logger.exception(
+            "Google OAuth callback failed."
+        )
+
+        return jsonify({
+            "error": "google_oauth_failed",
+            "message": (
+                "Google authorization could not be completed."
+            )
+        }), 400
+
+    provider_account_id = str(
+        profile.get("id", "")
+    ).strip()
+
+    email = str(
+        profile.get("email", "")
+    ).strip()
+
+    if not provider_account_id:
+        return jsonify({
+            "error": "google_profile_missing_id"
+        }), 400
+
+    user_id = int(current_user.id)
+
+    connection = get_db()
+
+    try:
+        existing = connection.execute(
+            """
+            SELECT id
+            FROM connections
+            WHERE user_id = ?
+            AND provider = ?
+            AND provider_account_id = ?
+            """,
+            (
+                user_id,
+                "google",
+                provider_account_id,
+            )
+        ).fetchone()
+
+        if existing:
+            connection_id = int(
+                existing["id"]
+            )
+
+            connection.execute(
+                """
+                UPDATE connections
+                SET
+                    display_name = ?,
+                    status = ?,
+                    connection_type = ?,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+                AND user_id = ?
+                """,
+                (
+                    email or "Google",
+                    "pending",
+                    "direct",
+                    connection_id,
+                    user_id,
+                )
+            )
+
+        else:
+            result = connection.execute(
+                """
+                INSERT INTO connections (
+                    user_id,
+                    provider,
+                    provider_account_id,
+                    display_name,
+                    status,
+                    connection_type
+                )
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    user_id,
+                    "google",
+                    provider_account_id,
+                    email or "Google",
+                    "connected",
+                    "direct",
+                )
+            )
+
+            connection_id = int(
+                result.lastrowid
+            )
+
+        connection.commit()
+
+    except Exception:
+        connection.rollback()
+        raise
+
+    finally:
+        connection.close()
+
+    save_credentials(
+        user_id,
+        connection_id,
+        credential_data
+    )
+
+    return redirect(url_for("home"))
 
 
 @app.route(
