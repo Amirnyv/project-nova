@@ -9,10 +9,20 @@ struct NovaConnection: Decodable, Identifiable {
     let display_name: String?
     let status: String
     let connection_type: String
+    let created_at: String?
+    let updated_at: String?
 }
 struct ConnectionsResponse: Decodable { let connections: [NovaConnection] }
 struct ConnectionCapabilitiesResponse: Decodable { let providers: [ConnectionProvider] }
 struct ConnectionProvider: Decodable, Identifiable {
+    // This nested payload intentionally has no database id or timestamps.
+    struct Account: Decodable {
+        let provider: String
+        let provider_account_id: String?
+        let display_name: String?
+        let status: String
+        let connection_type: String
+    }
     struct Service: Decodable, Identifiable {
         let id: String
         let display_name: String
@@ -24,6 +34,7 @@ struct ConnectionProvider: Decodable, Identifiable {
     let oauth: Bool
     let connected: Bool
     let services: [Service]
+    let accounts: [Account]
     var id: String { provider }
 }
 

@@ -43,3 +43,25 @@ is no invented callback scheme or credential persistence.
 
 No native XCTest target exists in the current Xcode project. Simulator compilation
 is validation of the native code, not verification of deployed OAuth behavior.
+
+## Required seamless handoff contract (not implemented or named by iOS)
+
+The backend must accept an authenticated, CSRF-protected native request to mint
+an opaque handoff credential bound to the current Nova user, intended provider,
+short expiry, and a single use. A browser HTTPS entry must consume it atomically,
+establish the matching Flask-Login browser session (handling a previously signed-in
+different account explicitly), then create OAuth state and PKCE in that browser
+session. Do not send the native session cookie, Google tokens, or passwords in a
+URL. Redact handoff credentials from logs and prevent referrer leakage.
+
+The OAuth callback must validate stored expected state against supplied state
+before exchanging the authorization code, consume state/verifier once, and preserve
+account ownership. A future agreed callback/universal link may report completion
+without credentials; the native app must still re-read `/api/connections` to verify
+status. Until this server contract exists, browser reauthentication is required.
+
+Source inspection also confirms credentials are encrypted server-side by
+`connection_vault.py` and stored separately in `connection_credentials`; neither
+Connections GET response includes that table's contents. The native models omit
+all credential fields. The provider `accounts` payload is typed separately because
+it has no database id or timestamps, unlike the top-level connection list.

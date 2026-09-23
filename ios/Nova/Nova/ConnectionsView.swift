@@ -58,6 +58,10 @@ struct ConnectionsView: View {
                         VStack(alignment: .leading, spacing: 14) {
                             Text(provider.display_name).font(.title3.bold())
                             Text(provider.connected ? "Connected according to Nova" : "Not connected").foregroundStyle(.secondary)
+                            if provider.connected {
+                                Text("\(provider.accounts.count) linked account(s)").font(.caption).foregroundStyle(.secondary)
+                            }
+                            Text("Provider capability catalog").font(.subheadline.bold())
                             ForEach(provider.services) { service in
                                 VStack(alignment: .leading, spacing: 5) {
                                     Text(service.display_name).font(.headline)
@@ -66,7 +70,7 @@ struct ConnectionsView: View {
                                     }
                                 }
                             }
-                            Text("Catalog capabilities only. Nova does not report executable connected-app tools or granted Gmail/Calendar permissions here. Google setup currently links account identity.")
+                            Text("These capabilities describe planned service support, not permission to use your email or calendar. Google setup currently links your account identity only.")
                                 .font(.footnote).foregroundStyle(.secondary)
                             if provider.provider == "google" && provider.oauth {
                                 Button(provider.connected ? "Connect another Google account" : "Connect Google") { explainBrowser = true }
