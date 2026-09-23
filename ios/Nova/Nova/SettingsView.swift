@@ -42,11 +42,11 @@ struct SettingsView: View {
                 }
                 Section("Connections") {
                     NavigationLink {
-                        SettingsComingSoonView(title: "Connections", icon: "link", message: "Connections setup coming soon. Connected accounts and available services will appear here when Nova’s integration backend is available.")
+                        ConnectionsView()
                     } label: {
                         VStack(alignment: .leading, spacing: 5) {
                             Label("Connections", systemImage: "link")
-                            Text("Setup coming soon").font(.caption).foregroundStyle(.secondary)
+                            Text("Accounts, providers & capabilities").font(.caption).foregroundStyle(.secondary)
                         }
                     }
                 }
@@ -124,17 +124,5 @@ struct SettingsView: View {
             try await api.signOut(csrfToken: csrfToken)
             onSignOut()
         } catch { signOutError = error.localizedDescription }
-    }
-}
-
-private struct SettingsComingSoonView: View {
-    let title: String
-    let icon: String
-    let message: String
-
-    var body: some View {
-        ContentUnavailableView(title, systemImage: icon, description: Text(message))
-            .background(Color(red: 0.025, green: 0.03, blue: 0.07))
-            .navigationTitle(title).navigationBarTitleDisplayMode(.inline)
     }
 }
