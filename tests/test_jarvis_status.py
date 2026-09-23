@@ -57,6 +57,8 @@ class JarvisStatusTests(unittest.TestCase):
                        'confirmations_available': True, 'project_resolution_available': True},
             'capabilities': {
                 'read_tools': sorted([
+                    'gmail.search',
+'gmail.read',
     'projects.list',
     'projects.get',
     'tasks.list',
@@ -68,7 +70,15 @@ class JarvisStatusTests(unittest.TestCase):
     'connections.list',
     'connections.capabilities'
 ]),
-                'write_tools': ['tasks.create', 'tasks.toggle'], 'destructive_tools': []},
+                'write_tools': sorted([
+    'tasks.create',
+    'tasks.toggle',
+    'gmail.send',
+    'gmail.reply',
+    'gmail.archive',
+    'gmail.trash',
+    'gmail.labels',
+]), 'destructive_tools': []},
             'confirmation_store': {'type': 'memory', 'production_ready': False}})
 
     def test_capabilities_come_from_registry_without_handlers_or_schemas(self):

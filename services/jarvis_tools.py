@@ -259,6 +259,45 @@ def _connections_capabilities(user_id):
         "capabilities": capabilities
     }
 
+def _gmail_search(user_id, query):
+    from services.google_gmail import search_messages
+    return search_messages(user_id, query)
+
+
+def _gmail_read(user_id, message_id):
+    from services.google_gmail import read_message
+    return read_message(user_id, message_id)
+
+
+def _gmail_send(user_id, to, subject, body):
+    from services.google_gmail import send_email
+    return send_email(user_id, to, subject, body)
+
+
+def _gmail_reply(user_id, message_id, body):
+    from services.google_gmail import reply_to_message
+    return reply_to_message(user_id, message_id, body)
+
+
+def _gmail_archive(user_id, message_id):
+    from services.google_gmail import archive_message
+    return archive_message(user_id, message_id)
+
+
+def _gmail_trash(user_id, message_id):
+    from services.google_gmail import trash_message
+    return trash_message(user_id, message_id)
+
+
+def _gmail_labels(user_id, message_id, add_labels, remove_labels):
+    from services.google_gmail import modify_labels
+    return modify_labels(
+        user_id,
+        message_id,
+        add_labels=[label.strip() for label in add_labels.split(",") if label.strip()],
+        remove_labels=[label.strip() for label in remove_labels.split(",") if label.strip()],
+    )
+
 def _schema(**properties):
     return {'type': 'object', 'properties': deepcopy(properties),
             'required': list(properties), 'additionalProperties': False}
@@ -268,6 +307,54 @@ _ID = {'type': 'integer', 'minimum': 1, 'maximum': 2147483647}
 _SYMBOL = {'type': 'string', 'minLength': 1, 'maxLength': 32,
            'pattern': r'^[A-Za-z0-9][A-Za-z0-9./:_-]*$'}
 _TOOLS = (
+
+    JarvisTool(
+        'gmail.search', 'Search your Gmail messages.',
+        _schema(query={'type': 'string', 'minLength': 1, 'maxLength': 500}),
+        'read', False, _gmail_search,
+    ),
+    JarvisTool(
+        'gmail.read', 'Read a Gmail message.',
+        _schema(message_id={'type': 'string', 'minLength': 1, 'maxLength': 200}),
+        'read', False, _gmail_read,
+    ),
+    JarvisTool(
+        'gmail.send', 'Send an email from your connected Gmail account.',
+        _schema(
+            to={'type': 'string', 'minLength': 3, 'maxLength': 320},
+            subject={'type': 'string', 'minLength': 1, 'maxLength': 998},
+            body={'type': 'string', 'minLength': 1, 'maxLength': 20000},
+        ),
+        'write', True, _gmail_send,
+    ),
+    JarvisTool(
+        'gmail.reply', 'Reply to an existing Gmail message.',
+        _schema(
+            message_id={'type': 'string', 'minLength': 1, 'maxLength': 200},
+            body={'type': 'string', 'minLength': 1, 'maxLength': 20000},
+        ),
+        'write', True, _gmail_reply,
+    ),
+    JarvisTool(
+        'gmail.archive', 'Remove a Gmail message from your inbox.',
+        _schema(message_id={'type': 'string', 'minLength': 1, 'maxLength': 200}),
+        'write', True, _gmail_archive,
+    ),
+    JarvisTool(
+        'gmail.trash', 'Move a Gmail message to Trash.',
+        _schema(message_id={'type': 'string', 'minLength': 1, 'maxLength': 200}),
+        'write', True, _gmail_trash,
+    ),
+    JarvisTool(
+        'gmail.labels', 'Add or remove Gmail labels by their label IDs.',
+        _schema(
+            message_id={'type': 'string', 'minLength': 1, 'maxLength': 200},
+            add_labels={'type': 'string', 'minLength': 0, 'maxLength': 500},
+            remove_labels={'type': 'string', 'minLength': 0, 'maxLength': 500},
+        ),
+        'write', True, _gmail_labels,
+    ),
+
     JarvisTool('projects.list', 'List your Nova projects.', _schema(), 'read', False, _projects_list),
     JarvisTool('projects.get', 'Read one of your projects.', _schema(project_id=_ID), 'read', False, _projects_get),
     JarvisTool('tasks.list', 'Read tasks in one of your projects.', _schema(project_id=_ID), 'read', False, _tasks_list),

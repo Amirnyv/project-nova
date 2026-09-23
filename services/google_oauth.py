@@ -10,6 +10,12 @@ GOOGLE_OAUTH_SCOPES = [
     "openid",
     "https://www.googleapis.com/auth/userinfo.email",
     "https://www.googleapis.com/auth/userinfo.profile",
+
+    # Gmail — full mailbox access
+    "https://mail.google.com/",
+
+    # Google Calendar — full calendar access
+    "https://www.googleapis.com/auth/calendar",
 ]
 
 

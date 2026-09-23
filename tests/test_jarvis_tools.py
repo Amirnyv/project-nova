@@ -98,6 +98,14 @@ class JarvisToolsTests(unittest.TestCase):
 
     def test_registry_and_detached_definitions(self):
         expected = {
+
+            'gmail.search',
+'gmail.read',
+'gmail.send',
+'gmail.reply',
+'gmail.archive',
+'gmail.trash',
+'gmail.labels',
     'projects.list',
     'projects.get',
     'tasks.list',
@@ -243,6 +251,89 @@ class JarvisToolsTests(unittest.TestCase):
         validated['data']['arguments']['user_id'] = 2
         self.assertEqual(planner.execute_jarvis_tool_call(1, validated['data'], confirmed=True)['error']['code'], 'invalid_arguments')
 
+
+    def test_gmail_search_executes_without_confirmation(self):
+        with patch.dict(
+            tools._gmail_search.__globals__,
+            {"search_messages": None},
+        ):
+            with patch(
+                "services.google_gmail.search_messages",
+                return_value={
+                    "messages": [{"id": "abc123"}],
+                    "result_size_estimate": 1,
+                },
+            ) as gmail_search:
+                result = self.run_tool(
+                    "gmail.search", {"query": "is:unread"}
+                )
+
+        self.assertTrue(result["ok"])
+        gmail_search.assert_called_once_with(1, "is:unread")
+
+    def test_gmail_read_executes_without_confirmation(self):
+        with patch(
+            "services.google_gmail.read_message",
+            return_value={"id": "abc123", "subject": "Hello"},
+        ) as gmail_read:
+            result = self.run_tool(
+                "gmail.read", {"message_id": "abc123"}
+            )
+
+        self.assertTrue(result["ok"])
+        gmail_read.assert_called_once_with(1, "abc123")
+
+    def test_gmail_send_requires_confirmation(self):
+        with patch("services.google_gmail.send_email") as gmail_send:
+            result = self.run_tool(
+                "gmail.send",
+                {
+                    "to": "friend@example.com",
+                    "subject": "Hello",
+                    "body": "Test message",
+                },
+            )
+
+        self.assertEqual(
+            result["error"]["code"], "confirmation_required"
+        )
+        gmail_send.assert_not_called()
+
+    def test_gmail_send_executes_when_confirmed(self):
+        with patch(
+            "services.google_gmail.send_email",
+            return_value={
+                "id": "sent123",
+                "thread_id": "thread123",
+                "sent": True,
+            },
+        ) as gmail_send:
+            result = self.run_tool(
+                "gmail.send",
+                {
+                    "to": "friend@example.com",
+                    "subject": "Hello",
+                    "body": "Test message",
+                },
+                confirmed=True,
+            )
+
+        self.assertTrue(result["ok"])
+        self.assertTrue(result["data"]["sent"])
+        gmail_send.assert_called_once_with(
+            1, "friend@example.com", "Hello", "Test message"
+        )
+
+    def test_gmail_trash_requires_confirmation(self):
+        with patch("services.google_gmail.trash_message") as gmail_trash:
+            result = self.run_tool(
+                "gmail.trash", {"message_id": "abc123"}
+            )
+
+        self.assertEqual(
+            result["error"]["code"], "confirmation_required"
+        )
+        gmail_trash.assert_not_called()
 
 if __name__ == '__main__':
     unittest.main()
