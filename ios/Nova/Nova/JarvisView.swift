@@ -32,6 +32,15 @@ struct JarvisView: View {
                             .disabled(model.sending || voice.listening || voice.requestingPermission)
                         }
                     }
+                    card("Google Workspace") {
+                        NavigationLink {
+                            GoogleWorkspaceView()
+                        } label: {
+                            Label("Gmail & Calendar", systemImage: "envelope.badge")
+                        }
+                        Text("Workspace APIs coming soon. Prepare local drafts; execution is unavailable.")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
                     statusCard
                     card("Active Tasks") {
                         if model.loading { ProgressView("Loading tasks…") }
