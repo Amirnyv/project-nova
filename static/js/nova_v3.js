@@ -9362,167 +9362,75 @@ function formatMarketChange(
 }
 
 
-async function loadMarketLandingData() {
 
+async function loadMarketLandingData() {
     const symbols = [
-        "SPY",
-        "QQQ",
-        "BTC/USD",
-        "ETH/USD",
-        "AAPL",
-        "TSLA",
-        "NVDA",
-        "AMZN",
-        "MSFT"
+        "SPY", "QQQ", "BTC/USD", "ETH/USD",
+        "AAPL", "TSLA", "NVDA", "AMZN", "MSFT"
     ];
 
+    const marketCards = {
+        "SPY": ["market-sp500-price", "market-sp500-change"],
+        "QQQ": ["market-nasdaq-price", "market-nasdaq-change"],
+        "BTC/USD": ["market-btc-price", "market-btc-change"],
+        "ETH/USD": ["market-eth-price", "market-eth-change"]
+    };
 
-    const results =
-    await Promise.all(
-        symbols.map(
-            (symbol) =>
-                loadMarketQuote(symbol)
-        )
-    );
+    function updateMarketSymbol(symbol, price, change) {
+        const cardIds = marketCards[symbol];
 
+        if (cardIds) {
+            const priceElement = document.getElementById(cardIds[0]);
+            const changeElement = document.getElementById(cardIds[1]);
 
-    const quotes = {};
-
-    symbols.forEach(
-        (symbol, index) => {
-
-            if (results[index]) {
-
-                quotes[symbol] =
-                    results[index];
-            }
+            if (priceElement) priceElement.textContent = price;
+            if (changeElement) changeElement.textContent = change;
         }
-    );
 
-
-    const sp500 =
-        quotes["SPY"];
-
-    const nasdaq =
-        quotes["QQQ"];
-
-    const bitcoin =
-        quotes["BTC/USD"];
-
-    const ethereum =
-        quotes["ETH/USD"];
-
-
-    if (sp500) {
-
-        document.getElementById(
-            "market-sp500-price"
-        ).textContent =
-            `$${sp500.price}`;
-
-        document.getElementById(
-            "market-sp500-change"
-        ).textContent =
-            formatMarketChange(
-                sp500.change
-            );
-    }
-
-
-    if (nasdaq) {
-
-        document.getElementById(
-            "market-nasdaq-price"
-        ).textContent =
-            `$${nasdaq.price}`;
-
-        document.getElementById(
-            "market-nasdaq-change"
-        ).textContent =
-            formatMarketChange(
-                nasdaq.change
-            );
-    }
-
-
-    if (bitcoin) {
-
-        document.getElementById(
-            "market-btc-price"
-        ).textContent =
-            `$${bitcoin.price}`;
-
-        document.getElementById(
-            "market-btc-change"
-        ).textContent =
-            formatMarketChange(
-                bitcoin.change
-            );
-    }
-
-
-    if (ethereum) {
-
-        document.getElementById(
-            "market-eth-price"
-        ).textContent =
-            `$${ethereum.price}`;
-
-        document.getElementById(
-            "market-eth-change"
-        ).textContent =
-            formatMarketChange(
-                ethereum.change
-            );
-    }
-
-
-    document
-        .querySelectorAll(
-            "#markets-page .market-stock-row"
-        )
-        .forEach(
-            (row) => {
-
-                const symbol =
-                    row.dataset.symbol;
-
-                const quote =
-                    quotes[symbol];
-
-                if (!quote) {
-                    return;
-                }
-
+        document
+            .querySelectorAll("#markets-page .market-stock-row")
+            .forEach((row) => {
+                if (row.dataset.symbol !== symbol) return;
 
                 const priceElement =
-                    row.querySelector(
-                        ".market-stock-price"
-                    );
+                    row.querySelector(".market-stock-price");
 
                 const changeElement =
-                    row.querySelector(
-                        ".market-stock-change"
-                    );
+                    row.querySelector(".market-stock-change");
 
+                if (priceElement) priceElement.textContent = price;
+                if (changeElement) changeElement.textContent = change;
+            });
+    }
 
-                if (priceElement) {
+    // Show a loading state immediately.
+    symbols.forEach((symbol) => {
+        updateMarketSymbol(symbol, "Loading…", "—");
+    });
 
-                    priceElement.textContent =
-                        `$${quote.price}`;
-                }
+    // Update each symbol independently as its request completes.
+    await Promise.all(
+        symbols.map(async (symbol) => {
+            const quote = await loadMarketQuote(symbol);
 
-
-                if (changeElement) {
-
-                    changeElement.textContent =
-                        formatMarketChange(
-                            quote.change
-                        );
-                }
+            if (
+                !quote ||
+                quote.price === null ||
+                quote.price === undefined
+            ) {
+                updateMarketSymbol(symbol, "Unavailable", "—");
+                return;
             }
-        );
+
+            updateMarketSymbol(
+                symbol,
+                `$${quote.price}`,
+                formatMarketChange(quote.change)
+            );
+        })
+    );
 }
+
 
 
 loadMarketLandingData();
