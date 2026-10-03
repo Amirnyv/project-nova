@@ -308,6 +308,21 @@ def init_db():
 
         init_sqlite_db()
 
+    # Existing databases need a real migration, not only CREATE IF NOT EXISTS.
+    from services.billing_schema import migrate_billing
+    from services.apple_schema import migrate_apple_billing
+    connection = get_db()
+    try:
+        migrate_billing(connection, postgres=USE_POSTGRES)
+        migrate_apple_billing(connection, postgres=USE_POSTGRES)
+    finally:
+        connection.close()
+
+    from services.workspace_schema import initialize_workspace_schema
+    initialize_workspace_schema(get_db, USE_POSTGRES)
+    from services.paper_schema import initialize_paper_schema
+    initialize_paper_schema(get_db, USE_POSTGRES)
+
 
 # -------------------------------------------------
 # SQLITE DATABASE
@@ -437,6 +452,33 @@ def init_sqlite_db():
                 REFERENCES users(id)
         );
 
+
+                CREATE TABLE IF NOT EXISTS connections (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            provider TEXT NOT NULL,
+
+                    provider_account_id TEXT,
+            display_name TEXT,
+            status TEXT NOT NULL DEFAULT 'disconnected',
+            connection_type TEXT NOT NULL DEFAULT 'direct',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(user_id, provider, provider_account_id),
+            FOREIGN KEY (user_id)
+                REFERENCES users(id)
+        );
+
+                CREATE TABLE IF NOT EXISTS connection_credentials (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            connection_id INTEGER NOT NULL UNIQUE,
+            encrypted_credentials TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (connection_id)
+                REFERENCES connections(id)
+                ON DELETE CASCADE
+        );
 
         CREATE TABLE IF NOT EXISTS conversations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -637,6 +679,33 @@ def init_postgres_db():
         )
         """,
 
+        """
+        CREATE TABLE IF NOT EXISTS connections (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            provider TEXT NOT NULL,
+            provider_account_id TEXT,
+            display_name TEXT,
+            status TEXT NOT NULL DEFAULT 'disconnected',
+            connection_type TEXT NOT NULL DEFAULT 'direct',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(user_id, provider, provider_account_id),
+            FOREIGN KEY (user_id)
+                REFERENCES users(id)
+        )
+        """,
+
+        """
+        CREATE TABLE IF NOT EXISTS connection_credentials (
+            id SERIAL PRIMARY KEY,
+            connection_id INTEGER NOT NULL UNIQUE
+                REFERENCES connections(id) ON DELETE CASCADE,
+            encrypted_credentials TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """,
 
         """
         CREATE TABLE IF NOT EXISTS conversations (

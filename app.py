@@ -47,6 +47,15 @@ from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from openai import OpenAI
 from services.ai_router import routed_chat_stream
+from services.jarvis_planner import plan_jarvis_action, jarvis_result_context, tool_result_context
+from services.jarvis_confirmations import confirmation_intent, pending_actions
+from services.jarvis_tools import JARVIS_TOOLS
+from services.connection_vault import save_credentials
+from services.google_oauth import (
+    GoogleOAuthError,
+    create_authorization_url,
+    finish_authorization,
+)
 from dotenv import load_dotenv
 
 from agents.stock_agent import analyze_stock, get_market_quote
@@ -62,6 +71,9 @@ from agents.project_agent import (
 )
 
 from database import get_db, init_db, USE_POSTGRES
+from services.billing_entitlements import (
+    get_effective_entitlement, get_stripe_subscription, save_provider_subscription,
+)
 from user_model import User, get_user_by_id
 
 
@@ -174,9 +186,16 @@ def protect_browser_mutations():
         "login", "signup", "forgot_password", "reset_password", "logout", "chat",
         "add_project", "save_project_notes", "create_project_task",
         "update_project_task", "delete_project_task", "upload_project_file",
-        "delete_project_file", "delete_conversation"
+        "delete_project_file", "delete_conversation",
+        "workspace_prepare",
+        "workspace_confirm",
+        "workspace_request_status",
     }
-    if request.method not in {"POST", "PATCH", "PUT", "DELETE"} or request.endpoint not in protected:
+    # Authenticated Apple account-token and sync routes use browser CSRF.
+    # The exact notification path is server-to-server and must verify Apple JWS.
+    apple_mutation = (request.path.startswith("/api/billing/apple/")
+                      and request.path != "/api/billing/apple/notifications")
+    if request.method not in {"POST", "PATCH", "PUT", "DELETE"} or (request.endpoint not in protected and not apple_mutation):
         return None
     expected = session.get("csrf_token")
     supplied = request.headers.get("X-CSRF-Token") or request.form.get("csrf_token")
@@ -250,6 +269,12 @@ def load_user(user_id):
 # -------------------------------------------------
 
 init_db()
+
+# Apple credentials are loaded only when an Apple verification request arrives.
+from services.apple_routes import register_apple_billing
+register_apple_billing(app, get_db, USE_POSTGRES)
+from services.paper_routes import register_paper_trading
+register_paper_trading(app, get_db, USE_POSTGRES)
 
 
 # -------------------------------------------------
@@ -1231,31 +1256,7 @@ def create_checkout_session():
 @login_required
 def create_portal_session():
 
-    subscription = get_active_subscription(
-        int(current_user.id)
-    )
-
-    if not subscription:
-        return jsonify({
-            "error": "No active subscription found."
-        }), 400
-
-
-    connection = get_db()
-
-    row = connection.execute(
-        """
-        SELECT provider_customer_id
-        FROM subscriptions
-        WHERE user_id = ?
-        """,
-        (
-            int(current_user.id),
-        )
-    ).fetchone()
-
-    connection.close()
-
+    row = get_stripe_subscription(get_db, int(current_user.id))
 
     if (
         not row
@@ -1504,7 +1505,7 @@ SET
     current_period_end = ?,
     cancel_at_period_end = ?,
     updated_at = CURRENT_TIMESTAMP
-WHERE provider_subscription_id = ?
+WHERE provider_subscription_id = ? AND provider = 'stripe'
             """,
             (
     stripe_plan,
@@ -1538,7 +1539,7 @@ WHERE provider_subscription_id = ?
                 status = 'inactive',
                 cancel_at_period_end = 0,
                 updated_at = CURRENT_TIMESTAMP
-            WHERE provider_subscription_id = ?
+            WHERE provider_subscription_id = ? AND provider = 'stripe'
             """,
             (
                 stripe_subscription_id,
@@ -1565,7 +1566,7 @@ WHERE provider_subscription_id = ?
                 SET
                     status = 'past_due',
                     updated_at = CURRENT_TIMESTAMP
-                WHERE provider_subscription_id = ?
+                WHERE provider_subscription_id = ? AND provider = 'stripe'
                 """,
                 (
                     stripe_subscription_id,
@@ -1615,7 +1616,7 @@ WHERE provider_subscription_id = ?
                         current_period_start = ?,
                         current_period_end = ?,
                         updated_at = CURRENT_TIMESTAMP
-                    WHERE provider_subscription_id = ?
+                    WHERE provider_subscription_id = ? AND provider = 'stripe'
                     """,
                     (
                         subscription_data.get(
@@ -1703,25 +1704,7 @@ PLAN_TOKEN_LIMITS = {
 }
 
 def get_active_subscription(user_id):
-    connection = get_db()
-
-    row = connection.execute(
-        """
-        SELECT
-    plan,
-    status,
-    current_period_start,
-    current_period_end,
-    cancel_at_period_end
-FROM subscriptions
-        WHERE user_id = ?
-        """,
-        (user_id,)
-    ).fetchone()
-
-    connection.close()
-
-    return row
+    return get_effective_entitlement(get_db, user_id)
 
 def stripe_timestamp_to_datetime(timestamp):
 
@@ -1794,78 +1777,10 @@ def save_subscription(
     current_period_start=None,
     current_period_end=None
 ):
-    connection = get_db()
-
-    existing = connection.execute(
-        """
-        SELECT id
-        FROM subscriptions
-        WHERE user_id = ?
-        """,
-        (user_id,)
-    ).fetchone()
-
-
-    if existing:
-
-        connection.execute(
-            """
-            UPDATE subscriptions
-            SET
-                plan = ?,
-                status = ?,
-                provider = ?,
-                provider_customer_id = ?,
-                provider_subscription_id = ?,
-                current_period_start = ?,
-                current_period_end = ?,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE user_id = ?
-            """,
-            (
-                plan,
-                status,
-                provider,
-                provider_customer_id,
-                provider_subscription_id,
-                current_period_start,
-                current_period_end,
-                user_id
-            )
-        )
-
-
-    else:
-
-        connection.execute(
-            """
-            INSERT INTO subscriptions (
-                user_id,
-                plan,
-                status,
-                provider,
-                provider_customer_id,
-                provider_subscription_id,
-                current_period_start,
-                current_period_end
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                user_id,
-                plan,
-                status,
-                provider,
-                provider_customer_id,
-                provider_subscription_id,
-                current_period_start,
-                current_period_end
-            )
-        )
-
-
-    connection.commit()
-    connection.close()
+    return save_provider_subscription(
+        get_db, user_id, plan, status, provider, provider_customer_id,
+        provider_subscription_id, current_period_start, current_period_end,
+    )
 
 def user_has_ai_access(user_id):
     subscription = get_active_subscription(user_id)
@@ -2415,6 +2330,249 @@ def delete_conversation(conversation_id):
     })
 
 
+@app.route("/api/workspace/confirm", methods=["POST"])
+@login_required
+def workspace_confirm():
+    """Execute a server-approved Workspace action."""
+    from services.workspace_confirmations import (
+        WorkspaceConfirmationError,
+    )
+    from services.workspace_execute import (
+        confirm_calendar_create,
+    )
+
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict):
+        return jsonify({
+            "error": {
+                "code": "invalid_request",
+                "message": "A JSON object is required.",
+                "retryable": False,
+            }
+        }), 400
+
+    connection_id = data.get("connectionId")
+
+    if type(connection_id) is not int or connection_id < 1:
+        return jsonify({
+            "error": {
+                "code": "invalid_connection",
+                "message": "Select a valid Google account.",
+                "retryable": False,
+            }
+        }), 400
+
+    try:
+        from services.workspace_gmail import confirm_gmail
+        from database import get_db
+
+        db = get_db()
+        try:
+            proposal = db.execute(
+                """
+                SELECT operation
+                FROM workspace_proposals
+                WHERE proposal_id = ?
+                  AND user_id = ?
+                  AND connection_id = ?
+                """,
+                (
+                    data.get("proposalId"),
+                    int(current_user.id),
+                    connection_id,
+                ),
+            ).fetchone()
+        finally:
+            db.close()
+
+        if proposal and proposal["operation"] in (
+            "gmail.send",
+            "gmail.reply",
+        ):
+            result = confirm_gmail(
+                user_id=int(current_user.id),
+                connection_id=connection_id,
+                proposal_id=data.get("proposalId"),
+                confirmation_token=data.get("confirmationToken"),
+                request_id=data.get("requestId"),
+            )
+
+            return jsonify(result), (
+                202 if result["status"] == "uncertain" else 200
+            )
+
+        result = confirm_calendar_create(
+            user_id=int(current_user.id),
+            connection_id=connection_id,
+            proposal_id=data.get("proposalId"),
+            confirmation_token=data.get("confirmationToken"),
+            request_id=data.get("requestId"),
+        )
+
+        if result["status"] == "uncertain":
+            return jsonify(result), 202
+
+        return jsonify(result), 200
+
+    except WorkspaceConfirmationError as exc:
+        status = (
+            403 if exc.code == "permission_denied"
+            else 409 if exc.code == "confirmation_unavailable"
+            else 400
+        )
+
+        return jsonify({
+            "error": {
+                "code": exc.code,
+                "message": str(exc),
+                "retryable": False,
+            }
+        }), status
+
+
+@app.route("/api/workspace/prepare", methods=["POST"])
+@login_required
+def workspace_prepare():
+    """Prepare a Calendar action without executing it."""
+    from services.workspace_confirmations import (
+        WorkspaceConfirmationError,
+    )
+    from services.workspace_prepare import (
+        prepare_calendar_create,
+    )
+
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict):
+        return jsonify({
+            "error": {
+                "code": "invalid_request",
+                "message": "A JSON object is required.",
+                "retryable": False,
+            }
+        }), 400
+
+    if data.get("operation") in ("gmail.send", "gmail.reply"):
+        from services.workspace_gmail import prepare_gmail
+
+        try:
+            result = prepare_gmail(
+                user_id=int(current_user.id),
+                connection_id=data.get("connectionId"),
+                operation=data["operation"],
+                to=data.get("to"),
+                subject=data.get("subject"),
+                body=data.get("body"),
+                message_id=data.get("messageId"),
+            )
+            return jsonify(result), 200
+
+        except WorkspaceConfirmationError as exc:
+            status = 403 if exc.code == "permission_denied" else 400
+            return jsonify({
+                "error": {
+                    "code": exc.code,
+                    "message": str(exc),
+                    "retryable": False,
+                }
+            }), status
+
+    if data.get("operation") != "calendar.create":
+        return jsonify({
+            "error": {
+                "code": "unsupported_action",
+                "message": "This action is not available yet.",
+                "retryable": False,
+            }
+        }), 400
+
+    try:
+        result = prepare_calendar_create(
+            user_id=int(current_user.id),
+            connection_id=data.get("connectionId"),
+            summary=data.get("summary"),
+            start_time=data.get("startTime"),
+            end_time=data.get("endTime"),
+            description=data.get("description", ""),
+            calendar_id=data.get("calendarId", "primary"),
+        )
+        return jsonify(result), 200
+
+    except WorkspaceConfirmationError as exc:
+        status = (
+            403 if exc.code == "permission_denied"
+            else 400
+        )
+        return jsonify({
+            "error": {
+                "code": exc.code,
+                "message": str(exc),
+                "retryable": False,
+            }
+        }), status
+
+
+@app.route(
+    "/api/workspace/requests/<request_id>",
+    methods=["GET"],
+)
+@login_required
+def workspace_request_status(request_id):
+    """Look up a Workspace request without executing it."""
+    from services.workspace_confirmations import (
+        WorkspaceConfirmationError,
+        get_workspace_request_status,
+    )
+
+    try:
+        result = get_workspace_request_status(
+            int(current_user.id),
+            request_id,
+        )
+        return jsonify(result), 200
+
+    except WorkspaceConfirmationError as exc:
+        if exc.code == "not_found":
+            return jsonify({
+                "error": {
+                    "code": "not_found",
+                    "message": "Workspace request not found.",
+                    "retryable": False,
+                }
+            }), 404
+
+        return jsonify({
+            "error": {
+                "code": exc.code,
+                "message": str(exc),
+                "retryable": False,
+            }
+        }), 400
+
+@app.route("/api/jarvis/status", methods=["GET"])
+@login_required
+def jarvis_status():
+    """Installed capabilities only; no provider probes or user-data reads."""
+    return jsonify({
+        "ok": True,
+        "jarvis": {
+            "tools_available": bool(JARVIS_TOOLS),
+            "planner_available": True,
+            "confirmations_available": True,
+            "project_resolution_available": True,
+        },
+        "capabilities": {
+            "read_tools": sorted(tool.name for tool in JARVIS_TOOLS.values()
+                                 if tool.risk_level == "read"),
+            "write_tools": sorted(tool.name for tool in JARVIS_TOOLS.values()
+                                  if tool.risk_level == "write"),
+            "destructive_tools": [],
+        },
+        "confirmation_store": {"type": "memory", "production_ready": False},
+    })
+
+
 @app.route("/api/ai/usage", methods=["GET"])
 @login_required
 def ai_usage():
@@ -2430,7 +2588,7 @@ def ai_usage():
         return jsonify({
             "subscription": {
                 "plan": "none",
-                "status": "inactive"
+                "status": "inactive", "billing_source": None, "active_billing_sources": []
             },
             "used": 0,
             "limit": 0,
@@ -2460,6 +2618,8 @@ def ai_usage():
         return jsonify({
             "subscription": {
     "plan": plan,
+    "billing_source": subscription.get("billing_source"),
+    "active_billing_sources": subscription.get("active_billing_sources", []),
     "status": subscription["status"],
     "current_period_start": subscription[
         "current_period_start"
@@ -2479,6 +2639,8 @@ def ai_usage():
     return jsonify({
         "subscription": {
     "plan": plan,
+    "billing_source": subscription.get("billing_source"),
+    "active_billing_sources": subscription.get("active_billing_sources", []),
     "status": subscription["status"],
     "current_period_start": subscription[
         "current_period_start"
@@ -2574,7 +2736,7 @@ def chat():
     if agent_mode == "coding":
         subscription = get_active_subscription(int(current_user.id))
         if (not subscription or subscription["status"] != "active"
-                or subscription["plan"] != "max"):
+                or subscription["plan"] not in ("max", "developer")):
             return jsonify({
                 "error": "upgrade_required",
                 "message": (
@@ -2874,6 +3036,11 @@ def chat():
     })
 
     lower_message = user_message.lower()
+    action_intent = confirmation_intent(user_message)
+    if action_intent is None:
+        # A different request invalidates an earlier proposal, avoiding an
+        # ambiguous later yes in this conversation (including market shortcuts).
+        pending_actions.discard(user_id, conversation_id)
 
     # TRADE HISTORY
     if "trade history" in lower_message:
@@ -3261,7 +3428,7 @@ def chat():
         message_saved = False
         reply = ""
 
-        if not needs_web_search:
+        if not needs_web_search or action_intent is not None:
             router_stream = None
             router_reply_parts = []
             router_provider = None
@@ -3311,6 +3478,9 @@ def chat():
                 nonlocal router_saved
                 nonlocal router_usage_recorded
 
+                if router_stream is None:
+                    return
+
                 content = "".join(
                     router_reply_parts
                 ).strip()
@@ -3357,8 +3527,33 @@ def chat():
                         router_saved = True
 
             try:
+                def record_planner_usage(provider, model, input_tokens, output_tokens):
+                    record_ai_usage(user_id, conversation_id, f"{provider}:{model}",
+                                    input_tokens, output_tokens)
+
+                decision = None
+                if action_intent is None:
+                    decision = plan_jarvis_action(
+                        messages, user_message, record_usage=record_planner_usage,
+                    )
+                # Planning consumes allowance too; do not start another AI call
+                # or execute a tool if it exhausted the current allowance.
+                if not check_ai_usage_limit(user_id).get("allowed"):
+                    yield json.dumps({
+                        "type": "error", "message": "AI usage limit reached. Please try again after your allowance renews.",
+                        "conversation_id": conversation_id,
+                    }) + "\n"
+                    return
+                if action_intent is not None:
+                    # Resolve only the stored action; never ask the planner to
+                    # reinterpret confirmation, even on expiry or replay.
+                    result = pending_actions.resolve(user_id, conversation_id, user_message)
+                    context = tool_result_context(result)
+                else:
+                    context = jarvis_result_context(user_id, decision, conversation_id=conversation_id)
+                response_messages = messages + context
                 router_stream = routed_chat_stream(
-                    messages,
+                    response_messages,
                     max_tokens=MAX_AI_OUTPUT_TOKENS,
                     temperature=0.7,
                     allow_openai_fallback=True,
@@ -3782,6 +3977,399 @@ def chat():
     )
 
 
+# -------------------------------------------------
+# CONNECTIONS
+# -------------------------------------------------
+
+CONNECTION_PROVIDER_CATALOG = {
+    "google": {
+        "provider": "google",
+        "display_name": "Google",
+        "connection_type": "direct",
+        "oauth": True,
+        "services": [
+            {
+                "id": "gmail",
+                "display_name": "Gmail",
+                "capabilities": [
+                    "email.read",
+                    "email.search",
+                    "email.send"
+                ]
+            },
+            {
+                "id": "google_calendar",
+                "display_name": "Google Calendar",
+                "capabilities": [
+                    "calendar.read",
+                    "calendar.create",
+                    "calendar.update"
+                ]
+            }
+        ]
+    }
+}
+
+@app.route(
+    "/api/connections/google/connect",
+    methods=["GET"]
+)
+@login_required
+def connect_google():
+    state = secrets.token_urlsafe(32)
+
+    session["google_oauth_state"] = state
+
+    redirect_uri = url_for(
+        "google_oauth_callback",
+        _external=True
+    )
+
+    try:
+        authorization_url, returned_state, code_verifier = (
+            create_authorization_url(
+                redirect_uri,
+                state
+            )
+        )
+
+        session["google_oauth_code_verifier"] = code_verifier
+
+    except GoogleOAuthError as error:
+        session.pop(
+            "google_oauth_state",
+            None
+        )
+
+        return jsonify({
+            "error": "google_oauth_not_configured",
+            "message": str(error)
+        }), 503
+
+    if not hmac.compare_digest(
+        state.encode(),
+        returned_state.encode()
+    ):
+        session.pop(
+            "google_oauth_state",
+            None
+        )
+
+        return jsonify({
+            "error": "google_oauth_state_failed"
+        }), 500
+
+    return redirect(
+        authorization_url
+    )
+
+
+@app.route(
+    "/api/connections/google/callback",
+    methods=["GET"]
+)
+@login_required
+def google_oauth_callback():
+    expected_state = session.pop(
+        "google_oauth_state",
+        None
+    )
+
+    supplied_state = request.args.get(
+        "state",
+        ""
+    )
+
+    code_verifier = session.pop(
+        "google_oauth_code_verifier",
+        None
+    )
+
+    if (not isinstance(expected_state, str) or not expected_state
+            or not isinstance(supplied_state, str) or not supplied_state
+            or not hmac.compare_digest(expected_state.encode(), supplied_state.encode())):
+        return jsonify({"error": "google_oauth_state_failed"}), 403
+
+    if not code_verifier:
+        return jsonify({
+            "error": "google_oauth_verifier_missing"
+        }), 403
+
+    redirect_uri = url_for(
+        "google_oauth_callback",
+        _external=True
+    )
+
+    try:
+        profile, credential_data = (
+    finish_authorization(
+        redirect_uri,
+        expected_state,
+        request.url,
+        code_verifier
+    )
+)
+    except Exception:
+        app.logger.exception(
+            "Google OAuth callback failed."
+        )
+
+        return jsonify({
+            "error": "google_oauth_failed",
+            "message": (
+                "Google authorization could not be completed."
+            )
+        }), 400
+
+    provider_account_id = str(
+        profile.get("id", "")
+    ).strip()
+
+    email = str(
+        profile.get("email", "")
+    ).strip()
+
+    if not provider_account_id:
+        return jsonify({
+            "error": "google_profile_missing_id"
+        }), 400
+
+    user_id = int(current_user.id)
+
+    connection = get_db()
+
+    try:
+        existing = connection.execute(
+            """
+            SELECT id
+            FROM connections
+            WHERE user_id = ?
+            AND provider = ?
+            AND provider_account_id = ?
+            """,
+            (
+                user_id,
+                "google",
+                provider_account_id,
+            )
+        ).fetchone()
+
+        if existing:
+            connection_id = int(
+                existing["id"]
+            )
+
+            connection.execute(
+                """
+                UPDATE connections
+                SET
+                    display_name = ?,
+                    status = ?,
+                    connection_type = ?,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+                AND user_id = ?
+                """,
+                (
+                    email or "Google",
+                    "pending",
+                    "direct",
+                    connection_id,
+                    user_id,
+                )
+            )
+
+        else:
+            result = connection.execute(
+                """
+                INSERT INTO connections (
+                    user_id,
+                    provider,
+                    provider_account_id,
+                    display_name,
+                    status,
+                    connection_type
+                )
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    user_id,
+                    "google",
+                    provider_account_id,
+                    email or "Google",
+                    "pending",
+                    "direct",
+                )
+            )
+
+            connection_id = int(
+                result.lastrowid
+            )
+
+        connection.commit()
+
+    except Exception:
+        connection.rollback()
+        raise
+
+    finally:
+        connection.close()
+
+        save_credentials(
+        user_id,
+        connection_id,
+        credential_data
+    )
+
+    connection = get_db()
+
+    try:
+        connection.execute(
+            """
+            UPDATE connections
+            SET status = ?,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+            AND user_id = ?
+            """,
+            (
+                "connected",
+                connection_id,
+                user_id,
+            )
+        )
+
+        connection.commit()
+
+    except Exception:
+        connection.rollback()
+        raise
+
+    finally:
+        connection.close()
+
+    return redirect(url_for("home"))
+
+
+@app.route(
+    "/api/connections",
+    methods=["GET"]
+)
+@login_required
+def list_connections():
+    user_id = int(current_user.id)
+
+    connection = get_db()
+
+    rows = connection.execute(
+        """
+        SELECT
+            id,
+            provider,
+            provider_account_id,
+            display_name,
+            status,
+            connection_type,
+            created_at,
+            updated_at
+        FROM connections
+        WHERE user_id = ?
+        ORDER BY created_at ASC
+        """,
+        (
+            user_id,
+        )
+    ).fetchall()
+
+    connection.close()
+
+    connections = [
+        dict(row)
+        for row in rows
+    ]
+
+    return jsonify({
+        "connections": connections
+    })
+
+
+@app.route(
+    "/api/connections/capabilities",
+    methods=["GET"]
+)
+@login_required
+def connection_capabilities():
+    user_id = int(current_user.id)
+
+    connection = get_db()
+
+    rows = connection.execute(
+        """
+        SELECT
+            provider,
+            provider_account_id,
+            display_name,
+            status,
+            connection_type
+        FROM connections
+        WHERE user_id = ?
+        AND status = ?
+        ORDER BY created_at ASC
+        """,
+        (
+            user_id,
+            "connected"
+        )
+    ).fetchall()
+
+    connection.close()
+
+    connected_providers = {}
+
+    for row in rows:
+        row_data = dict(row)
+
+        provider = row_data.get(
+            "provider"
+        )
+
+        if provider:
+            connected_providers.setdefault(
+                provider,
+                []
+            ).append(
+                row_data
+            )
+
+    providers = []
+
+    for (
+        provider_name,
+        provider_info
+    ) in CONNECTION_PROVIDER_CATALOG.items():
+
+        accounts = connected_providers.get(
+            provider_name,
+            []
+        )
+
+        provider_data = dict(
+            provider_info
+        )
+
+        provider_data["connected"] = bool(
+            accounts
+        )
+
+        provider_data["accounts"] = accounts
+
+        providers.append(
+            provider_data
+        )
+
+    return jsonify({
+        "providers": providers
+    })
 
 # -------------------------------------------------
 # PROJECTS

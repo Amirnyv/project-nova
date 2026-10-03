@@ -8259,3 +8259,5069 @@ select:disabled[title*="launch"] {
     cursor: not-allowed;
     opacity: 0.55;
 }
+
+/* =========================================
+   JARVIS PAGE
+   ========================================= */
+
+#jarvis-page {
+    position: relative;
+    min-height: calc(100vh - 90px);
+    padding: 28px;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 50% 28%, rgba(0, 174, 255, 0.14), transparent 24%),
+        radial-gradient(circle at 50% 70%, rgba(0, 102, 255, 0.08), transparent 32%),
+        linear-gradient(180deg, #07111f 0%, #050a12 48%, #03070d 100%);
+}
+
+#jarvis-page::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 34px 34px;
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent 90%);
+}
+
+.jarvis-shell {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr) 280px;
+    gap: 22px;
+    min-height: calc(100vh - 146px);
+}
+
+.jarvis-left-panel,
+.jarvis-right-panel,
+.jarvis-main-panel {
+    min-width: 0;
+}
+
+.jarvis-left-panel,
+.jarvis-right-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.jarvis-brand-block,
+.jarvis-system-card,
+.jarvis-info-card,
+.jarvis-command-panel,
+.jarvis-action-card {
+    border: 1px solid rgba(78, 186, 255, 0.16);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(13, 30, 49, 0.82),
+            rgba(6, 16, 28, 0.78)
+        );
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.025),
+        0 18px 50px rgba(0,0,0,0.22);
+    backdrop-filter: blur(18px);
+}
+
+.jarvis-brand-block {
+    padding: 22px;
+    border-radius: 18px;
+}
+
+.jarvis-eyebrow,
+.jarvis-command-kicker {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #54c8ff;
+}
+
+.jarvis-brand-block h2 {
+    margin: 7px 0 5px;
+    font-size: 21px;
+    color: #eefaff;
+}
+
+.jarvis-brand-block p {
+    margin: 0;
+    color: #70879a;
+    font-size: 13px;
+}
+
+.jarvis-side-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.jarvis-nav-item {
+    width: 100%;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #7890a4;
+    text-align: left;
+    padding: 12px 14px;
+    border-radius: 11px;
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.jarvis-nav-item:hover {
+    color: #cdefff;
+    background: rgba(58, 171, 255, 0.06);
+}
+
+.jarvis-nav-item.active {
+    color: #e8f8ff;
+    border-color: rgba(68, 184, 255, 0.25);
+    background:
+        linear-gradient(
+            90deg,
+            rgba(29, 139, 255, 0.20),
+            rgba(0, 180, 255, 0.05)
+        );
+    box-shadow: inset 3px 0 0 #26baff;
+}
+
+.jarvis-system-card {
+    margin-top: auto;
+    padding: 17px;
+    border-radius: 16px;
+}
+
+.jarvis-system-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    color: #dcefff;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.jarvis-online-dot,
+.jarvis-activity-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #42d88d;
+    box-shadow: 0 0 12px rgba(66,216,141,0.75);
+}
+
+.jarvis-status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0;
+    border-top: 1px solid rgba(255,255,255,0.04);
+    font-size: 12px;
+    color: #7e96aa;
+}
+
+.jarvis-status-row strong {
+    color: #65dba0;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.jarvis-main-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.jarvis-core-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 360px;
+    overflow: hidden;
+    border-radius: 28px;
+    border: 1px solid rgba(50, 178, 255, 0.12);
+    background:
+        radial-gradient(circle at 50% 46%, rgba(0, 181, 255, 0.11), transparent 30%),
+        linear-gradient(
+            180deg,
+            rgba(9, 25, 42, 0.54),
+            rgba(4, 11, 20, 0.40)
+        );
+}
+
+.jarvis-core-wrap::before {
+    content: "";
+    position: absolute;
+    width: 520px;
+    height: 140px;
+    left: 50%;
+    bottom: -65px;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background: rgba(0, 162, 255, 0.10);
+    filter: blur(30px);
+}
+
+.jarvis-orb {
+    position: relative;
+    width: 190px;
+    height: 190px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    filter: drop-shadow(0 0 28px rgba(25, 182, 255, 0.35));
+}
+
+.jarvis-orb::before {
+    content: "";
+    position: absolute;
+    inset: 28px;
+    border-radius: 50%;
+    background:
+        radial-gradient(
+            circle at 38% 35%,
+            rgba(230, 250, 255, 1) 0%,
+            rgba(77, 208, 255, 0.92) 14%,
+            rgba(10, 123, 255, 0.58) 38%,
+            rgba(0, 43, 99, 0.10) 70%,
+            transparent 72%
+        );
+    box-shadow:
+        0 0 28px rgba(73, 211, 255, 0.72),
+        0 0 70px rgba(0, 119, 255, 0.55),
+        inset 0 0 22px rgba(255,255,255,0.28);
+    animation: jarvisCorePulse 3s ease-in-out infinite;
+}
+
+.jarvis-orb-core {
+    position: relative;
+    z-index: 3;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background:
+        radial-gradient(
+            circle,
+            #ffffff 0%,
+            #9cecff 28%,
+            #20bfff 52%,
+            rgba(32,191,255,0) 75%
+        );
+    box-shadow:
+        0 0 25px #66ddff,
+        0 0 60px rgba(0, 174, 255, 0.9);
+}
+
+.jarvis-orb-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(78, 216, 255, 0.44);
+    box-shadow:
+        inset 0 0 12px rgba(51, 197, 255, 0.12),
+        0 0 16px rgba(0, 162, 255, 0.12);
+}
+
+.jarvis-ring-one {
+    inset: 10px;
+    border-style: dashed;
+    animation: jarvisSpin 14s linear infinite;
+}
+
+.jarvis-ring-two {
+    inset: 24px;
+    border-color: rgba(93, 170, 255, 0.48);
+    border-width: 2px 1px;
+    animation: jarvisSpinReverse 9s linear infinite;
+}
+
+.jarvis-ring-three {
+    inset: 41px;
+    border-style: dotted;
+    border-color: rgba(118, 231, 255, 0.55);
+    animation: jarvisSpin 6s linear infinite;
+}
+
+.jarvis-mode-label {
+    margin-top: 14px;
+    color: #9edfff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.24em;
+}
+
+.jarvis-state-track {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 7px;
+    margin-top: 16px;
+}
+
+.jarvis-state {
+    padding: 7px 11px;
+    border: 1px solid rgba(120, 177, 208, 0.12);
+    border-radius: 999px;
+    background: rgba(6, 16, 27, 0.7);
+    color: #557084;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.10em;
+}
+
+.jarvis-state.active {
+    color: #dff7ff;
+    border-color: rgba(66, 204, 255, 0.55);
+    background: rgba(14, 119, 184, 0.20);
+    box-shadow:
+        0 0 16px rgba(0, 179, 255, 0.16),
+        inset 0 0 15px rgba(31, 181, 255, 0.06);
+}
+
+.jarvis-quick-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.jarvis-action-card {
+    min-height: 82px;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 15px;
+    border-radius: 15px;
+    text-align: left;
+    color: inherit;
+    cursor: pointer;
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease;
+}
+
+.jarvis-action-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(74, 198, 255, 0.38);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(16, 45, 70, 0.92),
+            rgba(7, 22, 37, 0.88)
+        );
+}
+
+.jarvis-action-icon {
+    flex: 0 0 auto;
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border-radius: 11px;
+    border: 1px solid rgba(67, 193, 255, 0.24);
+    background: rgba(12, 124, 191, 0.12);
+    color: #68d5ff;
+    font-size: 18px;
+}
+
+.jarvis-action-card > span:last-child {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.jarvis-action-card strong {
+    color: #e4f4fb;
+    font-size: 13px;
+}
+
+.jarvis-action-card small {
+    margin-top: 3px;
+    color: #647d90;
+    font-size: 11px;
+}
+
+.jarvis-command-panel {
+    padding: 24px;
+    border-radius: 21px;
+}
+
+.jarvis-command-heading {
+    text-align: center;
+}
+
+.jarvis-command-heading h1 {
+    margin: 6px 0;
+    color: #edfaff;
+    font-size: clamp(24px, 3vw, 34px);
+    font-weight: 650;
+    letter-spacing: -0.03em;
+}
+
+.jarvis-command-heading p {
+    margin: 0;
+    color: #6e8799;
+    font-size: 13px;
+}
+
+.jarvis-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.jarvis-suggestions button {
+    border: 1px solid rgba(88, 187, 242, 0.16);
+    background: rgba(18, 47, 69, 0.48);
+    color: #8fb0c2;
+    padding: 8px 11px;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 11px;
+    cursor: pointer;
+    transition: 0.18s ease;
+}
+
+.jarvis-suggestions button:hover {
+    color: #dbf5ff;
+    border-color: rgba(80, 208, 255, 0.42);
+}
+
+.jarvis-input-wrap {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    align-items: center;
+    gap: 9px;
+    margin-top: 18px;
+    padding: 8px;
+    border-radius: 17px;
+    border: 1px solid rgba(77, 194, 255, 0.22);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(4, 14, 24, 0.86),
+            rgba(2, 9, 16, 0.93)
+        );
+    box-shadow:
+        inset 0 0 30px rgba(17, 114, 175, 0.04),
+        0 10px 35px rgba(0,0,0,0.16);
+}
+
+#jarvis-command-input {
+    width: 100%;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #e8f8ff;
+    font: inherit;
+    padding: 8px 5px;
+}
+
+#jarvis-command-input::placeholder {
+    color: #40586a;
+}
+
+.jarvis-icon-button,
+.jarvis-mic-button,
+.jarvis-send-button {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    border: 1px solid rgba(68, 184, 255, 0.16);
+    background: rgba(15, 56, 83, 0.42);
+    color: #90dcff;
+    font: inherit;
+    cursor: pointer;
+    transition: 0.18s ease;
+}
+
+.jarvis-icon-button:hover,
+.jarvis-mic-button:hover {
+    border-color: rgba(79, 206, 255, 0.5);
+    background: rgba(16, 89, 130, 0.40);
+}
+
+.jarvis-mic-button {
+    color: #64d6ff;
+}
+
+.jarvis-send-button {
+    border-color: rgba(78, 203, 255, 0.45);
+    background:
+        linear-gradient(
+            135deg,
+            rgba(0, 140, 255, 0.88),
+            rgba(0, 210, 255, 0.78)
+        );
+    color: #ffffff;
+    box-shadow: 0 0 18px rgba(0, 176, 255, 0.23);
+}
+
+.jarvis-send-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 24px rgba(0, 193, 255, 0.34);
+}
+
+.jarvis-info-card {
+    padding: 17px;
+    border-radius: 16px;
+}
+
+.jarvis-info-title {
+    margin-bottom: 12px;
+    color: #d8edf7;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.10em;
+}
+
+.jarvis-empty-state {
+    padding: 18px 12px;
+    text-align: center;
+    border: 1px dashed rgba(104, 170, 203, 0.12);
+    border-radius: 11px;
+    color: #506b7d;
+    font-size: 11px;
+}
+
+.jarvis-activity-item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: 10px;
+    padding: 10px 0;
+    border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+.jarvis-activity-item:first-of-type {
+    border-top: 0;
+}
+
+.jarvis-activity-item .jarvis-activity-dot {
+    margin-top: 5px;
+    width: 7px;
+    height: 7px;
+    background: #32c8ff;
+    box-shadow: 0 0 10px rgba(50,200,255,0.55);
+}
+
+.jarvis-activity-item div {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.jarvis-activity-item strong {
+    color: #cbe4ee;
+    font-size: 11px;
+}
+
+.jarvis-activity-item small {
+    margin-top: 3px;
+    color: #50697a;
+    font-size: 10px;
+}
+
+
+/* =========================================
+   JARVIS ANIMATIONS
+   ========================================= */
+
+@keyframes jarvisSpin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes jarvisSpinReverse {
+    from {
+        transform: rotate(360deg);
+    }
+
+    to {
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes jarvisCorePulse {
+    0%,
+    100% {
+        transform: scale(0.96);
+        opacity: 0.82;
+    }
+
+    50% {
+        transform: scale(1.06);
+        opacity: 1;
+    }
+}
+
+
+/* =========================================
+   JARVIS RESPONSIVE
+   ========================================= */
+
+@media (max-width: 1200px) {
+    .jarvis-shell {
+        grid-template-columns: 210px minmax(0, 1fr);
+    }
+
+    .jarvis-right-panel {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+    #jarvis-page {
+        padding: 18px;
+    }
+
+    .jarvis-shell {
+        grid-template-columns: 1fr;
+    }
+
+    .jarvis-left-panel {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .jarvis-side-nav {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .jarvis-nav-item {
+        text-align: center;
+    }
+
+    .jarvis-system-card {
+        margin-top: 0;
+    }
+
+    .jarvis-right-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .jarvis-quick-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    #jarvis-page {
+        padding: 12px;
+    }
+
+    .jarvis-core-wrap {
+        min-height: 310px;
+    }
+
+    .jarvis-orb {
+        width: 155px;
+        height: 155px;
+    }
+
+    .jarvis-side-nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .jarvis-quick-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .jarvis-command-panel {
+        padding: 18px 13px;
+    }
+
+    .jarvis-input-wrap {
+        grid-template-columns: auto 1fr auto;
+    }
+
+    #jarvis-plus-button {
+        display: none;
+    }
+}
+
+/* =========================================================
+   JARVIS V2 — CINEMATIC COMMAND CENTER
+   VISUAL OVERRIDES
+   ========================================================= */
+
+#jarvis-page {
+    position: relative;
+    min-height: calc(100vh - 40px);
+    padding: 20px 26px 34px;
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle at 52% 18%,
+            rgba(0, 132, 255, 0.12),
+            transparent 24%
+        ),
+        radial-gradient(
+            circle at 52% 48%,
+            rgba(0, 72, 150, 0.10),
+            transparent 42%
+        ),
+        linear-gradient(
+            180deg,
+            #030913 0%,
+            #02070d 55%,
+            #010408 100%
+        );
+}
+
+
+/* subtle futuristic grid */
+
+#jarvis-page::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    pointer-events: none;
+
+    background-image:
+        linear-gradient(
+            rgba(40, 176, 255, 0.025) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(40, 176, 255, 0.025) 1px,
+            transparent 1px
+        );
+
+    background-size: 52px 52px;
+
+    mask-image:
+        linear-gradient(
+            to bottom,
+            rgba(0,0,0,0.9),
+            rgba(0,0,0,0.2)
+        );
+}
+
+
+/* soft central blue atmosphere */
+
+#jarvis-page::after {
+    content: "";
+    position: absolute;
+
+    width: 900px;
+    height: 900px;
+
+    left: 52%;
+    top: 160px;
+
+    transform: translateX(-50%);
+
+    border-radius: 50%;
+
+    pointer-events: none;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(0, 155, 255, 0.065),
+            rgba(0, 74, 180, 0.025) 40%,
+            transparent 70%
+        );
+
+    filter: blur(18px);
+}
+
+
+/* =========================================================
+   MAIN LAYOUT
+   ========================================================= */
+
+.jarvis-shell {
+    position: relative;
+    z-index: 2;
+
+    display: grid;
+
+    grid-template-columns:
+        215px
+        minmax(520px, 1fr)
+        250px;
+
+    gap: 18px;
+
+    width: 100%;
+    max-width: 1540px;
+
+    margin: 0 auto;
+}
+
+
+/* =========================================================
+   LEFT / RIGHT PANELS
+   ========================================================= */
+
+.jarvis-left-panel,
+.jarvis-right-panel {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 14px;
+}
+
+
+/* =========================================================
+   LEFT BRAND
+   ========================================================= */
+
+.jarvis-brand-block {
+    position: relative;
+
+    padding: 20px 19px;
+
+    border-radius: 14px;
+
+    border:
+        1px solid
+        rgba(45, 187, 255, 0.18);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(8, 27, 46, 0.78),
+            rgba(3, 13, 23, 0.88)
+        );
+
+    box-shadow:
+        inset 0 0 25px rgba(0, 144, 255, 0.025),
+        0 20px 55px rgba(0, 0, 0, 0.26);
+
+    backdrop-filter: blur(20px);
+}
+
+
+/* tiny glowing edge */
+
+.jarvis-brand-block::before {
+    content: "";
+
+    position: absolute;
+
+    left: 18px;
+    top: 0;
+
+    width: 52px;
+    height: 1px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            #39c8ff,
+            transparent
+        );
+
+    box-shadow:
+        0 0 12px rgba(57, 200, 255, 0.7);
+}
+
+
+.jarvis-eyebrow {
+    font-size: 10px;
+    font-weight: 900;
+
+    letter-spacing: 0.28em;
+
+    color: #56d5ff;
+}
+
+
+.jarvis-brand-block h2 {
+    margin: 8px 0 5px;
+
+    font-size: 20px;
+    line-height: 1.08;
+
+    color: #f0faff;
+
+    letter-spacing: -0.025em;
+}
+
+
+.jarvis-brand-block p {
+    margin: 0;
+
+    color: #607d92;
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   LEFT NAV — CONTROL RAIL
+   ========================================================= */
+
+.jarvis-side-nav {
+    display: flex;
+    flex-direction: column;
+
+    gap: 6px;
+
+    padding: 0 1px;
+}
+
+
+.jarvis-nav-item {
+    position: relative;
+
+    width: 100%;
+
+    padding: 11px 13px;
+
+    border-radius: 9px;
+
+    border:
+        1px solid
+        transparent;
+
+    background:
+        transparent;
+
+    color: #66879e;
+
+    text-align: left;
+
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        color 0.18s ease,
+        background 0.18s ease,
+        border-color 0.18s ease,
+        transform 0.18s ease;
+}
+
+
+.jarvis-nav-item:hover {
+    transform: translateX(3px);
+
+    color: #d9f4ff;
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(0, 144, 255, 0.09),
+            transparent
+        );
+}
+
+
+.jarvis-nav-item.active {
+    color: #eafaff;
+
+    border-color:
+        rgba(44, 196, 255, 0.28);
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(0, 141, 255, 0.23),
+            rgba(0, 141, 255, 0.025)
+        );
+
+    box-shadow:
+        inset 3px 0 0 #38caff,
+        0 0 20px rgba(0, 161, 255, 0.04);
+}
+
+
+/* =========================================================
+   SYSTEM STATUS
+   ========================================================= */
+
+.jarvis-system-card {
+    margin-top: auto;
+
+    padding: 15px;
+
+    border-radius: 13px;
+
+    border:
+        1px solid
+        rgba(38, 178, 255, 0.18);
+
+    background:
+        linear-gradient(
+            160deg,
+            rgba(7, 27, 45, 0.76),
+            rgba(2, 13, 22, 0.92)
+        );
+
+    backdrop-filter: blur(18px);
+
+    box-shadow:
+        inset 0 0 25px rgba(0, 119, 255, 0.025),
+        0 22px 45px rgba(0,0,0,0.22);
+}
+
+
+.jarvis-system-header {
+    margin-bottom: 10px;
+
+    color: #deeff7;
+
+    font-size: 11px;
+    font-weight: 800;
+
+    letter-spacing: 0.02em;
+}
+
+
+.jarvis-online-dot {
+    width: 7px;
+    height: 7px;
+
+    background: #39e78c;
+
+    box-shadow:
+        0 0 5px #39e78c,
+        0 0 13px rgba(57, 231, 140, 0.55);
+}
+
+
+.jarvis-status-row {
+    padding: 7px 0;
+
+    border-top:
+        1px solid
+        rgba(96, 180, 220, 0.06);
+
+    color: #648197;
+
+    font-size: 10px;
+}
+
+
+.jarvis-status-row strong {
+    color: #4ae19c;
+
+    font-size: 9px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.06em;
+}
+
+
+/* =========================================================
+   CENTER MAIN PANEL
+   ========================================================= */
+
+.jarvis-main-panel {
+    display: flex;
+    flex-direction: column;
+
+    gap: 16px;
+}
+
+
+/* =========================================================
+   MAIN JARVIS CORE
+   ========================================================= */
+
+.jarvis-core-wrap {
+    position: relative;
+
+    min-height: 460px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    border-radius: 22px;
+
+    border:
+        1px solid
+        rgba(39, 177, 255, 0.12);
+
+    background:
+        radial-gradient(
+            ellipse at 50% 54%,
+            rgba(0, 141, 255, 0.10),
+            transparent 27%
+        ),
+        radial-gradient(
+            ellipse at 50% 100%,
+            rgba(0, 120, 255, 0.10),
+            transparent 44%
+        ),
+        linear-gradient(
+            180deg,
+            rgba(2, 13, 25, 0.78),
+            rgba(1, 8, 15, 0.92)
+        );
+
+    box-shadow:
+        inset 0 0 80px rgba(0, 108, 184, 0.035),
+        0 26px 65px rgba(0,0,0,0.24);
+}
+
+
+/* star field */
+
+.jarvis-core-wrap::before {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    pointer-events: none;
+
+    opacity: 0.38;
+
+    background-image:
+        radial-gradient(
+            circle at 12% 20%,
+            #61d8ff 0 1px,
+            transparent 1.5px
+        ),
+        radial-gradient(
+            circle at 77% 14%,
+            #61d8ff 0 1px,
+            transparent 1.5px
+        ),
+        radial-gradient(
+            circle at 64% 33%,
+            #ffffff 0 1px,
+            transparent 1.5px
+        ),
+        radial-gradient(
+            circle at 26% 38%,
+            #4abfff 0 1px,
+            transparent 1.5px
+        ),
+        radial-gradient(
+            circle at 87% 44%,
+            #58cfff 0 1px,
+            transparent 1.5px
+        );
+}
+
+
+/* EARTH / HORIZON EFFECT */
+
+.jarvis-core-wrap::after {
+    content: "";
+
+    position: absolute;
+
+    width: 105%;
+    height: 235px;
+
+    left: 50%;
+    bottom: -167px;
+
+    transform: translateX(-50%);
+
+    border-radius: 50% 50% 0 0;
+
+    border-top:
+        1px solid
+        rgba(81, 202, 255, 0.78);
+
+    background:
+        radial-gradient(
+            ellipse at 50% 0%,
+            rgba(0, 143, 255, 0.18),
+            rgba(0, 40, 100, 0.06) 45%,
+            rgba(0, 8, 20, 0.94) 72%
+        );
+
+    box-shadow:
+        0 -3px 12px rgba(43, 193, 255, 0.34),
+        0 -18px 70px rgba(0, 135, 255, 0.20),
+        inset 0 35px 80px rgba(0, 107, 255, 0.07);
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   GIANT ORB
+   ========================================================= */
+
+.jarvis-orb {
+    position: relative;
+
+    z-index: 4;
+
+    width: 250px;
+    height: 250px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 50%;
+
+    margin-top: -25px;
+
+    filter:
+        drop-shadow(
+            0 0 28px
+            rgba(0, 190, 255, 0.38)
+        )
+        drop-shadow(
+            0 0 70px
+            rgba(0, 108, 255, 0.18)
+        );
+}
+
+
+/* blue energy atmosphere */
+
+.jarvis-orb::before {
+    content: "";
+
+    position: absolute;
+
+    inset: 34px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle at 40% 36%,
+            rgba(237, 253, 255, 1) 0%,
+            rgba(118, 231, 255, 0.96) 7%,
+            rgba(27, 178, 255, 0.88) 18%,
+            rgba(0, 98, 255, 0.44) 42%,
+            rgba(0, 41, 100, 0.12) 63%,
+            transparent 72%
+        );
+
+    box-shadow:
+        0 0 25px rgba(100, 229, 255, 0.80),
+        0 0 70px rgba(0, 165, 255, 0.50),
+        0 0 145px rgba(0, 105, 255, 0.28),
+        inset 0 0 25px rgba(255,255,255,0.40);
+
+    animation:
+        jarvisCorePulseV2
+        3.2s
+        ease-in-out
+        infinite;
+}
+
+
+/* outer scanner glow */
+
+.jarvis-orb::after {
+    content: "";
+
+    position: absolute;
+
+    inset: -20px;
+
+    border-radius: 50%;
+
+    border:
+        1px solid
+        rgba(49, 198, 255, 0.08);
+
+    box-shadow:
+        0 0 60px rgba(0, 161, 255, 0.08);
+
+    animation:
+        jarvisOuterPulse
+        4.8s
+        ease-in-out
+        infinite;
+}
+
+
+/* central reactor */
+
+.jarvis-orb-core {
+    position: relative;
+
+    z-index: 5;
+
+    width: 52px;
+    height: 52px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            #ffffff 0%,
+            #d8faff 12%,
+            #70e5ff 28%,
+            #10baff 50%,
+            rgba(0, 143, 255, 0.25) 68%,
+            transparent 76%
+        );
+
+    box-shadow:
+        0 0 14px #ffffff,
+        0 0 30px #44dbff,
+        0 0 65px rgba(0, 189, 255, 0.95),
+        0 0 120px rgba(0, 113, 255, 0.45);
+}
+
+
+/* =========================================================
+   ORBITAL RINGS
+   ========================================================= */
+
+.jarvis-orb-ring {
+    position: absolute;
+
+    border-radius: 50%;
+
+    pointer-events: none;
+}
+
+
+.jarvis-ring-one {
+    inset: 3px;
+
+    border:
+        1px dashed
+        rgba(67, 210, 255, 0.46);
+
+    box-shadow:
+        0 0 10px rgba(0, 188, 255, 0.16);
+
+    animation:
+        jarvisSpin
+        17s
+        linear
+        infinite;
+}
+
+
+.jarvis-ring-two {
+    inset: 23px;
+
+    border:
+        2px solid
+        rgba(49, 156, 255, 0.34);
+
+    border-left-color:
+        rgba(130, 239, 255, 0.80);
+
+    border-right-color:
+        rgba(0, 101, 255, 0.12);
+
+    animation:
+        jarvisSpinReverse
+        10s
+        linear
+        infinite;
+}
+
+
+.jarvis-ring-three {
+    inset: 50px;
+
+    border:
+        1px dotted
+        rgba(134, 234, 255, 0.68);
+
+    animation:
+        jarvisSpin
+        6.5s
+        linear
+        infinite;
+}
+
+
+/* =========================================================
+   MODE LABEL
+   ========================================================= */
+
+.jarvis-mode-label {
+    position: relative;
+
+    z-index: 4;
+
+    margin-top: 2px;
+
+    color: #85ddff;
+
+    font-size: 10px;
+    font-weight: 900;
+
+    letter-spacing: 0.32em;
+
+    text-shadow:
+        0 0 16px
+        rgba(80, 211, 255, 0.35);
+}
+
+
+/* =========================================================
+   STATE TRACK
+   ========================================================= */
+
+.jarvis-state-track {
+    position: relative;
+
+    z-index: 4;
+
+    display: flex;
+
+    margin-top: 16px;
+
+    gap: 6px;
+}
+
+
+.jarvis-state {
+    padding: 7px 12px;
+
+    border-radius: 999px;
+
+    border:
+        1px solid
+        rgba(65, 158, 205, 0.10);
+
+    background:
+        rgba(1, 10, 18, 0.72);
+
+    color: #405f76;
+
+    font-size: 8px;
+    font-weight: 900;
+
+    letter-spacing: 0.13em;
+
+    backdrop-filter: blur(12px);
+}
+
+
+.jarvis-state.active {
+    color: #ddf8ff;
+
+    border-color:
+        rgba(55, 201, 255, 0.66);
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(0, 149, 235, 0.25),
+            rgba(0, 72, 130, 0.13)
+        );
+
+    box-shadow:
+        0 0 20px rgba(0, 180, 255, 0.14),
+        inset 0 0 12px rgba(82, 215, 255, 0.05);
+}
+
+
+/* =========================================================
+   QUICK ACTIONS — HUD STYLE
+   ========================================================= */
+
+.jarvis-quick-actions {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 10px;
+}
+
+
+.jarvis-action-card {
+    position: relative;
+
+    min-height: 72px;
+
+    padding: 13px 14px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    overflow: hidden;
+
+    border-radius: 12px;
+
+    border:
+        1px solid
+        rgba(43, 182, 255, 0.14);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(7, 27, 45, 0.74),
+            rgba(3, 14, 24, 0.92)
+        );
+
+    color: inherit;
+
+    box-shadow:
+        inset 0 0 24px rgba(0, 135, 255, 0.025);
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+
+.jarvis-action-card::before {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    top: 0;
+
+    width: 42px;
+    height: 1px;
+
+    background:
+        #35caff;
+
+    opacity: 0.55;
+
+    box-shadow:
+        0 0 9px
+        rgba(53, 202, 255, 0.55);
+}
+
+
+.jarvis-action-card:hover {
+    transform: translateY(-3px);
+
+    border-color:
+        rgba(59, 205, 255, 0.38);
+
+    box-shadow:
+        0 12px 30px rgba(0,0,0,0.25),
+        inset 0 0 28px rgba(0, 149, 255, 0.04);
+}
+
+
+.jarvis-action-icon {
+    width: 37px;
+    height: 37px;
+
+    flex: 0 0 37px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 10px;
+
+    border:
+        1px solid
+        rgba(53, 203, 255, 0.28);
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(0, 160, 255, 0.18),
+            rgba(0, 89, 160, 0.08)
+        );
+
+    color: #56d8ff;
+
+    font-size: 15px;
+
+    box-shadow:
+        inset 0 0 14px
+        rgba(0, 153, 255, 0.06);
+}
+
+
+.jarvis-action-card strong {
+    color: #e3f5fb;
+
+    font-size: 11px;
+}
+
+
+.jarvis-action-card small {
+    margin-top: 3px;
+
+    color: #4e7086;
+
+    font-size: 9px;
+}
+
+
+/* =========================================================
+   COMMAND CENTER
+   ========================================================= */
+
+.jarvis-command-panel {
+    position: relative;
+
+    padding: 21px 22px 18px;
+
+    border-radius: 17px;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        rgba(44, 186, 255, 0.17);
+
+    background:
+        radial-gradient(
+            ellipse at 50% 0%,
+            rgba(0, 137, 255, 0.07),
+            transparent 55%
+        ),
+        linear-gradient(
+            145deg,
+            rgba(7, 25, 42, 0.84),
+            rgba(2, 13, 23, 0.94)
+        );
+
+    box-shadow:
+        inset 0 0 45px rgba(0, 126, 220, 0.025),
+        0 25px 65px rgba(0,0,0,0.22);
+}
+
+
+.jarvis-command-panel::before {
+    content: "";
+
+    position: absolute;
+
+    width: 180px;
+    height: 1px;
+
+    left: 50%;
+    top: 0;
+
+    transform: translateX(-50%);
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            #46d4ff,
+            transparent
+        );
+
+    box-shadow:
+        0 0 15px
+        rgba(70, 212, 255, 0.70);
+}
+
+
+.jarvis-command-heading h1 {
+    margin: 5px 0;
+
+    color: #effbff;
+
+    font-size:
+        clamp(
+            25px,
+            2.7vw,
+            38px
+        );
+
+    font-weight: 680;
+
+    letter-spacing: -0.04em;
+}
+
+
+.jarvis-command-kicker {
+    color: #4dd5ff;
+
+    font-size: 9px;
+
+    letter-spacing: 0.25em;
+
+    text-shadow:
+        0 0 15px
+        rgba(77, 213, 255, 0.35);
+}
+
+
+.jarvis-command-heading p {
+    color: #557287;
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   COMMAND SUGGESTIONS
+   ========================================================= */
+
+.jarvis-suggestions {
+    margin-top: 14px;
+}
+
+
+.jarvis-suggestions button {
+    padding: 6px 10px;
+
+    border-radius: 999px;
+
+    border:
+        1px solid
+        rgba(59, 184, 239, 0.15);
+
+    background:
+        rgba(4, 29, 47, 0.70);
+
+    color: #7495a8;
+
+    font-size: 9px;
+}
+
+
+.jarvis-suggestions button:hover {
+    color: #e1f8ff;
+
+    border-color:
+        rgba(60, 207, 255, 0.48);
+
+    background:
+        rgba(0, 98, 153, 0.13);
+}
+
+
+/* =========================================================
+   JARVIS COMMAND INPUT
+   ========================================================= */
+
+.jarvis-input-wrap {
+    position: relative;
+
+    margin-top: 14px;
+
+    padding: 7px;
+
+    grid-template-columns:
+        auto
+        1fr
+        auto
+        auto;
+
+    border-radius: 13px;
+
+    border:
+        1px solid
+        rgba(51, 191, 255, 0.24);
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(1, 10, 18, 0.94),
+            rgba(1, 7, 12, 0.98)
+        );
+
+    box-shadow:
+        inset 0 0 26px rgba(0, 134, 220, 0.025),
+        0 12px 30px rgba(0,0,0,0.28);
+}
+
+
+#jarvis-command-input {
+    color: #e9faff;
+
+    font-size: 12px;
+}
+
+
+#jarvis-command-input::placeholder {
+    color: #344f62;
+}
+
+
+.jarvis-icon-button,
+.jarvis-mic-button,
+.jarvis-send-button {
+    width: 38px;
+    height: 38px;
+
+    border-radius: 10px;
+}
+
+
+.jarvis-icon-button,
+.jarvis-mic-button {
+    border:
+        1px solid
+        rgba(45, 183, 255, 0.16);
+
+    background:
+        rgba(0, 72, 115, 0.16);
+
+    color: #61d7ff;
+}
+
+
+.jarvis-send-button {
+    border:
+        1px solid
+        rgba(80, 222, 255, 0.62);
+
+    background:
+        linear-gradient(
+            135deg,
+            #007eea,
+            #16c7ef
+        );
+
+    color: #ffffff;
+
+    box-shadow:
+        0 0 18px
+        rgba(0, 183, 255, 0.22);
+}
+
+
+/* =========================================================
+   RIGHT TELEMETRY PANELS
+   ========================================================= */
+
+.jarvis-info-card {
+    position: relative;
+
+    padding: 15px;
+
+    border-radius: 13px;
+
+    border:
+        1px solid
+        rgba(41, 181, 255, 0.16);
+
+    background:
+        linear-gradient(
+            155deg,
+            rgba(7, 27, 45, 0.76),
+            rgba(2, 12, 22, 0.92)
+        );
+
+    box-shadow:
+        inset 0 0 30px rgba(0, 135, 255, 0.02),
+        0 18px 48px rgba(0,0,0,0.20);
+
+    backdrop-filter: blur(18px);
+}
+
+
+.jarvis-info-card::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    right: 18px;
+
+    width: 42px;
+    height: 1px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            #37cfff
+        );
+
+    opacity: 0.45;
+}
+
+
+.jarvis-info-title {
+    margin-bottom: 10px;
+
+    color: #d9f0fa;
+
+    font-size: 10px;
+    font-weight: 900;
+
+    letter-spacing: 0.11em;
+}
+
+
+.jarvis-empty-state {
+    padding: 20px 8px;
+
+    border-radius: 9px;
+
+    border:
+        1px dashed
+        rgba(46, 169, 225, 0.10);
+
+    background:
+        rgba(0, 61, 100, 0.035);
+
+    color: #42647a;
+
+    font-size: 9px;
+}
+
+
+.jarvis-activity-item {
+    padding: 9px 0;
+
+    border-top:
+        1px solid
+        rgba(72, 162, 205, 0.055);
+}
+
+
+.jarvis-activity-item strong {
+    color: #cde7f2;
+
+    font-size: 9px;
+}
+
+
+.jarvis-activity-item small {
+    color: #46697f;
+
+    font-size: 8px;
+}
+
+
+/* =========================================================
+   CINEMATIC ORB ANIMATION
+   ========================================================= */
+
+@keyframes jarvisCorePulseV2 {
+
+    0%,
+    100% {
+        transform: scale(0.96);
+
+        filter:
+            brightness(0.93)
+            saturate(1);
+    }
+
+    50% {
+        transform: scale(1.045);
+
+        filter:
+            brightness(1.12)
+            saturate(1.16);
+    }
+}
+
+
+@keyframes jarvisOuterPulse {
+
+    0%,
+    100% {
+        transform: scale(0.98);
+
+        opacity: 0.32;
+    }
+
+    50% {
+        transform: scale(1.09);
+
+        opacity: 0.75;
+    }
+}
+
+
+/* =========================================================
+   ORB STATE PREP
+   Used later when connected to real Jarvis states
+   ========================================================= */
+
+.jarvis-orb[data-state="thinking"] {
+    filter:
+        drop-shadow(
+            0 0 38px
+            rgba(0, 194, 255, 0.48)
+        );
+}
+
+
+.jarvis-orb[data-state="planning"]
+.jarvis-ring-one {
+    animation-duration: 5s;
+}
+
+
+.jarvis-orb[data-state="planning"]
+.jarvis-ring-two {
+    animation-duration: 4s;
+}
+
+
+.jarvis-orb[data-state="executing"]
+.jarvis-ring-one {
+    animation-duration: 2.8s;
+}
+
+
+.jarvis-orb[data-state="executing"]
+.jarvis-ring-two {
+    animation-duration: 2s;
+}
+
+
+.jarvis-orb[data-state="complete"]
+.jarvis-orb-core {
+    animation:
+        jarvisCompleteFlash
+        0.65s
+        ease;
+}
+
+
+@keyframes jarvisCompleteFlash {
+
+    0% {
+        transform: scale(1);
+    }
+
+    35% {
+        transform: scale(1.5);
+
+        filter:
+            brightness(1.8);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+
+/* =========================================================
+   LARGE SCREEN
+   ========================================================= */
+
+@media (min-width: 1450px) {
+
+    .jarvis-shell {
+        grid-template-columns:
+            225px
+            minmax(620px, 1fr)
+            265px;
+    }
+
+    .jarvis-core-wrap {
+        min-height: 500px;
+    }
+
+    .jarvis-orb {
+        width: 285px;
+        height: 285px;
+    }
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 1200px) {
+
+    .jarvis-shell {
+        grid-template-columns:
+            195px
+            minmax(0, 1fr);
+    }
+
+    .jarvis-right-panel {
+        grid-column:
+            1 / -1;
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(
+                3,
+                minmax(0, 1fr)
+            );
+    }
+
+    .jarvis-core-wrap {
+        min-height: 430px;
+    }
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 850px) {
+
+    #jarvis-page {
+        padding:
+            14px;
+    }
+
+    .jarvis-shell {
+        grid-template-columns:
+            1fr;
+    }
+
+    .jarvis-left-panel {
+        order: 2;
+    }
+
+    .jarvis-main-panel {
+        order: 1;
+    }
+
+    .jarvis-right-panel {
+        order: 3;
+
+        grid-template-columns:
+            1fr;
+    }
+
+    .jarvis-core-wrap {
+        min-height: 390px;
+    }
+
+    .jarvis-orb {
+        width: 210px;
+        height: 210px;
+
+        margin-top: 0;
+    }
+
+    .jarvis-side-nav {
+        display: grid;
+
+        grid-template-columns:
+            repeat(
+                4,
+                minmax(0, 1fr)
+            );
+    }
+
+    .jarvis-nav-item {
+        text-align: center;
+    }
+
+    .jarvis-quick-actions {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+    }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 560px) {
+
+    .jarvis-core-wrap {
+        min-height: 350px;
+    }
+
+    .jarvis-orb {
+        width: 180px;
+        height: 180px;
+    }
+
+    .jarvis-side-nav {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+    }
+
+    .jarvis-quick-actions {
+        grid-template-columns:
+            1fr;
+    }
+
+    .jarvis-state-track {
+        max-width: 300px;
+    }
+
+    .jarvis-state {
+        padding:
+            6px 8px;
+
+        font-size:
+            7px;
+    }
+
+    .jarvis-command-panel {
+        padding:
+            18px 12px;
+    }
+
+    .jarvis-command-heading h1 {
+        font-size:
+            25px;
+    }
+
+    #jarvis-plus-button {
+        display:
+            none;
+    }
+
+    .jarvis-input-wrap {
+        grid-template-columns:
+            1fr
+            auto
+            auto;
+    }
+}
+
+/* =========================================
+   JARVIS DESKTOP OVERRIDE
+   Keep cinematic layout inside Nova workspace
+   ========================================= */
+
+@media (min-width: 700px) {
+
+    .jarvis-shell {
+        grid-template-columns:
+            215px
+            minmax(0, 1fr)
+            250px;
+    }
+
+    .jarvis-left-panel {
+        order: initial;
+    }
+
+    .jarvis-main-panel {
+        order: initial;
+    }
+
+    .jarvis-right-panel {
+        order: initial;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .jarvis-core-wrap {
+        min-height: 500px;
+    }
+
+    .jarvis-orb {
+        width: 285px;
+        height: 285px;
+        margin-top: -25px;
+    }
+
+    .jarvis-side-nav {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .jarvis-nav-item {
+        text-align: left;
+    }
+
+    .jarvis-quick-actions {
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+    }
+}
+
+/* =========================================================
+   JARVIS V3 — REFERENCE DESIGN
+   ========================================================= */
+
+#jarvis-page.active-page {
+    padding: 0;
+}
+
+body:has(#jarvis-page.active-page) .sidebar {
+    display: none;
+}
+
+body:has(#jarvis-page.active-page) .main-content {
+    margin-left: 0;
+    width: 100%;
+}
+
+body:has(#jarvis-page.active-page) .mobile-app-header {
+    display: none;
+}
+
+.jarvis-v3-app {
+    min-height: 100vh;
+    width: 100%;
+    padding: 14px;
+
+    color: #eaf7ff;
+
+    background:
+        radial-gradient(
+            circle at 50% 25%,
+            rgba(0, 115, 255, 0.09),
+            transparent 32%
+        ),
+        linear-gradient(
+            180deg,
+            #020a12 0%,
+            #02070d 100%
+        );
+}
+
+
+/* =========================================================
+   TOP BAR
+   ========================================================= */
+
+.jarvis-v3-topbar {
+    height: 78px;
+
+    display: grid;
+    grid-template-columns: 180px 1fr 390px;
+    align-items: center;
+
+    gap: 18px;
+
+    padding: 0 10px 10px;
+
+    border-bottom:
+        1px solid
+        rgba(76, 184, 255, 0.09);
+}
+
+
+.jarvis-v3-logo {
+    display: flex;
+    flex-direction: column;
+}
+
+
+.jarvis-v3-logo-text {
+    font-size: 31px;
+    font-weight: 300;
+
+    letter-spacing: 0.24em;
+
+    color: #abc6d9;
+}
+
+
+.jarvis-v3-logo-text span {
+    color: #58d9ff;
+
+    text-shadow:
+        0 0 10px #4edaff,
+        0 0 28px rgba(0, 151, 255, 0.9);
+}
+
+
+.jarvis-v3-logo small {
+    margin-top: 3px;
+
+    color: #385269;
+
+    font-size: 7px;
+    font-weight: 800;
+
+    letter-spacing: 0.24em;
+}
+
+
+.jarvis-v3-topnav {
+    height: 66px;
+
+    display: flex;
+    align-items: stretch;
+
+    gap: 3px;
+}
+
+
+.jarvis-v3-topnav-item {
+    min-width: 67px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+
+    border: 0;
+    border-bottom: 2px solid transparent;
+
+    background: transparent;
+
+    color: #6e8497;
+
+    font: inherit;
+    font-size: 10px;
+
+    cursor: pointer;
+
+    transition: 0.18s ease;
+}
+
+
+.jarvis-v3-topnav-icon {
+    font-size: 19px;
+
+    color: #71899b;
+}
+
+
+.jarvis-v3-topnav-item:hover {
+    color: #d8f5ff;
+}
+
+
+.jarvis-v3-topnav-item.active {
+    color: #effcff;
+
+    border-bottom-color: #168cff;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(0, 132, 255, 0.13),
+            rgba(0, 86, 255, 0.04)
+        );
+
+    box-shadow:
+        inset 0 -20px 40px
+        rgba(0, 126, 255, 0.08);
+}
+
+
+.jarvis-v3-topnav-item.active
+.jarvis-v3-topnav-icon {
+    color: #3ecfff;
+
+    text-shadow:
+        0 0 15px
+        rgba(41, 191, 255, 0.8);
+}
+
+
+.jarvis-v3-topbar-right {
+    display: grid;
+
+    grid-template-columns: 1fr auto;
+
+    gap: 16px;
+
+    align-items: center;
+}
+
+
+.jarvis-v3-search {
+    height: 40px;
+
+    display: grid;
+
+    grid-template-columns:
+        auto
+        1fr;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 0 13px;
+
+    border-radius: 14px;
+
+    border:
+        1px solid
+        rgba(84, 163, 209, 0.12);
+
+    background:
+        rgba(8, 25, 39, 0.74);
+}
+
+
+.jarvis-v3-search span {
+    color: #7395aa;
+}
+
+
+.jarvis-v3-search input {
+    width: 100%;
+
+    border: 0;
+    outline: 0;
+
+    background: transparent;
+
+    color: #cce8f4;
+
+    font: inherit;
+    font-size: 11px;
+}
+
+
+.jarvis-v3-user {
+    display: grid;
+
+    grid-template-columns:
+        auto
+        1fr;
+
+    align-items: center;
+
+    gap: 9px;
+}
+
+
+.jarvis-v3-user-avatar {
+    width: 39px;
+    height: 39px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            145deg,
+            #27455f,
+            #172a3c
+        );
+
+    color: #dff7ff;
+}
+
+
+.jarvis-v3-user div:last-child {
+    display: flex;
+
+    flex-direction: column;
+}
+
+
+.jarvis-v3-user strong {
+    font-size: 11px;
+}
+
+
+.jarvis-v3-user small {
+    color: #62788b;
+
+    font-size: 9px;
+}
+
+
+/* =========================================================
+   MAIN GRID
+   ========================================================= */
+
+.jarvis-v3-grid {
+    display: grid;
+
+    grid-template-columns:
+        210px
+        minmax(600px, 1fr)
+        220px;
+
+    gap: 12px;
+
+    max-width: 1540px;
+
+    margin: 0 auto;
+}
+
+
+/* =========================================================
+   SHARED PANELS
+   ========================================================= */
+
+.jarvis-v3-left-main,
+.jarvis-v3-system,
+.jarvis-v3-hero,
+.jarvis-v3-action,
+.jarvis-v3-command,
+.jarvis-v3-bottom-card,
+.jarvis-v3-time-card,
+.jarvis-v3-right-card {
+    border:
+        1px solid
+        rgba(54, 168, 232, 0.16);
+
+    background:
+        linear-gradient(
+            150deg,
+            rgba(5, 23, 38, 0.91),
+            rgba(2, 12, 21, 0.96)
+        );
+
+    box-shadow:
+        inset 0 0 40px
+        rgba(0, 135, 255, 0.018);
+}
+
+
+/* =========================================================
+   LEFT PANEL
+   ========================================================= */
+
+.jarvis-v3-left {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+}
+
+
+.jarvis-v3-left-main {
+    min-height: 505px;
+
+    padding: 22px 10px 18px;
+
+    border-radius: 11px;
+}
+
+
+.jarvis-v3-left-title {
+    padding: 0 12px;
+
+    color: #58d8ff;
+
+    font-size: 27px;
+    font-weight: 300;
+
+    letter-spacing: 0.24em;
+
+    text-shadow:
+        0 0 20px
+        rgba(33, 194, 255, 0.22);
+}
+
+
+.jarvis-v3-left-subtitle {
+    padding: 5px 12px 22px;
+
+    color: #526d80;
+
+    font-size: 8px;
+    font-weight: 800;
+
+    letter-spacing: 0.18em;
+}
+
+
+.jarvis-v3-control-nav {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+
+.jarvis-v3-control-item {
+    height: 39px;
+
+    display: grid;
+
+    grid-template-columns:
+        26px
+        1fr;
+
+    align-items: center;
+
+    border: 1px solid transparent;
+
+    border-radius: 7px;
+
+    padding: 0 11px;
+
+    background: transparent;
+
+    color: #91aabd;
+
+    font: inherit;
+    font-size: 11px;
+
+    text-align: left;
+
+    cursor: pointer;
+}
+
+
+.jarvis-v3-control-item span {
+    color: #8eb3cb;
+
+    font-size: 16px;
+}
+
+
+.jarvis-v3-control-item.active {
+    color: #eafaff;
+
+    border-color:
+        rgba(23, 144, 255, 0.26);
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(0, 116, 255, 0.22),
+            rgba(0, 87, 183, 0.07)
+        );
+
+    box-shadow:
+        inset 3px 0 0 #168fff;
+}
+
+
+.jarvis-v3-quote {
+    margin-top: 37px;
+
+    text-align: center;
+
+    color: #7694a8;
+
+    font-size: 12px;
+
+    font-style: italic;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   SYSTEM CARD
+   ========================================================= */
+
+.jarvis-v3-system {
+    padding: 12px;
+
+    border-radius: 10px;
+}
+
+
+.jarvis-v3-card-title {
+    color: #c9e3ee;
+
+    font-size: 9px;
+    font-weight: 800;
+}
+
+
+.jarvis-v3-system-master {
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    padding: 11px 0 15px;
+
+    color: #46da8a;
+
+    font-size: 9px;
+}
+
+
+.jarvis-v3-green-dot {
+    width: 10px;
+    height: 10px;
+
+    border-radius: 50%;
+
+    background: #3ee685;
+
+    box-shadow:
+        0 0 10px
+        rgba(62, 230, 133, 0.7);
+}
+
+
+.jarvis-v3-system-row {
+    display: flex;
+
+    justify-content: space-between;
+
+    padding: 6px 0;
+
+    color: #617d90;
+
+    font-size: 8px;
+}
+
+
+.jarvis-v3-system-row strong {
+    color: #4ee497;
+
+    font-size: 7px;
+}
+
+
+/* =========================================================
+   CENTER
+   ========================================================= */
+
+.jarvis-v3-center {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+}
+
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.jarvis-v3-hero {
+    position: relative;
+
+    height: 325px;
+
+    overflow: hidden;
+
+    border-radius: 12px;
+
+    background:
+        radial-gradient(
+            circle at 51% 47%,
+            rgba(0, 116, 255, 0.12),
+            transparent 28%
+        ),
+        linear-gradient(
+            180deg,
+            #03111f 0%,
+            #010811 100%
+        );
+}
+
+
+.jarvis-v3-hero::before {
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background-image:
+        linear-gradient(
+            rgba(43, 158, 218, 0.018) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(43, 158, 218, 0.018) 1px,
+            transparent 1px
+        );
+
+    background-size: 40px 40px;
+}
+
+
+/* =========================================================
+   STATE RAIL
+   ========================================================= */
+
+.jarvis-v3-state-rail {
+    position: absolute;
+
+    z-index: 8;
+
+    left: 38px;
+
+    top: 73px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 15px;
+}
+
+
+.jarvis-v3-state-rail::before {
+    content: "";
+
+    position: absolute;
+
+    left: 4px;
+
+    top: 7px;
+
+    bottom: 7px;
+
+    width: 1px;
+
+    background:
+        rgba(59, 133, 180, 0.26);
+}
+
+
+.jarvis-v3-state-row {
+    position: relative;
+
+    display: grid;
+
+    grid-template-columns:
+        9px
+        1fr;
+
+    align-items: center;
+
+    gap: 11px;
+
+    color: #395b70;
+
+    font-size: 7px;
+    font-weight: 800;
+
+    letter-spacing: 0.10em;
+}
+
+
+.jarvis-v3-state-row span {
+    position: relative;
+
+    z-index: 2;
+
+    width: 8px;
+    height: 8px;
+
+    border-radius: 50%;
+
+    background: #173349;
+}
+
+
+.jarvis-v3-state-row.active {
+    color: #95dcf8;
+}
+
+
+.jarvis-v3-state-row.active span {
+    background: #20caff;
+
+    box-shadow:
+        0 0 11px
+        rgba(32, 202, 255, 0.9);
+}
+
+
+/* =========================================================
+   ORB
+   ========================================================= */
+
+.jarvis-v3-orb {
+    position: absolute;
+
+    z-index: 5;
+
+    width: 265px;
+    height: 265px;
+
+    left: 50%;
+    top: 15px;
+
+    transform:
+        translateX(-50%);
+
+    display: grid;
+
+    place-items: center;
+
+    border-radius: 50%;
+}
+
+
+.jarvis-v3-orbit {
+    position: absolute;
+
+    border-radius: 50%;
+
+    border:
+        1px solid
+        rgba(62, 158, 255, 0.16);
+}
+
+
+.jarvis-v3-orbit.orbit-a {
+    inset: -13px;
+
+    border-style: solid;
+
+    animation:
+        jarvisV3Spin
+        19s
+        linear
+        infinite;
+}
+
+
+.jarvis-v3-orbit.orbit-b {
+    inset: 0px;
+
+    border-left-color:
+        rgba(67, 220, 255, 0.65);
+
+    border-right-color:
+        rgba(0, 67, 255, 0.08);
+
+    animation:
+        jarvisV3SpinReverse
+        12s
+        linear
+        infinite;
+}
+
+
+.jarvis-v3-orbit.orbit-c {
+    inset: 21px;
+
+    border-style: dashed;
+
+    border-color:
+        rgba(45, 176, 255, 0.30);
+
+    animation:
+        jarvisV3Spin
+        8s
+        linear
+        infinite;
+}
+
+
+.jarvis-v3-energy-sphere {
+    position: relative;
+
+    width: 210px;
+    height: 210px;
+
+    display: grid;
+
+    place-items: center;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(0, 13, 29, 0.96) 0%,
+            rgba(0, 24, 51, 0.96) 50%,
+            rgba(0, 122, 255, 0.35) 67%,
+            rgba(40, 220, 255, 0.95) 71%,
+            rgba(0, 87, 255, 0.42) 74%,
+            transparent 77%
+        );
+
+    box-shadow:
+        inset 0 0 35px
+        rgba(0, 112, 255, 0.22),
+
+        0 0 12px
+        rgba(52, 223, 255, 0.9),
+
+        0 0 28px
+        rgba(0, 151, 255, 0.75),
+
+        0 0 70px
+        rgba(0, 90, 255, 0.32);
+
+    animation:
+        jarvisV3Pulse
+        4s
+        ease-in-out
+        infinite;
+}
+
+
+.jarvis-v3-energy-sphere::before {
+    content: "";
+
+    position: absolute;
+
+    inset: 8px;
+
+    border-radius: 50%;
+
+    border:
+        1px solid
+        rgba(89, 220, 255, 0.62);
+
+    box-shadow:
+        inset 0 0 20px
+        rgba(0, 130, 255, 0.34);
+}
+
+
+.jarvis-v3-energy-sphere::after {
+    content: "";
+
+    position: absolute;
+
+    width: 100px;
+    height: 180px;
+
+    right: 11px;
+    top: 16px;
+
+    border-radius: 50%;
+
+    border-right:
+        2px solid
+        rgba(91, 232, 255, 0.65);
+
+    transform:
+        rotate(-10deg);
+
+    filter:
+        blur(0.2px);
+}
+
+
+.jarvis-v3-orb-text {
+    position: relative;
+
+    z-index: 8;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+}
+
+
+.jarvis-v3-orb-text strong {
+    color: #c9e7f6;
+
+    font-size: 32px;
+    font-weight: 300;
+
+    letter-spacing: 0.20em;
+}
+
+
+.jarvis-v3-orb-text strong span {
+    color: #64ddff;
+
+    text-shadow:
+        0 0 13px
+        #44d8ff,
+
+        0 0 30px
+        rgba(0, 145, 255, 0.85);
+}
+
+
+.jarvis-v3-orb-text small {
+    margin-top: 8px;
+
+    color: #82a9bd;
+
+    font-size: 8px;
+
+    letter-spacing: 0.30em;
+}
+
+
+/* =========================================================
+   EARTH HORIZON
+   ========================================================= */
+
+.jarvis-v3-earth {
+    position: absolute;
+
+    z-index: 2;
+
+    width: 730px;
+    height: 185px;
+
+    left: 50%;
+    bottom: -113px;
+
+    transform:
+        translateX(-50%);
+
+    border-radius:
+        50% 50% 0 0;
+
+    border-top:
+        2px solid
+        rgba(89, 221, 255, 0.75);
+
+    background:
+        radial-gradient(
+            ellipse at 50% 0%,
+            rgba(14, 130, 255, 0.35),
+            rgba(0, 46, 115, 0.20) 34%,
+            rgba(0, 10, 32, 0.98) 68%
+        );
+
+    box-shadow:
+        0 -3px 14px
+        rgba(71, 215, 255, 0.68),
+
+        0 -18px 75px
+        rgba(0, 104, 255, 0.36);
+}
+
+
+/* =========================================================
+   HERO QUOTE
+   ========================================================= */
+
+.jarvis-v3-hero-quote {
+    position: absolute;
+
+    z-index: 7;
+
+    right: 30px;
+
+    top: 95px;
+
+    color: #86a9ba;
+
+    font-size: 12px;
+
+    font-style: italic;
+
+    line-height: 1.55;
+
+    text-align: left;
+}
+
+
+/* =========================================================
+   ACTIONS
+   ========================================================= */
+
+.jarvis-v3-actions {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            6,
+            minmax(0, 1fr)
+        );
+
+    gap: 8px;
+}
+
+
+.jarvis-v3-action {
+    min-height: 108px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 5px;
+
+    border-radius: 10px;
+
+    color: inherit;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease;
+}
+
+
+.jarvis-v3-action:hover {
+    transform:
+        translateY(-3px);
+
+    border-color:
+        rgba(56, 207, 255, 0.46);
+}
+
+
+.jarvis-v3-action-icon {
+    margin-bottom: 4px;
+
+    color: #9ed7f4;
+
+    font-size: 27px;
+}
+
+
+.jarvis-v3-action strong {
+    color: #d9ecf5;
+
+    font-size: 10px;
+}
+
+
+.jarvis-v3-action small {
+    color: #526f82;
+
+    font-size: 7px;
+}
+
+
+/* =========================================================
+   COMMAND CENTER
+   ========================================================= */
+
+.jarvis-v3-command {
+    padding: 23px 28px 20px;
+
+    border-radius: 11px;
+}
+
+
+.jarvis-v3-command h2 {
+    margin: 0;
+
+    color: #9bb2c0;
+
+    font-size: 18px;
+    font-weight: 400;
+}
+
+
+.jarvis-v3-suggestions {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 8px;
+
+    margin-top: 20px;
+}
+
+
+.jarvis-v3-suggestions button {
+    padding: 7px 13px;
+
+    border:
+        1px solid
+        rgba(62, 150, 204, 0.11);
+
+    border-radius: 999px;
+
+    background:
+        rgba(6, 25, 39, 0.70);
+
+    color: #718c9d;
+
+    font: inherit;
+    font-size: 8px;
+
+    cursor: pointer;
+}
+
+
+.jarvis-v3-input-row {
+    display: grid;
+
+    grid-template-columns:
+        auto
+        auto
+        1fr
+        auto
+        auto;
+
+    align-items: center;
+
+    gap: 7px;
+
+    margin-top: 16px;
+}
+
+
+.jarvis-v3-round-button,
+.jarvis-v3-sliders,
+.jarvis-v3-send {
+    width: 38px;
+    height: 38px;
+
+    display: grid;
+
+    place-items: center;
+
+    border-radius: 50%;
+
+    border:
+        1px solid
+        rgba(63, 167, 218, 0.17);
+
+    background:
+        rgba(4, 19, 31, 0.87);
+
+    color: #8cb5c9;
+
+    cursor: pointer;
+}
+
+
+.jarvis-v3-mic {
+    border-color:
+        rgba(54, 173, 255, 0.32);
+
+    box-shadow:
+        inset 0 0 17px
+        rgba(0, 121, 255, 0.09);
+}
+
+
+#jarvis-command-input {
+    height: 42px;
+
+    border:
+        1px solid
+        rgba(50, 149, 201, 0.09);
+
+    border-radius: 12px;
+
+    outline: 0;
+
+    padding: 0 14px;
+
+    background:
+        rgba(2, 13, 23, 0.88);
+
+    color: #cbe9f6;
+
+    font: inherit;
+
+    font-size: 10px;
+}
+
+
+.jarvis-v3-send {
+    background:
+        linear-gradient(
+            145deg,
+            #0c8cff,
+            #276bff
+        );
+
+    border-color:
+        rgba(82, 202, 255, 0.65);
+
+    color: white;
+
+    box-shadow:
+        0 0 18px
+        rgba(0, 126, 255, 0.30);
+}
+
+
+/* =========================================================
+   BOTTOM
+   ========================================================= */
+
+.jarvis-v3-bottom {
+    display: grid;
+
+    grid-template-columns:
+        1.1fr
+        1fr;
+
+    gap: 10px;
+}
+
+
+.jarvis-v3-bottom-card {
+    min-height: 142px;
+
+    padding: 12px;
+
+    border-radius: 10px;
+}
+
+
+.jarvis-v3-card-header {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    margin-bottom: 10px;
+}
+
+
+.jarvis-v3-card-header strong {
+    color: #d5e8f1;
+
+    font-size: 9px;
+}
+
+
+.jarvis-v3-card-header button {
+    border: 0;
+
+    background: transparent;
+
+    color: #388dd0;
+
+    font: inherit;
+
+    font-size: 7px;
+
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   MARKET BOXES
+   ========================================================= */
+
+.jarvis-v3-market-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            4,
+            minmax(0, 1fr)
+        );
+
+    gap: 6px;
+}
+
+
+.jarvis-v3-market-box {
+    min-height: 93px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    padding: 9px;
+
+    border:
+        1px solid
+        rgba(54, 146, 196, 0.09);
+
+    border-radius: 8px;
+
+    background:
+        rgba(5, 23, 37, 0.70);
+}
+
+
+.jarvis-v3-market-box strong {
+    color: #b7d0dd;
+
+    font-size: 8px;
+}
+
+
+.jarvis-v3-market-box span {
+    margin-top: 4px;
+
+    color: #e1f1f7;
+
+    font-size: 12px;
+}
+
+
+.jarvis-v3-market-box small {
+    margin-top: 3px;
+
+    font-size: 7px;
+}
+
+
+.jarvis-v3-market-box .positive {
+    color: #35d378;
+}
+
+
+.jarvis-v3-market-box .negative {
+    color: #ef6c71;
+}
+
+
+.jarvis-v3-mini-chart {
+    position: relative;
+
+    height: 28px;
+
+    margin-top: auto;
+
+    overflow: hidden;
+}
+
+
+.jarvis-v3-mini-chart::before {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    right: 0;
+
+    height: 2px;
+
+    background:
+        currentColor;
+
+    transform-origin:
+        left center;
+
+    clip-path:
+        polygon(
+            0 80%,
+            12% 45%,
+            22% 63%,
+            36% 22%,
+            48% 50%,
+            62% 18%,
+            72% 41%,
+            85% 10%,
+            100% 25%,
+            100% 60%,
+            0 100%
+        );
+}
+
+
+.jarvis-v3-mini-chart.up {
+    color: #2ed37a;
+}
+
+
+.jarvis-v3-mini-chart.down {
+    color: #e95f66;
+
+    transform:
+        scaleY(-1);
+}
+
+
+/* =========================================================
+   PROJECTS
+   ========================================================= */
+
+.jarvis-v3-project-row {
+    display: grid;
+
+    grid-template-columns:
+        auto
+        1fr
+        auto;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 7px 0;
+
+    border-top:
+        1px solid
+        rgba(71, 150, 194, 0.06);
+}
+
+
+.project-dot {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+}
+
+
+.project-dot.green {
+    background: #35d985;
+}
+
+
+.project-dot.purple {
+    background: #d64bcc;
+}
+
+
+.project-dot.orange {
+    background: #ff6a42;
+}
+
+
+.project-dot.blue {
+    background: #348dff;
+}
+
+
+.jarvis-v3-project-row strong {
+    color: #a9c0cc;
+
+    font-size: 8px;
+}
+
+
+.jarvis-v3-project-row small {
+    color: #486273;
+
+    font-size: 7px;
+}
+
+
+/* =========================================================
+   RIGHT PANEL
+   ========================================================= */
+
+.jarvis-v3-right {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 9px;
+}
+
+
+.jarvis-v3-time-card,
+.jarvis-v3-right-card {
+    position: relative;
+
+    overflow: hidden;
+
+    padding: 13px;
+
+    border-radius: 10px;
+}
+
+
+.jarvis-v3-time-card {
+    min-height: 137px;
+}
+
+
+.jarvis-v3-date {
+    color: #9cb4c4;
+
+    font-size: 8px;
+}
+
+
+.jarvis-v3-time {
+    margin-top: 7px;
+
+    color: #daf2fc;
+
+    font-size: 28px;
+    font-weight: 300;
+}
+
+
+.jarvis-v3-time-card p {
+    color: #58798d;
+
+    font-size: 8px;
+
+    line-height: 1.5;
+}
+
+
+.jarvis-v3-earth-corner {
+    position: absolute;
+
+    width: 120px;
+    height: 120px;
+
+    right: -48px;
+    bottom: -49px;
+
+    border-radius: 50%;
+
+    border:
+        1px solid
+        rgba(66, 207, 255, 0.60);
+
+    background:
+        radial-gradient(
+            circle at 30% 30%,
+            rgba(36, 151, 255, 0.55),
+            rgba(0, 49, 109, 0.72) 50%,
+            #00101f 72%
+        );
+
+    box-shadow:
+        0 0 40px
+        rgba(0, 124, 255, 0.25);
+}
+
+
+/* =========================================================
+   TASKS
+   ========================================================= */
+
+.jarvis-v3-task-row {
+    display: grid;
+
+    grid-template-columns:
+        auto
+        1fr
+        auto;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 9px 0;
+
+    border-top:
+        1px solid
+        rgba(58, 143, 192, 0.07);
+}
+
+
+.task-circle {
+    width: 12px;
+    height: 12px;
+
+    border-radius: 50%;
+
+    border:
+        1px solid
+        #5c91ad;
+}
+
+
+.jarvis-v3-task-row div {
+    display: flex;
+
+    flex-direction: column;
+}
+
+
+.jarvis-v3-task-row strong {
+    color: #b5cbd6;
+
+    font-size: 8px;
+}
+
+
+.jarvis-v3-task-row small {
+    color: #506d80;
+
+    font-size: 7px;
+}
+
+
+.jarvis-v3-task-row em {
+    color: #5d7585;
+
+    font-size: 7px;
+
+    font-style: normal;
+}
+
+
+.jarvis-v3-task-row em.today {
+    color: #ff595f;
+}
+
+
+/* =========================================================
+   ACTIVITY
+   ========================================================= */
+
+.jarvis-v3-activity-row,
+.jarvis-v3-device-row {
+    display: grid;
+
+    grid-template-columns:
+        auto
+        1fr
+        auto;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 8px 0;
+
+    border-top:
+        1px solid
+        rgba(56, 143, 194, 0.07);
+}
+
+
+.jarvis-v3-activity-row > span,
+.jarvis-v3-device-row > span {
+    color: #79b7d6;
+
+    font-size: 10px;
+}
+
+
+.jarvis-v3-activity-row strong,
+.jarvis-v3-device-row strong {
+    color: #a8c0cb;
+
+    font-size: 8px;
+}
+
+
+.jarvis-v3-activity-row small {
+    color: #4d697a;
+
+    font-size: 7px;
+}
+
+
+.jarvis-v3-device-row small {
+    color: #3fd883;
+
+    font-size: 7px;
+}
+
+
+.jarvis-v3-connect-device {
+    width: 100%;
+
+    margin-top: 8px;
+
+    padding: 8px;
+
+    border:
+        1px solid
+        rgba(47, 149, 207, 0.11);
+
+    border-radius: 8px;
+
+    background:
+        rgba(4, 22, 35, 0.65);
+
+    color: #7391a2;
+
+    font: inherit;
+
+    font-size: 8px;
+
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   ORB ANIMATIONS
+   ========================================================= */
+
+@keyframes jarvisV3Spin {
+    from {
+        transform:
+            rotate(0deg);
+    }
+
+    to {
+        transform:
+            rotate(360deg);
+    }
+}
+
+
+@keyframes jarvisV3SpinReverse {
+    from {
+        transform:
+            rotate(360deg);
+    }
+
+    to {
+        transform:
+            rotate(0deg);
+    }
+}
+
+
+@keyframes jarvisV3Pulse {
+    0%,
+    100% {
+        transform:
+            scale(0.97);
+
+        filter:
+            brightness(0.90);
+    }
+
+    50% {
+        transform:
+            scale(1.035);
+
+        filter:
+            brightness(1.12);
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1180px) {
+
+    .jarvis-v3-topbar {
+        grid-template-columns:
+            150px
+            1fr;
+    }
+
+    .jarvis-v3-topbar-right {
+        display: none;
+    }
+
+    .jarvis-v3-grid {
+        grid-template-columns:
+            180px
+            minmax(0, 1fr);
+    }
+
+    .jarvis-v3-right {
+        grid-column:
+            1 / -1;
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(
+                4,
+                minmax(0, 1fr)
+            );
+    }
+
+}
+
+
+@media (max-width: 850px) {
+
+    body:has(#jarvis-page.active-page) .sidebar {
+        display: block;
+    }
+
+    .jarvis-v3-topbar {
+        display: none;
+    }
+
+    .jarvis-v3-grid {
+        grid-template-columns:
+            1fr;
+    }
+
+    .jarvis-v3-left {
+        display: none;
+    }
+
+    .jarvis-v3-right {
+        grid-template-columns:
+            1fr;
+    }
+
+    .jarvis-v3-actions {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+    }
+
+    .jarvis-v3-bottom {
+        grid-template-columns:
+            1fr;
+    }
+
+    .jarvis-v3-hero {
+        height: 370px;
+    }
+
+    .jarvis-v3-state-rail {
+        left: 18px;
+    }
+
+    .jarvis-v3-hero-quote {
+        display: none;
+    }
+
+}
+
+/* =========================================================
+   JARVIS V3 — REFERENCE PROPORTION REFINEMENT
+   ========================================================= */
+
+.jarvis-v3-app {
+    padding: 10px 12px 18px;
+}
+
+.jarvis-v3-grid {
+    grid-template-columns:
+        205px
+        minmax(650px, 1fr)
+        250px;
+
+    gap: 10px;
+
+    max-width: 1420px;
+}
+
+
+/* TOP BAR */
+
+.jarvis-v3-topbar {
+    height: 72px;
+
+    grid-template-columns:
+        170px
+        1fr
+        355px;
+
+    gap: 12px;
+}
+
+
+/* HERO */
+
+.jarvis-v3-hero {
+    height: 360px;
+
+    border-radius: 10px;
+}
+
+
+/* ORB */
+
+.jarvis-v3-orb {
+    width: 290px;
+    height: 290px;
+
+    top: 4px;
+}
+
+.jarvis-v3-energy-sphere {
+    width: 225px;
+    height: 225px;
+}
+
+
+/* make sphere feel deeper */
+
+.jarvis-v3-energy-sphere {
+    background:
+        radial-gradient(
+            circle at 45% 42%,
+            rgba(0, 31, 63, 1) 0%,
+            rgba(0, 21, 50, 0.98) 43%,
+            rgba(0, 91, 189, 0.50) 61%,
+            rgba(0, 191, 255, 0.88) 69%,
+            rgba(92, 235, 255, 1) 72%,
+            rgba(0, 98, 255, 0.55) 75%,
+            transparent 79%
+        );
+
+    box-shadow:
+        inset 0 0 55px rgba(0, 116, 255, 0.32),
+        0 0 16px rgba(53, 220, 255, 0.95),
+        0 0 42px rgba(0, 152, 255, 0.72),
+        0 0 100px rgba(0, 91, 255, 0.35);
+}
+
+
+/* STATE RAIL */
+
+.jarvis-v3-state-rail {
+    left: 34px;
+    top: 82px;
+
+    gap: 18px;
+}
+
+
+/* HERO QUOTE */
+
+.jarvis-v3-hero-quote {
+    right: 35px;
+    top: 100px;
+
+    font-size: 11px;
+
+    line-height: 1.7;
+}
+
+
+/* =========================================================
+   FIX THE "EARTH" 😂
+   Make it more like a distant curved horizon
+   ========================================================= */
+
+.jarvis-v3-earth {
+    width: 720px;
+    height: 120px;
+
+    bottom: -82px;
+
+    border-radius: 50%;
+
+    border-top:
+        1px solid
+        rgba(71, 210, 255, 0.85);
+
+    background:
+        radial-gradient(
+            ellipse at 50% -20%,
+            rgba(21, 147, 255, 0.28),
+            rgba(0, 59, 145, 0.10) 34%,
+            rgba(0, 13, 35, 0.92) 67%,
+            rgba(0, 5, 14, 1) 100%
+        );
+
+    box-shadow:
+        0 -1px 7px rgba(84, 221, 255, 0.85),
+        0 -7px 28px rgba(0, 153, 255, 0.38),
+        0 -26px 90px rgba(0, 70, 255, 0.19);
+
+    opacity: 0.95;
+}
+
+
+/* add subtle horizon atmosphere */
+
+.jarvis-v3-hero::after {
+    content: "";
+
+    position: absolute;
+
+    z-index: 1;
+
+    width: 620px;
+    height: 80px;
+
+    left: 50%;
+    bottom: -20px;
+
+    transform: translateX(-50%);
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            ellipse,
+            rgba(0, 151, 255, 0.14),
+            transparent 68%
+        );
+
+    filter: blur(20px);
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   QUICK ACTIONS
+   ========================================================= */
+
+.jarvis-v3-actions {
+    gap: 7px;
+}
+
+.jarvis-v3-action {
+    min-height: 96px;
+
+    padding: 11px 7px;
+}
+
+.jarvis-v3-action-icon {
+    font-size: 23px;
+}
+
+.jarvis-v3-action strong {
+    font-size: 9px;
+}
+
+.jarvis-v3-action small {
+    font-size: 7px;
+}
+
+
+/* =========================================================
+   COMMAND CENTER
+   ========================================================= */
+
+.jarvis-v3-command {
+    padding: 19px 24px 17px;
+}
+
+.jarvis-v3-command h2 {
+    font-size: 17px;
+}
+
+.jarvis-v3-suggestions {
+    margin-top: 15px;
+}
+
+.jarvis-v3-input-row {
+    margin-top: 13px;
+}
+
+
+/* =========================================================
+   BOTTOM PANELS
+   ========================================================= */
+
+.jarvis-v3-bottom {
+    gap: 9px;
+}
+
+.jarvis-v3-bottom-card {
+    min-height: 130px;
+
+    padding: 11px;
+}
+
+.jarvis-v3-market-box {
+    min-height: 84px;
+}
+
+
+/* =========================================================
+   RIGHT RAIL
+   ========================================================= */
+
+.jarvis-v3-right {
+    gap: 8px;
+}
+
+.jarvis-v3-time-card {
+    min-height: 150px;
+}
+
+.jarvis-v3-right-card {
+    padding: 12px;
+}
+
+
+/* =========================================================
+   LEFT SIDE
+   ========================================================= */
+
+.jarvis-v3-left-main {
+    min-height: 520px;
+}
+
+.jarvis-v3-quote {
+    margin-top: 45px;
+}
+
+
+/* =========================================================
+   BETTER BALANCE ON LARGE DISPLAYS
+   ========================================================= */
+
+@media (min-width: 1300px) {
+
+    .jarvis-v3-grid {
+        grid-template-columns:
+            205px
+            minmax(700px, 860px)
+            250px;
+
+        justify-content: center;
+    }
+
+}
+
+/* =========================================================
+   JARVIS V3 — FULL SCREEN SCALE-UP
+   Fill desktop viewport / increase readability
+   ========================================================= */
+
+.jarvis-v3-app {
+    min-height: 100vh;
+    width: 100%;
+
+    padding:
+        8px
+        16px
+        24px;
+}
+
+
+/* =========================================================
+   TOP BAR
+   ========================================================= */
+
+.jarvis-v3-topbar {
+    height: 86px;
+
+    grid-template-columns:
+        190px
+        1fr
+        380px;
+
+    gap: 18px;
+
+    padding:
+        0
+        12px
+        10px;
+}
+
+
+.jarvis-v3-logo-text {
+    font-size: 36px;
+}
+
+
+.jarvis-v3-logo small {
+    font-size: 8px;
+}
+
+
+.jarvis-v3-topnav {
+    height: 76px;
+}
+
+
+.jarvis-v3-topnav-item {
+    min-width: 76px;
+
+    font-size: 11px;
+}
+
+
+.jarvis-v3-topnav-icon {
+    font-size: 21px;
+}
+
+
+.jarvis-v3-search {
+    height: 44px;
+}
+
+
+.jarvis-v3-search input {
+    font-size: 12px;
+}
+
+
+.jarvis-v3-user-avatar {
+    width: 44px;
+    height: 44px;
+}
+
+
+.jarvis-v3-user strong {
+    font-size: 12px;
+}
+
+
+.jarvis-v3-user small {
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   MAIN GRID — USE THE WHOLE SCREEN
+   ========================================================= */
+
+.jarvis-v3-grid {
+    width: 100%;
+
+    max-width: none;
+
+    grid-template-columns:
+        230px
+        minmax(0, 1fr)
+        285px;
+
+    gap: 14px;
+
+    margin: 0;
+}
+
+
+/* =========================================================
+   LEFT RAIL
+   ========================================================= */
+
+.jarvis-v3-left-main {
+    min-height: 560px;
+
+    padding:
+        25px
+        12px
+        22px;
+}
+
+
+.jarvis-v3-left-title {
+    font-size: 31px;
+}
+
+
+.jarvis-v3-left-subtitle {
+    font-size: 9px;
+}
+
+
+.jarvis-v3-control-item {
+    height: 44px;
+
+    padding:
+        0
+        13px;
+
+    font-size: 12px;
+}
+
+
+.jarvis-v3-control-item span {
+    font-size: 18px;
+}
+
+
+.jarvis-v3-quote {
+    margin-top: 52px;
+
+    font-size: 13px;
+}
+
+
+.jarvis-v3-system {
+    padding: 15px;
+}
+
+
+.jarvis-v3-card-title {
+    font-size: 10px;
+}
+
+
+.jarvis-v3-system-master {
+    font-size: 10px;
+}
+
+
+.jarvis-v3-system-row {
+    padding: 8px 0;
+
+    font-size: 9px;
+}
+
+
+.jarvis-v3-system-row strong {
+    font-size: 8px;
+}
+
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.jarvis-v3-hero {
+    height: 410px;
+}
+
+
+.jarvis-v3-state-rail {
+    left: 48px;
+    top: 92px;
+
+    gap: 20px;
+}
+
+
+.jarvis-v3-state-row {
+    font-size: 8px;
+}
+
+
+.jarvis-v3-state-row span {
+    width: 9px;
+    height: 9px;
+}
+
+
+/* =========================================================
+   ORB — BIGGER
+   ========================================================= */
+
+.jarvis-v3-orb {
+    width: 335px;
+    height: 335px;
+
+    top: 3px;
+}
+
+
+.jarvis-v3-energy-sphere {
+    width: 255px;
+    height: 255px;
+}
+
+
+.jarvis-v3-orb-text strong {
+    font-size: 38px;
+}
+
+
+.jarvis-v3-orb-text small {
+    font-size: 9px;
+}
+
+
+.jarvis-v3-hero-quote {
+    right: 48px;
+    top: 114px;
+
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   EARTH HORIZON
+   ========================================================= */
+
+.jarvis-v3-earth {
+    width: 860px;
+    height: 140px;
+
+    bottom: -93px;
+}
+
+
+/* =========================================================
+   QUICK ACTIONS
+   ========================================================= */
+
+.jarvis-v3-actions {
+    gap: 10px;
+}
+
+
+.jarvis-v3-action {
+    min-height: 118px;
+
+    padding:
+        14px
+        9px;
+}
+
+
+.jarvis-v3-action-icon {
+    font-size: 29px;
+}
+
+
+.jarvis-v3-action strong {
+    font-size: 11px;
+}
+
+
+.jarvis-v3-action small {
+    font-size: 8px;
+}
+
+
+/* =========================================================
+   COMMAND CENTER
+   ========================================================= */
+
+.jarvis-v3-command {
+    padding:
+        25px
+        30px
+        23px;
+}
+
+
+.jarvis-v3-command h2 {
+    font-size: 22px;
+}
+
+
+.jarvis-v3-suggestions {
+    margin-top: 18px;
+}
+
+
+.jarvis-v3-suggestions button {
+    padding:
+        8px
+        14px;
+
+    font-size: 9px;
+}
+
+
+.jarvis-v3-input-row {
+    margin-top: 16px;
+
+    gap: 9px;
+}
+
+
+.jarvis-v3-round-button,
+.jarvis-v3-sliders,
+.jarvis-v3-send {
+    width: 44px;
+    height: 44px;
+}
+
+
+#jarvis-command-input {
+    height: 48px;
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   BOTTOM AREA
+   ========================================================= */
+
+.jarvis-v3-bottom-card {
+    min-height: 165px;
+
+    padding: 14px;
+}
+
+
+.jarvis-v3-card-header strong {
+    font-size: 10px;
+}
+
+
+.jarvis-v3-card-header button {
+    font-size: 8px;
+}
+
+
+.jarvis-v3-market-box {
+    min-height: 108px;
+
+    padding: 11px;
+}
+
+
+.jarvis-v3-market-box strong {
+    font-size: 9px;
+}
+
+
+.jarvis-v3-market-box span {
+    font-size: 14px;
+}
+
+
+.jarvis-v3-market-box small {
+    font-size: 8px;
+}
+
+
+.jarvis-v3-project-row {
+    padding: 9px 0;
+}
+
+
+.jarvis-v3-project-row strong {
+    font-size: 9px;
+}
+
+
+.jarvis-v3-project-row small {
+    font-size: 8px;
+}
+
+
+/* =========================================================
+   RIGHT RAIL
+   ========================================================= */
+
+.jarvis-v3-time-card {
+    min-height: 170px;
+
+    padding: 16px;
+}
+
+
+.jarvis-v3-date {
+    font-size: 9px;
+}
+
+
+.jarvis-v3-time {
+    font-size: 34px;
+}
+
+
+.jarvis-v3-time-card p {
+    font-size: 9px;
+}
+
+
+.jarvis-v3-right-card {
+    padding: 15px;
+}
+
+
+.jarvis-v3-task-row {
+    padding: 11px 0;
+}
+
+
+.jarvis-v3-task-row strong {
+    font-size: 9px;
+}
+
+
+.jarvis-v3-task-row small {
+    font-size: 8px;
+}
+
+
+.jarvis-v3-task-row em {
+    font-size: 8px;
+}
+
+
+.jarvis-v3-activity-row,
+.jarvis-v3-device-row {
+    padding: 10px 0;
+}
+
+
+.jarvis-v3-activity-row strong,
+.jarvis-v3-device-row strong {
+    font-size: 9px;
+}
+
+
+.jarvis-v3-activity-row small,
+.jarvis-v3-device-row small {
+    font-size: 8px;
+}
+
+
+.jarvis-v3-connect-device {
+    padding: 10px;
+
+    font-size: 9px;
+}
+
+
+/* =========================================================
+   WIDE DESKTOPS — REALLY USE THE SPACE
+   ========================================================= */
+
+@media (min-width: 1500px) {
+
+    .jarvis-v3-grid {
+        grid-template-columns:
+            250px
+            minmax(0, 1fr)
+            310px;
+
+        gap: 16px;
+    }
+
+    .jarvis-v3-hero {
+        height: 440px;
+    }
+
+    .jarvis-v3-orb {
+        width: 365px;
+        height: 365px;
+    }
+
+    .jarvis-v3-energy-sphere {
+        width: 280px;
+        height: 280px;
+    }
+
+    .jarvis-v3-earth {
+        width: 980px;
+        height: 150px;
+    }
+
+    .jarvis-v3-action {
+        min-height: 126px;
+    }
+
+    .jarvis-v3-command h2 {
+        font-size: 24px;
+    }
+}
+
+
+/* =========================================================
+   ULTRA WIDE DESKTOPS
+   ========================================================= */
+
+@media (min-width: 1800px) {
+
+    .jarvis-v3-app {
+        padding-left: 22px;
+        padding-right: 22px;
+    }
+
+    .jarvis-v3-grid {
+        grid-template-columns:
+            270px
+            minmax(0, 1fr)
+            330px;
+    }
+
+    .jarvis-v3-hero {
+        height: 470px;
+    }
+
+    .jarvis-v3-orb {
+        width: 390px;
+        height: 390px;
+    }
+
+    .jarvis-v3-energy-sphere {
+        width: 300px;
+        height: 300px;
+    }
+}
+
+/* =========================================
+   JARVIS VOICE LISTENING
+   ========================================= */
+
+.jarvis-v3-mic.active {
+    color: #ffffff;
+
+    border-color:
+        rgba(64, 220, 255, 0.9);
+
+    background:
+        rgba(0, 153, 255, 0.28);
+
+    box-shadow:
+        0 0 12px rgba(0, 204, 255, 0.75),
+        0 0 30px rgba(0, 126, 255, 0.45);
+
+    animation:
+        jarvisMicListening
+        1.2s
+        ease-in-out
+        infinite;
+}
+
+@keyframes jarvisMicListening {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.10);
+    }
+
+}
+
+/* ========================================
+   JARVIS V3 — LIVE NOVA RESPONSE
+======================================== */
+
+.jarvis-v3-response {
+    margin: 16px 0;
+    padding: 16px 18px;
+
+    border: 1px solid rgba(80, 170, 255, 0.22);
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(10, 25, 48, 0.88),
+            rgba(5, 13, 28, 0.94)
+        );
+
+    box-shadow:
+        inset 0 0 24px rgba(50, 145, 255, 0.04),
+        0 0 22px rgba(50, 145, 255, 0.05);
+}
+
+
+.jarvis-v3-response-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    margin-bottom: 10px;
+
+    font-size: 11px;
+    letter-spacing: 0.12em;
+}
+
+
+.jarvis-v3-response-header strong {
+    color: #8bc8ff;
+}
+
+
+.jarvis-v3-response-header small {
+    margin-left: auto;
+    opacity: 0.55;
+}
+
+
+.jarvis-v3-response-dot {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: #62b9ff;
+
+    box-shadow:
+        0 0 10px rgba(98, 185, 255, 0.9);
+}
+
+
+.jarvis-v3-response-text {
+    color: rgba(235, 246, 255, 0.92);
+
+    font-size: 14px;
+    line-height: 1.6;
+
+    white-space: pre-wrap;
+}

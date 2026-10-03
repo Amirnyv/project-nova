@@ -17,3 +17,14 @@ database_before_render.py
 # Xcode user-specific files
 xcuserdata/
 *.xcuserstate
+
+# Local data, credentials and working copies must never ship.
+*.db
+*.sqlite
+*.sqlite3
+*.p8
+*.pem
+*.key
+*.dir.tar
+*_backup*
+*_before_*
