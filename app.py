@@ -75,6 +75,7 @@ from services.billing_entitlements import (
     get_effective_entitlement, get_stripe_subscription, save_provider_subscription,
 )
 from user_model import User, get_user_by_id
+from services.registration import create_account, RegistrationError
 
 
 # -------------------------------------------------
@@ -183,7 +184,7 @@ def csrf_context():
 def protect_browser_mutations():
     # Billing endpoints and the signed Stripe webhook are deliberately unchanged.
     protected = {
-        "login", "signup", "forgot_password", "reset_password", "logout", "chat",
+        "login", "signup", "api_signup", "forgot_password", "reset_password", "logout", "chat",
         "add_project", "save_project_notes", "create_project_task",
         "update_project_task", "delete_project_task", "upload_project_file",
         "delete_project_file", "delete_conversation",
@@ -210,16 +211,19 @@ def protect_browser_mutations():
 def limit_auth_requests():
     policies = {"login": (60, 10, 900), "signup": (20, 5, 3600),
                 "forgot_password": (20, 5, 3600), "reset_password": (30, 10, 900)}
-    if request.method != "POST" or request.endpoint not in policies:
+    endpoint = "signup" if request.endpoint == "api_signup" else request.endpoint
+    if request.method != "POST" or endpoint not in policies:
         return None
-    ip_limit, account_limit, window = policies[request.endpoint]
-    account = request.form.get("email", "").strip().lower()
+    ip_limit, account_limit, window = policies[endpoint]
+    data = request.get_json(silent=True) if request.endpoint == "api_signup" else request.form
+    email = data.get("email", "") if hasattr(data, "get") else ""
+    account = email.strip().lower() if isinstance(email, str) else ""
     if request.endpoint == "reset_password":
         account = (request.view_args or {}).get("token", "")
     identities = [("ip:" + (request.remote_addr or "unknown"), ip_limit)]
     if account:
         identities.append(("account:" + account, account_limit))
-    keys = [(hashlib.sha256((request.endpoint + identity).encode()).hexdigest(), limit)
+    keys = [(hashlib.sha256((endpoint + identity).encode()).hexdigest(), limit)
             for identity, limit in identities]
     now = time.time()
     try:
@@ -241,8 +245,13 @@ def limit_auth_requests():
             json.dump(buckets, handle)
     except (OSError, ValueError):
         app.logger.error("Authentication rate guard unavailable")
+        if request.endpoint == "api_signup":
+            return jsonify(error="signup_unavailable", message="Signup is temporarily unavailable. Please try again later."), 503
         return "Authentication is temporarily unavailable. Please try again later.", 503
     if retry_after:
+        if request.endpoint == "api_signup":
+            return (jsonify(error="rate_limited", message="Too many attempts. Please wait before trying again."),
+                    429, {"Retry-After": str(retry_after)})
         return ("Too many attempts. Please wait before trying again.", 429,
                 {"Retry-After": str(retry_after)})
 
@@ -391,11 +400,8 @@ def send_welcome_email(
             """
         })
 
-    except Exception as error:
-        print(
-            "Welcome email error:",
-            repr(error)
-        )
+    except Exception:
+        app.logger.warning("Welcome email delivery failed.")
 
 def get_password_fingerprint(
     password_hash
@@ -574,113 +580,57 @@ def send_password_reset_email(
 # SIGN UP
 # -------------------------------------------------
 
+def complete_registration(data):
+    account = create_account(get_db, *(data.get(key, "") for key in
+                             ("username", "email", "password", "confirm_password")))
+    # Account commit is final; email delivery must never undo successful signup.
+    try:
+        send_welcome_email(account["email"], account["username"])
+    except Exception:
+        app.logger.warning("Welcome email delivery failed.")
+    login_user(User(account["id"], account["username"], account["email"]))
+    return account
+
+
+@app.get("/api/auth/csrf")
+def api_csrf():
+    response = jsonify(csrf_token=csrf_token())
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@app.post("/api/auth/signup")
+def api_signup():
+    if current_user.is_authenticated:
+        return jsonify(error="already_authenticated", message="Sign out before creating another account."), 409
+    data = request.get_json(silent=True)
+    fields = {"username", "email", "password", "confirm_password"}
+    if not isinstance(data, dict) or set(data) != fields:
+        return jsonify(error="invalid_request", message="Provide username, email, password and confirm_password."), 400
+    try:
+        account = complete_registration(data)
+    except RegistrationError as error:
+        return jsonify(error=error.code, message=error.message), error.status
+    except Exception:
+        app.logger.error("Native signup failed.")
+        return jsonify(error="signup_unavailable", message="Signup is temporarily unavailable. Please try again later."), 503
+    response = jsonify(ok=True, user=account)
+    response.headers["Cache-Control"] = "no-store"
+    return response, 201
+
+
+
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if current_user.is_authenticated:
         return redirect(url_for("home"))
-
     if request.method == "POST":
-        username = request.form.get(
-            "username",
-            ""
-        ).strip()
-
-        email = request.form.get(
-            "email",
-            ""
-        ).strip().lower()
-
-        password = request.form.get(
-            "password",
-            ""
-        )
-
-        confirm_password = request.form.get(
-            "confirm_password",
-            ""
-        )
-
-        if not username or not email or not password:
-            flash(
-                "Username, email, and password are required."
-            )
-            return render_template("signup.html")
-
-        if password != confirm_password:
-            flash("Passwords do not match.")
-            return render_template("signup.html")
-
-        if len(password) < 8:
-            flash(
-                "Password must be at least 8 characters."
-            )
-            return render_template("signup.html")
-
-        password_hash = generate_password_hash(password)
-
-        connection = get_db()
-
         try:
-            cursor = connection.execute(
-                """
-                INSERT INTO users (
-                    username,
-                    email,
-                    password_hash
-                )
-                VALUES (?, ?, ?)
-                """,
-                (
-                    username,
-                    email,
-                    password_hash
-                )
-            )
-
-            user_id = cursor.lastrowid
-
-            connection.execute(
-                """
-                INSERT INTO portfolios (
-                    user_id,
-                    cash
-                )
-                VALUES (?, ?)
-                """,
-                (
-                    user_id,
-                    10000.00
-                )
-            )
-
-            connection.commit()
-
-        except sqlite3.IntegrityError:
-            connection.rollback()
-            connection.close()
-
-            flash(
-                "That username or email is already registered."
-            )
+            complete_registration(request.form)
+        except RegistrationError as error:
+            flash(error.message)
             return render_template("signup.html")
-
-            connection.close()
-
-        send_welcome_email(
-            email,
-            username
-        )
-
-        user = User(
-            user_id,
-            username,
-            email
-        )
-
-        login_user(user)
-
         return redirect(url_for("home"))
-
     return render_template("signup.html")
 
 
