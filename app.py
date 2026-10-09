@@ -286,6 +286,12 @@ from services.paper_routes import register_paper_trading
 register_paper_trading(app, get_db, USE_POSTGRES)
 
 
+from services.nova_profile_routes import register_nova_profiles
+register_nova_profiles(app, get_db, local_guard_file, USE_POSTGRES)
+
+from services.nova_chat_routes import register_nova_chat
+register_nova_chat(app, get_db, local_guard_file, USE_POSTGRES)
+
 # -------------------------------------------------
 # OPENAI
 # -------------------------------------------------
