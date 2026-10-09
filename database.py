@@ -323,6 +323,20 @@ def init_db():
     from services.paper_schema import initialize_paper_schema
     initialize_paper_schema(get_db, USE_POSTGRES)
 
+    # Nova Chat database migrations (versions 1–3)
+    from services.nova_profile_schema import migrate_nova_profiles
+    from services.nova_chat_schema import migrate_nova_chat
+    from services.nova_group_schema import migrate_nova_groups
+
+    connection = get_db()
+    try:
+        migrate_nova_profiles(connection, postgres=USE_POSTGRES)
+        migrate_nova_chat(connection, postgres=USE_POSTGRES)
+        migrate_nova_groups(connection, postgres=USE_POSTGRES)
+    finally:
+        connection.close()
+
+
 
 # -------------------------------------------------
 # SQLITE DATABASE
